@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Materias primas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3">Materias primas</h1>
+  <a href="{{ url_for('materias_primas.crear') }}" class="btn btn-primary">
+    Nueva materia prima
+  </a>
+</div>
+
+{% if materias %}
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th>Unidad</th>
+        <th>Activo</th>
+        <th style="width: 180px;">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for mp in materias %}
+      <tr>
+        <td>{{ mp.id }}</td>
+        <td>{{ mp.nombre }}</td>
+        <td>{{ mp.tipo }}</td>
+        <td>{{ mp.unidad_base }}</td>
+        <td>{{ 'Sí' if mp.activo else 'No' }}</td>
+        <td>
+          <a href="{{ url_for('materias_primas.detalle', mp_id=mp.id) }}" class="btn btn-sm btn-secondary">
+            Ver
+          </a>
+          <a href="{{ url_for('materias_primas.editar', mp_id=mp.id) }}" class="btn btn-sm btn-warning">
+            Editar
+          </a>
+          <form action="{{ url_for('materias_primas.eliminar', mp_id=mp.id) }}"
+                method="post"
+                style="display:inline;"
+                onsubmit="return confirm('¿Seguro que deseas eliminar esta materia prima?');">
+            <button type="submit" class="btn btn-sm btn-danger">
+              Eliminar
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No hay materias primas registradas todavía.</p>
+{% endif %}
+{% endblock %}

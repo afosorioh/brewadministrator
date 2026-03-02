@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% if accion == "crear" %}
+  {% set titulo = "Nueva materia prima" %}
+{% else %}
+  {% set titulo = "Editar materia prima" %}
+{% endif %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">{{ titulo }}</h1>
+
+<form method="post">
+  <div class="mb-3">
+    <label for="nombre" class="form-label">Nombre</label>
+    <input type="text" class="form-control" id="nombre" name="nombre"
+           value="{{ mp.nombre if mp else '' }}" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="tipo" class="form-label">Tipo</label>
+    <select class="form-select" id="tipo" name="tipo" required>
+      <option value="">-- Selecciona tipo --</option>
+      {% for t in tipos %}
+        <option value="{{ t }}"
+          {% if mp and mp.tipo == t %}selected{% endif %}>
+          {{ t }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label for="unidad_base" class="form-label">Unidad base</label>
+    <select class="form-select" id="unidad_base" name="unidad_base" required>
+      <option value="">-- Selecciona unidad --</option>
+      {% for u in unidades %}
+        <option value="{{ u }}"
+          {% if mp and mp.unidad_base == u %}selected{% endif %}>
+          {{ u }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Detalles LEVADURA -->
+  <div id="seccion-levadura" class="border rounded p-3 mb-3" style="display:none;">
+    <h5>Detalles de levadura</h5>
+
+    <div class="mb-3">
+      <label class="form-label">Tipo de levadura</label>
+      <select class="form-select" name="lev_tipo_levadura">
+        {% set lev = mp.levadura_detalle if mp and mp.levadura_detalle else None %}
+        {% for val in ["ALE","LAGER","KVEIK","HIBRIDA","OTRA"] %}
+          <option value="{{ val }}"
+            {% if lev and lev.tipo_levadura == val %}selected{% endif %}>
+            {{ val }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Forma</label>
+      <select class="form-select" name="lev_forma">
+        {% for val in ["SECA","LIQUIDA"] %}
+          <option value="{{ val }}"
+            {% if lev and lev.forma == val %}selected{% endif %}>
+            {{ val }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Floculación</label>
+      <select class="form-select" name="lev_floculacion">
+        {% for val in ["BAJA","MEDIA","ALTA"] %}
+          <option value="{{ val }}"
+            {% if lev and lev.floculacion == val %}selected{% endif %}>
+            {{ val }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Atenuación mínima (%)</label>
+        <input type="number" class="form-control" name="lev_atenuacion_min"
+               value="{{ lev.atenuacion_min if lev and lev.atenuacion_min is not none else '' }}">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Atenuación máxima (%)</label>
+        <input type="number" class="form-control" name="lev_atenuacion_max"
+               value="{{ lev.atenuacion_max if lev and lev.atenuacion_max is not none else '' }}">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Pitch rate (mill. células / ml / °P)</label>
+      <input type="number" step="0.01" class="form-control" name="lev_pitch_rate"
+             value="{{ lev.pitch_rate_mill_cel_ml_plato if lev and lev.pitch_rate_mill_cel_ml_plato is not none else '' }}">
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Temperatura mínima (°C)</label>
+        <input type="number" class="form-control" name="lev_temp_min"
+               value="{{ lev.temperatura_min_c if lev and lev.temperatura_min_c is not none else '' }}">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Temperatura máxima (°C)</label>
+        <input type="number" class="form-control" name="lev_temp_max"
+               value="{{ lev.temperatura_max_c if lev and lev.temperatura_max_c is not none else '' }}">
+      </div>
+    </div>
+  </div>
+
+  <!-- Detalles LÚPULO -->
+  <div id="seccion-lupulo" class="border rounded p-3 mb-3" style="display:none;">
+    <h5>Detalles de lúpulo</h5>
+    {% set lup = mp.lupulo_detalle if mp and mp.lupulo_detalle else None %}
+
+    <div class="mb-3">
+      <label class="form-label">Uso</label>
+      <select class="form-select" name="lup_uso">
+        {% for val in ["AMARGOR","AROMA","DUAL"] %}
+          <option value="{{ val }}"
+            {% if lup and lup.uso == val %}selected{% endif %}>
+            {{ val }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Forma</label>
+      <select class="form-select" name="lup_forma">
+        {% for val in ["PELLET","FLOR","EXTRACTO"] %}
+          <option value="{{ val }}"
+            {% if lup and lup.forma == val %}selected{% endif %}>
+            {{ val }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Alfa ácidos (%)</label>
+        <input type="number" step="0.01" class="form-control" name="lup_alfa"
+               value="{{ lup.alfa_acidos_pct if lup and lup.alfa_acidos_pct is not none else '' }}">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Beta ácidos (%)</label>
+        <input type="number" step="0.01" class="form-control" name="lup_beta"
+               value="{{ lup.beta_acidos_pct if lup and lup.beta_acidos_pct is not none else '' }}">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Cohumulona (%)</label>
+        <input type="number" step="0.01" class="form-control" name="lup_cohumulona"
+               value="{{ lup.cohumulona_pct if lup and lup.cohumulona_pct is not none else '' }}">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Aceites totales (ml / 100g)</label>
+        <input type="number" step="0.01" class="form-control" name="lup_aceites"
+               value="{{ lup.aceites_totales_ml_100g if lup and lup.aceites_totales_ml_100g is not none else '' }}">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Perfil de aroma</label>
+      <input type="text" class="form-control" name="lup_perfil"
+             value="{{ lup.perfil_aroma if lup and lup.perfil_aroma else '' }}">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Año de cosecha</label>
+      <input type="number" class="form-control" name="lup_anio"
+             value="{{ lup.año_cosecha if lup and lup.año_cosecha is not none else '' }}">
+    </div>
+  </div>
+
+  <!-- Detalles MALTA -->
+  <div id="seccion-malta" class="border rounded p-3 mb-3" style="display:none;">
+    <h5>Detalles de malta</h5>
+    {% set mal = mp.malta_detalle if mp and mp.malta_detalle else None %}
+
+    <div class="mb-3">
+      <label class="form-label">Tipo de malta</label>
+      <select class="form-select" name="mal_tipo_malta">
+        {% for val in ["BASE","CARAMELO","TOSTADA","ESPECIAL","OTRA"] %}
+          <option value="{{ val }}"
+            {% if mal and mal.tipo_malta == val %}selected{% endif %}>
+            {{ val }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Color (EBC)</label>
+        <input type="number" step="0.01" class="form-control" name="mal_color_ebc"
+               value="{{ mal.color_ebc if mal and mal.color_ebc is not none else '' }}">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Color (Lovibond)</label>
+        <input type="number" step="0.01" class="form-control" name="mal_color_lovibond"
+               value="{{ mal.color_lovibond if mal and mal.color_lovibond is not none else '' }}">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Potencial de gravedad (ej. 1.036)</label>
+      <input type="number" step="0.001" class="form-control" name="mal_potencial"
+             value="{{ mal.potencial_gravedad if mal and mal.potencial_gravedad is not none else '' }}">
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Proteínas (%)</label>
+        <input type="number" step="0.01" class="form-control" name="mal_proteinas"
+               value="{{ mal.proteinas_pct if mal and mal.proteinas_pct is not none else '' }}">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">pH mosto color</label>
+        <input type="number" step="0.01" class="form-control" name="mal_ph_mosto"
+               value="{{ mal.ph_mosto_color if mal and mal.ph_mosto_color is not none else '' }}">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Uso máximo recomendado en molienda (%)</label>
+      <input type="number" step="0.01" class="form-control" name="mal_uso_max"
+             value="{{ mal.uso_max_pct_molienda if mal and mal.uso_max_pct_molienda is not none else '' }}">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label for="fabricante" class="form-label">Fabricante</label>
+    <input type="text" class="form-control" id="fabricante" name="fabricante"
+           value="{{ mp.fabricante if mp and mp.fabricante else '' }}">
+  </div>
+
+  <div class="mb-3">
+    <label for="origen" class="form-label">Origen</label>
+    <input type="text" class="form-control" id="origen" name="origen"
+           value="{{ mp.origen if mp and mp.origen else '' }}">
+  </div>
+
+  <div class="mb-3">
+    <label for="notas" class="form-label">Notas</label>
+    <textarea class="form-control" id="notas" name="notas" rows="3">{{ mp.notas if mp and mp.notas else '' }}</textarea>
+  </div>
+
+  <!-- Detalles OTROS -->
+  <div id="seccion-otros" class="border rounded p-3 mb-3" style="display:none;">
+    <h5>Detalles de otros insumos</h5>
+    {% set otro = mp.otros_detalle if mp and mp.otros_detalle else None %}
+
+    <div class="mb-3">
+      <label class="form-label">Tipo de insumo</label>
+      <select class="form-select" name="otro_tipo">
+        <option value="">-- Seleccionar tipo --</option>
+        {% for val in ["SALES","ADJUNTOS","EXTRACTOS","FRUTAS"] %}
+          <option value="{{ val }}"
+            {% if otro and otro.tipo == val %}selected{% endif %}>
+            {{ val }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Nombre específico</label>
+      <input type="text" class="form-control" name="otro_nombre"
+             value="{{ otro.nombre if otro and otro.nombre else '' }}"
+             placeholder="Ej. Extraco Avellana, Lactosa, Avena...">
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary">
+    Guardar
+  </button>
+  <a href="{{ url_for('materias_primas.lista') }}" class="btn btn-secondary">
+    Cancelar
+  </a>
+</form>
+
+<script>
+  function actualizarSeccionesTipo() {
+    const tipo = document.getElementById("tipo").value;
+    const secLev = document.getElementById("seccion-levadura");
+    const secLup = document.getElementById("seccion-lupulo");
+    const secMal = document.getElementById("seccion-malta");
+    const secOtros = document.getElementById("seccion-otros");
+
+    if (secLev) secLev.style.display = "none";
+    if (secLup) secLup.style.display = "none";
+    if (secMal) secMal.style.display = "none";
+    if (secOtros) secOtros.style.display = "none";
+
+    if (tipo === "LEVADURA" && secLev) secLev.style.display = "block";
+    if (tipo === "LUPULO" && secLup) secLup.style.display = "block";
+    if (tipo === "MALTA" && secMal) secMal.style.display = "block";
+    if (tipo === "OTRO" && secOtros) secOtros.style.display = "block";
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const tipoSelect = document.getElementById("tipo");
+    if (tipoSelect) {
+      tipoSelect.addEventListener("change", actualizarSeccionesTipo);
+      actualizarSeccionesTipo(); // para el caso de edición
+    }
+  });
+</script>
+
+
+{% endblock %}

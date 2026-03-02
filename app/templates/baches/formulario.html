@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% if accion == "crear" %}
+  {% set titulo = "Nuevo bache" %}
+{% else %}
+  {% set titulo = "Editar bache" %}
+{% endif %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">{{ titulo }}</h1>
+
+<form method="post">
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label class="form-label">Código de bache</label>
+      <input type="text" class="form-control" name="codigo_bache"
+             value="{{ bache.codigo_bache if bache else '' }}" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Nombre cerveza</label>
+      <input type="text" class="form-control" name="nombre_cerveza"
+             value="{{ bache.nombre_cerveza if bache else '' }}" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Receta (opcional)</label>
+      <select class="form-select" name="id_receta" id="id_receta">
+        <option value="">-- Sin receta asociada --</option>
+          {% for r in recetas %}
+            <option value="{{ r.id }}"
+                    data-descripcion="{{ (r.descripcion or '')|e }}"
+                    {% if bache and bache.id_receta == r.id %}selected{% endif %}>
+              {{ r.nombre }} ({{ r.estilo or '-' }})
+            </option>
+          {% endfor %}
+      </select>
+    <div class="mt-2">
+      <button type="button" class="btn btn-outline-info btn-sm"
+              onclick="mostrarReceta()">
+        Ver guía de receta
+      </button>
+    </div>      
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-3">
+      <label class="form-label">Fecha cocción</label>
+      <input type="date" class="form-control" name="fecha_coccion"
+             value="{{ bache.fecha_coccion if bache else '' }}" required>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Volumen objetivo (L)</label>
+      <input type="number" step="0.01" class="form-control" name="volumen_objetivo_litros"
+             value="{{ bache.volumen_objetivo_litros if bache and bache.volumen_objetivo_litros is not none else '' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Volumen final (L)</label>
+      <input type="number" step="0.01" class="form-control" name="volumen_final_litros"
+             value="{{ bache.volumen_final_litros if bache and bache.volumen_final_litros is not none else '' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Estado</label>
+      <select class="form-select" name="estado">
+        {% for e in estados %}
+          <option value="{{ e }}"
+            {% if bache and bache.estado == e %}selected{% endif %}>
+            {{ e }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-3">
+      <label class="form-label">Densidad inicial</label>
+      <input type="number" step="0.001" class="form-control" name="densidad_inicial"
+             value="{{ bache.densidad_inicial if bache and bache.densidad_inicial is not none else '' }}">
+    </div>
+    <div class="col-md-3">
+    <label class="form-label">pH macerado</label>
+    <input type="number" step="0.01" class="form-control" name="ph_macerado"
+           value="{{ bache.ph_macerado if bache and bache.ph_macerado is not none else '' }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">pH fin de hervido</label>
+      <input type="number" step="0.01" class="form-control" name="ph_fin_hervido"
+            value="{{ bache.ph_fin_hervido if bache and bache.ph_fin_hervido is not none else '' }}">
+    </div>
+    <div class="col-md-3">
+    <label class="form-label">Temp. maceración (°C)</label>
+    <input type="number" step="0.01" class="form-control"
+          name="temp_maceracion"
+          value="{{ bache.temp_maceracion if bache and bache.temp_maceracion is not none else '' }}">
+    </div>
+    <div class="col-md-3">
+    <label class="form-label">Temp. mash-off (°C)</label>
+    <input type="number" step="0.01" class="form-control"
+          name="temp_mashoff"
+          value="{{ bache.temp_mashoff if bache and bache.temp_mashoff is not none else '' }}">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Notas</label>
+      <textarea class="form-control" name="notas" rows="2">{{ bache.notas if bache and bache.notas else '' }}</textarea>
+    </div>
+  </div>
+
+  <hr>
+
+  <h5>Materias primas usadas</h5>
+  <p class="text-muted">
+    Selecciona lotes y define cantidades, etapas y tipo de aplicación
+    (por ejemplo, lúpulo amargor 60 min, dry hop día 3, etc.).
+  </p>
+
+  <table class="table table-sm align-middle" id="tabla-mp">
+    <thead>
+      <tr>
+        <th style="width: 25%;">Lote / Materia prima</th>
+        <th style="width: 10%;">Cantidad</th>
+        <th style="width: 10%;">Unidad</th>
+        <th style="width: 15%;">Etapa proceso</th>
+        <th style="width: 15%;">Tipo aplicación</th>
+        <th style="width: 10%;">Tiempo hervor (min)</th>
+        <th style="width: 10%;">Días fermentación</th>
+        <th style="width: 5%;"></th>
+      </tr>
+    </thead>
+    <tbody id="tabla-mp-body">
+      {% set filas = [] %}
+      {% if accion == "editar" and materias %}
+        {% set filas = materias %}
+      {% endif %}
+
+      {% if filas %}
+        {% for m, lote, mp in filas %}
+          <tr class="fila-mp">
+            <td>
+              <select class="form-select form-select-sm" name="lote_id">
+                <option value="">-- Seleccionar lote --</option>
+                {% for l in lotes %}
+                  <option value="{{ l.id }}"
+                    {% if l.id == lote.id %}selected{% endif %}>
+                    {{ l.materia_prima.nombre }} - lote {{ l.codigo_lote }}
+                    ({{ l.cantidad_disponible }} {{ l.materia_prima.unidad_base }})
+                  </option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <input type="number" step="0.001" class="form-control form-control-sm"
+                     name="cantidad" value="{{ m.cantidad_usada }}">
+            </td>
+            <td>
+              <select class="form-select form-select-sm" name="unidad">
+                {% for u in unidades %}
+                  <option value="{{ u }}"
+                    {% if m.unidad == u %}selected{% endif %}>{{ u }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <select class="form-select form-select-sm" name="etapa_proceso">
+                {% for val in ["MACERACION","HERVOR","WHIRLPOOL","FERMENTACION","MADURACION","OTRA"] %}
+                  <option value="{{ val }}"
+                    {% if m.etapa_proceso == val %}selected{% endif %}>{{ val }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <select class="form-select form-select-sm" name="tipo_aplicacion">
+                {% for val in ["GENERAL","AMARGOR","SABOR","AROMA","DRY_HOP","NUTRIENTE","OTRA"] %}
+                  <option value="{{ val }}"
+                    {% if m.tipo_aplicacion == val %}selected{% endif %}>{{ val }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <input type="number" class="form-control form-control-sm"
+                     name="tiempo_hervor"
+                     value="{{ m.tiempo_minutos_desde_inicio_hervor if m.tiempo_minutos_desde_inicio_hervor is not none else '' }}">
+            </td>
+            <td>
+              <input type="number" class="form-control form-control-sm"
+                     name="dias_fermentacion"
+                     value="{{ m.dias_desde_inicio_fermentacion if m.dias_desde_inicio_fermentacion is not none else '' }}">
+            </td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-fila">&times;</button>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <!-- Fila vacía inicial -->
+        <tr class="fila-mp">
+          <td>
+            <select class="form-select form-select-sm" name="lote_id">
+              <option value="">-- Seleccionar lote --</option>
+              {% for l in lotes %}
+                <option value="{{ l.id }}">
+                  {{ l.materia_prima.nombre }} - lote {{ l.codigo_lote }}
+                  ({{ l.cantidad_disponible }} {{ l.materia_prima.unidad_base }})
+                </option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <input type="number" step="0.001" class="form-control form-control-sm" name="cantidad">
+          </td>
+          <td>
+            <select class="form-select form-select-sm" name="unidad">
+              {% for u in unidades %}
+                <option value="{{ u }}">{{ u }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <select class="form-select form-select-sm" name="etapa_proceso">
+              {% for val in ["MACERACION","HERVOR","WHIRLPOOL","FERMENTACION","MADURACION","OTRA"] %}
+                <option value="{{ val }}">{{ val }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <select class="form-select form-select-sm" name="tipo_aplicacion">
+              {% for val in ["GENERAL","AMARGOR","SABOR","AROMA","DRY_HOP","NUTRIENTE","OTRA"] %}
+                <option value="{{ val }}">{{ val }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <input type="number" class="form-control form-control-sm" name="tiempo_hervor">
+          </td>
+          <td>
+            <input type="number" class="form-control form-control-sm" name="dias_fermentacion">
+          </td>
+          <td>
+            <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-fila">&times;</button>
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  <hr>
+  <h5 class="mt-4">Mediciones del bache</h5>
+  {% if mediciones %}
+  <h6 class="mt-3">Histórico</h6>
+  <table class="table table-sm table-striped">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Tipo</th>
+        <th>Valor</th>
+        <th>Comentario</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in mediciones %}
+      <tr>
+        <td>{{ m.fecha }}</td>
+        <td>{{ m.tipo }}</td>
+        <td>{{ m.valor }}</td>
+        <td>{{ m.comentario or "-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  <table class="table table-sm" id="tabla-mediciones">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Tipo</th>
+        <th>Valor</th>
+        <th>Comentario</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Nuevas mediciones -->
+    </tbody>
+  </table>
+
+<button type="button" class="btn btn-sm btn-primary" onclick="agregarMedicion()">
+  Añadir medición
+</button>
+
+  <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="btn-agregar-fila">
+    + Agregar fila
+  </button>
+
+  <div class="mt-3">
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a href="{{ url_for('baches.lista') }}" class="btn btn-secondary">Cancelar</a>
+  </div>
+</form>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const tablaBody = document.getElementById("tabla-mp-body");
+    const btnAgregar = document.getElementById("btn-agregar-fila");
+
+    function agregarListenersEliminar() {
+      const botones = document.querySelectorAll(".btn-eliminar-fila");
+      botones.forEach(btn => {
+        btn.onclick = function () {
+          const fila = this.closest("tr");
+          const filas = document.querySelectorAll("#tabla-mp-body tr");
+          if (filas.length > 1) {
+            fila.remove();
+          } else {
+            // Limpiar la fila si es la única
+            fila.querySelectorAll("input").forEach(inp => inp.value = "");
+            fila.querySelectorAll("select").forEach(sel => sel.selectedIndex = 0);
+          }
+        };
+      });
+    }
+
+    if (btnAgregar) {
+      btnAgregar.addEventListener("click", function () {
+        const primeraFila = tablaBody.querySelector("tr.fila-mp");
+        const nueva = primeraFila.cloneNode(true);
+        nueva.querySelectorAll("input").forEach(inp => inp.value = "");
+        nueva.querySelectorAll("select").forEach(sel => sel.selectedIndex = 0);
+        tablaBody.appendChild(nueva);
+        agregarListenersEliminar();
+      });
+    }
+
+    agregarListenersEliminar();
+  });
+</script>
+<script>
+function agregarMedicion() {
+  const tbody = document.querySelector("#tabla-mediciones tbody");
+
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>
+      <input type="datetime-local" name="med_fecha[]" class="form-control form-control-sm">
+    </td>
+    <td>
+      <select name="med_tipo[]" class="form-select form-select-sm">
+        <option value="PH">PH</option>
+        <option value="TEMPERATURA">Temperatura</option>
+        <option value="DENSIDAD">Densidad</option>
+        <option value="OTRO">Otro</option>
+      </select>
+    </td>
+    <td>
+      <input type="number" step="0.001" name="med_valor[]" class="form-control form-control-sm">
+    </td>
+    <td>
+      <input type="text" name="med_comentario[]" class="form-control form-control-sm">
+    </td>
+    <td>
+      <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">X</button>
+    </td>
+  `;
+
+  tbody.appendChild(row);
+}
+</script>
+<!-- Modal receta -->
+<div class="modal fade" id="modalReceta" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Guía de receta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <pre id="contenidoReceta" style="white-space: pre-wrap; margin:0;"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function mostrarReceta() {
+  const select = document.getElementById("id_receta");
+  if (!select) {
+    console.error("No existe el select #id_receta");
+    return;
+  }
+
+  const option = select.options[select.selectedIndex];
+  const descripcion = option ? option.getAttribute("data-descripcion") : "";
+
+  if (!descripcion || descripcion.trim() === "") {
+    alert("Esta receta no tiene descripción.");
+    return;
+  }
+
+  document.getElementById("contenidoReceta").textContent = descripcion;
+
+  // Bootstrap 5
+  const el = document.getElementById("modalReceta");
+  const modal = bootstrap.Modal.getOrCreateInstance(el);
+  modal.show();
+}
+</script>>
+{% endblock %}
+

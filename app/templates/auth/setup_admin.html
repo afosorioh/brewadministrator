@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Setup Admin{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Bootstrap: crear primer ADMIN</h1>
+
+<form method="post" class="card p-3">
+  <div class="mb-3">
+    <label class="form-label">Token</label>
+    <input class="form-control" name="token" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Username ADMIN</label>
+    <input class="form-control" name="username" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Contraseña</label>
+    <input type="password" class="form-control" name="password" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Confirmar contraseña</label>
+    <input type="password" class="form-control" name="password2" required>
+  </div>
+  <button class="btn btn-primary">Crear ADMIN</button>
+</form>
+{% endblock %}

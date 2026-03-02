@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle bache{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Detalle bache</h1>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ bache.codigo_bache }} - {{ bache.nombre_cerveza }}</h5>
+    <h6 class="card-subtitle mb-2 text-muted">
+      Fecha cocción: {{ bache.fecha_coccion }} |
+      Estado: {{ bache.estado }}
+    </h6>
+
+    <p class="mb-1"><strong>Receta:</strong>
+      {% if bache.receta %}
+        {{ bache.receta.nombre }} ({{ bache.receta.estilo or '-' }})
+      {% else %}
+        -
+      {% endif %}
+    </p>
+
+    <p class="mb-1">
+      <strong>Volumen objetivo (L):</strong> {{ bache.volumen_objetivo_litros or "-" }}<br>
+      <strong>Volumen final (L):</strong> {{ bache.volumen_final_litros or "-" }}
+    </p>
+
+    <p class="mb-1">
+      <strong>Densidad inicial:</strong> {{ bache.densidad_inicial or "-" }}<br>
+      <strong>Temp. maceración:</strong> {{ bache.temp_maceracion or "-" }} °C<br>
+      <strong>Temp. mash-off:</strong> {{ bache.temp_mashoff or "-" }} °C<br>
+    </p>
+
+    <p class="mb-1">
+      <strong>pH macerado:</strong> {{ bache.ph_macerado or "-" }}<br>
+      <strong>pH fin de hervido:</strong> {{ bache.ph_fin_hervido or "-" }}
+    </p>
+    
+    {% if bache.notas %}
+      <p class="mt-2"><strong>Notas:</strong><br>{{ bache.notas }}</p>
+    {% endif %}
+
+    <hr class="my-4">
+
+    <h5>Indicadores (calculados)</h5>
+
+    <div class="row">
+      <div class="col-md-4">
+        <div class="border rounded p-3 mb-3">
+          <div><strong>OG (densidad inicial):</strong> {{ "%.3f"|format(og) if og else "-" }}</div>
+          <div><strong>FG (última densidad):</strong> {{ "%.3f"|format(fg) if fg else "-" }}</div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="border rounded p-3 mb-3">
+          <div><strong>Alcohol (ABV aprox):</strong>
+            {% if abv is not none %}
+              {{ "%.2f"|format(abv) }} %
+            {% else %}
+              -
+            {% endif %}
+          </div>
+          <div><strong>Atenuación aparente:</strong>
+            {% if atenuacion is not none %}
+              {{ "%.1f"|format(atenuacion) }} %
+            {% else %}
+              -
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="border rounded p-3 mb-3">
+          <div class="mb-2"><strong>Últimas mediciones</strong></div>
+
+          <div>
+            <strong>Densidad:</strong>
+            {% if ult_dens %}
+              {{ ult_dens.valor }} <small class="text-muted">({{ ult_dens.fecha }})</small>
+            {% else %}-{% endif %}
+          </div>
+
+          <div>
+            <strong>Temperatura:</strong>
+            {% if ult_temp %}
+              {{ ult_temp.valor }} <small class="text-muted">({{ ult_temp.fecha }})</small>
+            {% else %}-{% endif %}
+          </div>
+
+          <div>
+            <strong>pH:</strong>
+            {% if ult_ph %}
+              {{ ult_ph.valor }} <small class="text-muted">({{ ult_ph.fecha }})</small>
+            {% else %}-{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if ult_dens and ult_dens.comentario %}
+      <div class="alert alert-secondary">
+        <strong>Comentario última densidad:</strong> {{ ult_dens.comentario }}
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<h5>Materias primas usadas</h5>
+
+{% if materias %}
+  <table class="table table-sm table-striped">
+    <thead>
+      <tr>
+        <th>Materia prima</th>
+        <th>Lote</th>
+        <th>Cantidad</th>
+        <th>Etapa</th>
+        <th>Tipo aplicación</th>
+        <th>Tiempo hervor (min)</th>
+        <th>Días ferm.</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m, lote, mp in materias %}
+      <tr>
+        <td>{{ mp.nombre }} ({{ mp.tipo }})</td>
+        <td>{{ lote.codigo_lote }}</td>
+        <td>{{ m.cantidad_usada }} {{ m.unidad }}</td>
+        <td>{{ m.etapa_proceso }}</td>
+        <td>{{ m.tipo_aplicacion }}</td>
+        <td>{{ m.tiempo_minutos_desde_inicio_hervor or "-" }}</td>
+        <td>{{ m.dias_desde_inicio_fermentacion or "-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No se han registrado materias primas para este bache.</p>
+{% endif %}
+
+<div class="mt-3">
+  <a href="{{ url_for('baches.editar', bache_id=bache.id) }}" class="btn btn-warning">
+    Editar
+  </a>
+  <a href="{{ url_for('baches.lista') }}" class="btn btn-secondary">
+    Volver a la lista
+  </a>
+  <a href="{{ url_for('baches.exportar_pdf', bache_id=bache.id) }}" class="btn btn-outline-primary">
+  Exportar PDF
+  </a>
+</div>
+{% endblock %}

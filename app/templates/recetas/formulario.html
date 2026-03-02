@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% if accion == "crear" %}
+  {% set titulo = "Nueva receta" %}
+{% else %}
+  {% set titulo = "Editar receta" %}
+{% endif %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">{{ titulo }}</h1>
+
+<form method="post">
+  <div class="mb-3">
+    <label class="form-label">Nombre</label>
+    <input type="text" class="form-control" name="nombre"
+           value="{{ receta.nombre if receta else '' }}" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Estilo</label>
+    <input type="text" class="form-control" name="estilo"
+           value="{{ receta.estilo if receta and receta.estilo else '' }}">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Volumen estándar (L)</label>
+    <input type="number" step="0.01" class="form-control"
+           name="volumen_estandar_litros"
+           value="{{ receta.volumen_estandar_litros if receta and receta.volumen_estandar_litros is not none else '' }}">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Descripción</label>
+    <textarea class="form-control" name="descripcion" rows="3">{{ receta.descripcion if receta and receta.descripcion else '' }}</textarea>
+  </div>
+
+  <button class="btn btn-primary">Guardar</button>
+  <a href="{{ url_for('recetas.lista') }}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Estadísticas por Bache</h2>
+
+<form method="post" class="card p-3 mb-3" style="max-width:400px;">
+  <label>Código de bache</label>
+  <input name="codigo_bache" class="form-control" placeholder="Ej: BATCH-001" required>
+  <button class="btn btn-primary mt-2">Buscar</button>
+</form>
+
+{% if bache %}
+<div class="card p-3 mb-3">
+  <h4>{{ bache.codigo_bache }} – {{ bache.nombre_cerveza }}</h4>
+  <p>Fecha cocción: {{ bache.fecha_coccion }}</p>
+  <p>Estado: {{ bache.estado }}</p>
+
+  <h5>Indicadores</h5>
+  <ul>
+    <li>OG: {{ "%.3f"|format(stats.og) if stats.og else "-" }}</li>
+    <li>FG: {{ "%.3f"|format(stats.fg) if stats.fg else "-" }}</li>
+    <li>ABV: {{ "%.2f"|format(stats.abv) if stats.abv else "-" }} %</li>
+    <li>Atenuación: {{ "%.1f"|format(stats.atenuacion) if stats.atenuacion else "-" }} %</li>
+  </ul>
+
+  <h5>Últimas mediciones</h5>
+  <ul>
+    <li>Densidad: {{ stats.ult_dens.valor if stats.ult_dens else "-" }}</li>
+    <li>Temp: {{ stats.ult_temp.valor if stats.ult_temp else "-" }}</li>
+    <li>pH: {{ stats.ult_ph.valor if stats.ult_ph else "-" }}</li>
+  </ul>
+</div>
+
+<div class="card p-3">
+  <h5>Gráfica</h5>
+  <img class="img-fluid"
+       src="{{ url_for('estadisticas.bache_grafica', bache_id=bache.id) }}">
+</div>
+{% endif %}
+
+{% endblock %}

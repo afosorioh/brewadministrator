@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Recetas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h1 class="h3">Recetas</h1>
+  <a href="{{ url_for('recetas.crear') }}" class="btn btn-primary">Nueva receta</a>
+</div>
+
+{% if recetas %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Estilo</th>
+      <th>Volumen estándar (L)</th>
+      <th style="width:180px;">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in recetas %}
+    <tr>
+      <td>{{ r.nombre }}</td>
+      <td>{{ r.estilo or "-" }}</td>
+      <td>{{ r.volumen_estandar_litros or "-" }}</td>
+      <td>
+        <a href="{{ url_for('recetas.detalle', receta_id=r.id) }}" class="btn btn-sm btn-secondary">Ver</a>
+        <a href="{{ url_for('recetas.editar', receta_id=r.id) }}" class="btn btn-sm btn-warning">Editar</a>
+        <form method="post"
+              action="{{ url_for('recetas.eliminar', receta_id=r.id) }}"
+              style="display:inline;"
+              onsubmit="return confirm('¿Eliminar esta receta?');">
+          <button class="btn btn-sm btn-danger">Eliminar</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No hay recetas registradas.</p>
+{% endif %}
+{% endblock %}

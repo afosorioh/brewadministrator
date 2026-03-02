@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle materia prima{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Detalle materia prima</h1>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ mp.nombre }}</h5>
+    <h6 class="card-subtitle mb-2 text-muted">
+      Tipo: {{ mp.tipo }} | Unidad base: {{ mp.unidad_base }}
+    </h6>
+
+    <p class="mb-1"><strong>Fabricante:</strong> {{ mp.fabricante or "-" }}</p>
+    <p class="mb-1"><strong>Origen:</strong> {{ mp.origen or "-" }}</p>
+    <p class="mb-1"><strong>Activo:</strong> {{ 'Sí' if mp.activo else 'No' }}</p>
+
+    {% if mp.notas %}
+      <p class="mt-3"><strong>Notas:</strong><br>{{ mp.notas }}</p>
+    {% endif %}
+
+    {% if mp.tipo == "OTRO" and mp.otros_detalle %}
+      <p class="mt-3">
+        <strong>Tipo de insumo:</strong> {{ mp.otros_detalle.tipo }}<br>
+        <strong>Nombre específico:</strong> {{ mp.otros_detalle.nombre }}
+      </p>
+    {% endif %}
+
+  </div>
+</div>
+
+
+<h5 class="mt-4">Lotes de esta materia prima</h5>
+
+<div class="mb-2">
+  <a href="{{ url_for('materias_primas.crear_lote', mp_id=mp.id) }}" class="btn btn-sm btn-primary">
+    Nuevo lote
+  </a>
+</div>
+
+{% if lotes %}
+  <table class="table table-sm table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Código lote</th>
+        <th>Fecha compra</th>
+        <th>Proveedor</th>
+        <th>Cant. inicial</th>
+        <th>Cant. disponible</th>
+        <th>Fecha vencimiento</th>
+        <th style="width: 150px;">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in lotes %}
+      <tr>
+        <td>{{ l.codigo_lote }}</td>
+        <td>{{ l.fecha_compra or "-" }}</td>
+        <td>{{ l.proveedor or "-" }}</td>
+        <td>{{ l.cantidad_inicial }} {{ mp.unidad_base }}</td>
+        <td>{{ l.cantidad_disponible }} {{ mp.unidad_base }}</td>
+        <td>{{ l.fecha_vencimiento or "-" }}</td>
+        <td>
+          <a href="{{ url_for('materias_primas.editar_lote', mp_id=mp.id, lote_id=l.id) }}"
+             class="btn btn-sm btn-warning">
+            Editar
+          </a>
+          <form action="{{ url_for('materias_primas.eliminar_lote', mp_id=mp.id, lote_id=l.id) }}"
+                method="post"
+                style="display:inline;"
+                onsubmit="return confirm('¿Seguro que deseas eliminar este lote?');">
+            <button type="submit" class="btn btn-sm btn-danger">
+              Eliminar
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No hay lotes registrados para esta materia prima.</p>
+{% endif %}
+
+<a href="{{ url_for('materias_primas.editar', mp_id=mp.id) }}" class="btn btn-warning">
+  Editar
+</a>
+<a href="{{ url_for('materias_primas.lista') }}" class="btn btn-secondary">
+  Volver a la lista
+</a>
+{% endblock %}
