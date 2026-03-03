@@ -120,18 +120,40 @@
         <th>Cantidad</th>
         <th>Etapa</th>
         <th>Tipo aplicación</th>
+        <th>Uso levadura</th>
+        <th>Generación</th>        
         <th>Tiempo hervor (min)</th>
         <th>Días ferm.</th>
       </tr>
     </thead>
     <tbody>
       {% for m, lote, mp in materias %}
+      {% set uso = usos_levadura_por_lote.get(lote.id) %}
       <tr>
         <td>{{ mp.nombre }} ({{ mp.tipo }})</td>
         <td>{{ lote.codigo_lote }}</td>
         <td>{{ m.cantidad_usada }} {{ m.unidad }}</td>
         <td>{{ m.etapa_proceso }}</td>
         <td>{{ m.tipo_aplicacion }}</td>
+
+        <td>
+          {% if mp.tipo == "LEVADURA" and uso %}
+            {{ uso.tipo_uso }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+
+        <td>
+          {% if mp.tipo == "LEVADURA" and uso and uso.tipo_uso == "REUTILIZADA" %}
+            {{ uso.generacion }}GEN
+          {% elif mp.tipo == "LEVADURA" and uso and uso.tipo_uso == "NUEVA" %}
+            0GEN
+          {% else %}
+            -
+          {% endif %}
+        </td>
+
         <td>{{ m.tiempo_minutos_desde_inicio_hervor or "-" }}</td>
         <td>{{ m.dias_desde_inicio_fermentacion or "-" }}</td>
       </tr>

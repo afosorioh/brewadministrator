@@ -291,8 +291,13 @@ class Bache(db.Model):
     )
 
     usos_levadura = db.relationship(
-        "BacheLevaduraUso", back_populates="bache", lazy="dynamic", foreign_keys="BacheLevaduraUso.id_bache"
+        "BacheLevaduraUso",
+        back_populates="bache",
+        cascade="all, delete-orphan",
+        lazy="select",
+        foreign_keys="BacheLevaduraUso.id_bache",
     )
+
     movimientos_barril = db.relationship(
         "MovimientoBarril", back_populates="bache", lazy="dynamic"
     )
@@ -404,35 +409,32 @@ class BacheLevaduraUso(db.Model):
         db.Integer,
         db.ForeignKey("bache.id_bache", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
 
     id_lote = db.Column(
         db.Integer,
         db.ForeignKey("lote_materia_prima.id_lote", ondelete="RESTRICT"),
         nullable=False,
+        index=True,
     )
 
     tipo_uso = db.Column(
-        db.Enum("NUEVA", "REUTILIZADA", name="tipo_uso_levadura"), nullable=False
+        db.Enum("NUEVA", "REUTILIZADA", name="tipo_uso_levadura"),
+        nullable=False,
     )
 
+    # 0 para NUEVA; 1..8 para reutilizada
     generacion = db.Column(db.SmallInteger, nullable=False, default=0)
 
-    id_bache_origen = db.Column(
-        db.Integer,
-        db.ForeignKey("bache.id_bache", ondelete="SET NULL"),
-        nullable=True,
-    )
-
-    fecha_inoculacion = db.Column(db.DateTime)
+    fecha_inoculacion = db.Column(db.DateTime, nullable=False)
     comentarios = db.Column(db.Text)
 
-    bache = db.relationship(
-        "Bache", back_populates="usos_levadura", foreign_keys=[id_bache]
+    __table_args__ = (
+        db.UniqueConstraint("id_bache", "id_lote", name="uq_bache_lote_levadura"),
     )
-    bache_origen = db.relationship(
-        "Bache", foreign_keys=[id_bache_origen]
-    )
+
+    bache = db.relationship("Bache", back_populates="usos_levadura", foreign_keys=[id_bache])
     lote = db.relationship("LoteMateriaPrima")
 
     def __repr__(self):

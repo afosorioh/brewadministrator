@@ -35,12 +35,12 @@
             </option>
           {% endfor %}
       </select>
-    <div class="mt-2">
-      <button type="button" class="btn btn-outline-info btn-sm"
-              onclick="mostrarReceta()">
-        Ver guía de receta
-      </button>
-    </div>      
+      <div class="mt-2">
+        <button type="button" class="btn btn-outline-info btn-sm"
+                onclick="mostrarReceta()">
+          Ver guía de receta
+        </button>
+      </div>
     </div>
   </div>
 
@@ -80,9 +80,9 @@
              value="{{ bache.densidad_inicial if bache and bache.densidad_inicial is not none else '' }}">
     </div>
     <div class="col-md-3">
-    <label class="form-label">pH macerado</label>
-    <input type="number" step="0.01" class="form-control" name="ph_macerado"
-           value="{{ bache.ph_macerado if bache and bache.ph_macerado is not none else '' }}">
+      <label class="form-label">pH macerado</label>
+      <input type="number" step="0.01" class="form-control" name="ph_macerado"
+            value="{{ bache.ph_macerado if bache and bache.ph_macerado is not none else '' }}">
     </div>
     <div class="col-md-3">
       <label class="form-label">pH fin de hervido</label>
@@ -90,16 +90,16 @@
             value="{{ bache.ph_fin_hervido if bache and bache.ph_fin_hervido is not none else '' }}">
     </div>
     <div class="col-md-3">
-    <label class="form-label">Temp. maceración (°C)</label>
-    <input type="number" step="0.01" class="form-control"
-          name="temp_maceracion"
-          value="{{ bache.temp_maceracion if bache and bache.temp_maceracion is not none else '' }}">
+      <label class="form-label">Temp. maceración (°C)</label>
+      <input type="number" step="0.01" class="form-control"
+            name="temp_maceracion"
+            value="{{ bache.temp_maceracion if bache and bache.temp_maceracion is not none else '' }}">
     </div>
     <div class="col-md-3">
-    <label class="form-label">Temp. mash-off (°C)</label>
-    <input type="number" step="0.01" class="form-control"
-          name="temp_mashoff"
-          value="{{ bache.temp_mashoff if bache and bache.temp_mashoff is not none else '' }}">
+      <label class="form-label">Temp. mash-off (°C)</label>
+      <input type="number" step="0.01" class="form-control"
+            name="temp_mashoff"
+            value="{{ bache.temp_mashoff if bache and bache.temp_mashoff is not none else '' }}">
     </div>
     <div class="col-md-6">
       <label class="form-label">Notas</label>
@@ -136,19 +136,50 @@
 
       {% if filas %}
         {% for m, lote, mp in filas %}
-          <tr class="fila-mp">
+          <tr class="fila-mp mp-row">
             <td>
               <select class="form-select form-select-sm" name="lote_id">
                 <option value="">-- Seleccionar lote --</option>
                 {% for l in lotes %}
                   <option value="{{ l.id }}"
+                          data-mp-tipo="{{ l.materia_prima.tipo }}"
                     {% if l.id == lote.id %}selected{% endif %}>
                     {{ l.materia_prima.nombre }} - lote {{ l.codigo_lote }}
                     ({{ l.cantidad_disponible }} {{ l.materia_prima.unidad_base }})
                   </option>
                 {% endfor %}
               </select>
+
+              <!-- Extra levadura -->
+              {% set uso = usos_levadura_por_lote.get(lote.id) %}
+              <div class="levadura-extra mt-2 {% if mp.tipo != 'LEVADURA' %}d-none{% endif %}">
+                <div class="d-flex flex-wrap gap-2 align-items-end">
+                  <div style="min-width: 140px;">
+                    <label class="form-label mb-0 small">Uso levadura</label>
+                    <select class="form-select form-select-sm" name="lev_tipo_uso">
+                      <option value="NUEVA" {% if uso and uso.tipo_uso == "NUEVA" %}selected{% endif %}>NUEVA</option>
+                      <option value="REUTILIZADA" {% if uso and uso.tipo_uso == "REUTILIZADA" %}selected{% endif %}>REUTILIZADA</option>
+                    </select>
+                  </div>
+
+                  <div class="lev-gen {% if not uso or uso.tipo_uso != 'REUTILIZADA' %}d-none{% endif %}" style="min-width: 120px;">
+                    <label class="form-label mb-0 small">Generación</label>
+                    <select class="form-select form-select-sm" name="lev_generacion">
+                      {% for g in range(1,9) %}
+                        <option value="{{ g }}" {% if uso and uso.generacion == g %}selected{% endif %}>{{ g }}GEN</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div style="min-width: 220px; flex: 1 1 220px;">
+                    <label class="form-label mb-0 small">Comentarios</label>
+                    <input type="text" class="form-control form-control-sm" name="lev_comentarios"
+                          value="{{ uso.comentarios if uso else '' }}" placeholder="Opcional">
+                  </div>
+                </div>
+              </div>
             </td>
+
             <td>
               <input type="number" step="0.001" class="form-control form-control-sm"
                      name="cantidad" value="{{ m.cantidad_usada }}">
@@ -194,18 +225,48 @@
         {% endfor %}
       {% else %}
         <!-- Fila vacía inicial -->
-        <tr class="fila-mp">
+        <tr class="fila-mp mp-row">
           <td>
             <select class="form-select form-select-sm" name="lote_id">
               <option value="">-- Seleccionar lote --</option>
               {% for l in lotes %}
-                <option value="{{ l.id }}">
+                <option value="{{ l.id }}" data-mp-tipo="{{ l.materia_prima.tipo }}" {% if l.id == lote.id %}selected{% endif %}>
                   {{ l.materia_prima.nombre }} - lote {{ l.codigo_lote }}
                   ({{ l.cantidad_disponible }} {{ l.materia_prima.unidad_base }})
                 </option>
               {% endfor %}
             </select>
-          </td>
+
+            <!-- Extra levadura -->
+          {% set uso = usos_levadura_por_lote.get(lote.id) %}
+          <div class="levadura-extra mt-2 {% if mp.tipo != 'LEVADURA' %}d-none{% endif %}">
+            <div class="row g-2">
+              <div class="col-md-4">
+                <label class="form-label mb-0 small">Uso levadura</label>
+                <select class="form-select form-select-sm" name="lev_tipo_uso">
+                  <option value="NUEVA" {% if uso and uso.tipo_uso == "NUEVA" %}selected{% endif %}>NUEVA</option>
+                  <option value="REUTILIZADA" {% if uso and uso.tipo_uso == "REUTILIZADA" %}selected{% endif %}>REUTILIZADA</option>
+                </select>
+              </div>
+
+              <div class="col-md-4 lev-gen {% if not uso or uso.tipo_uso != 'REUTILIZADA' %}d-none{% endif %}">
+                <label class="form-label mb-0 small">Generación</label>
+                <select class="form-select form-select-sm" name="lev_generacion">
+                  {% for g in range(1,9) %}
+                    <option value="{{ g }}" {% if uso and uso.generacion == g %}selected{% endif %}>{{ g }}GEN</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label mb-0 small">Comentarios</label>
+                <input type="text" class="form-control form-control-sm" name="lev_comentarios"
+                      value="{{ uso.comentarios if uso else '' }}" placeholder="Opcional">
+              </div>
+            </div>
+          </div>
+
+            </td>
           <td>
             <input type="number" step="0.001" class="form-control form-control-sm" name="cantidad">
           </td>
@@ -243,6 +304,10 @@
       {% endif %}
     </tbody>
   </table>
+
+  <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="btn-agregar-fila">
+    + Agregar fila
+  </button>
 
   <hr>
   <h5 class="mt-4">Mediciones del bache</h5>
@@ -284,12 +349,8 @@
     </tbody>
   </table>
 
-<button type="button" class="btn btn-sm btn-primary" onclick="agregarMedicion()">
-  Añadir medición
-</button>
-
-  <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="btn-agregar-fila">
-    + Agregar fila
+  <button type="button" class="btn btn-sm btn-primary" onclick="agregarMedicion()">
+    Añadir medición
   </button>
 
   <div class="mt-3">
@@ -299,6 +360,40 @@
 </form>
 
 <script>
+  function refreshLevaduraRow(row) {
+    const sel = row.querySelector("select[name='lote_id']");
+    const opt = sel && sel.selectedOptions && sel.selectedOptions[0];
+    const mpTipo = opt ? (opt.dataset.mpTipo || "") : "";
+
+    const extra = row.querySelector(".levadura-extra");
+    if (!extra) return;
+
+    if (mpTipo.toUpperCase() === "LEVADURA") {
+      extra.classList.remove("d-none");
+      const usoSel = row.querySelector("select[name='lev_tipo_uso']");
+      const genBox = row.querySelector(".lev-gen");
+      const toggleGen = () => {
+        if (usoSel && usoSel.value === "REUTILIZADA") genBox.classList.remove("d-none");
+        else genBox.classList.add("d-none");
+      };
+      if (usoSel) {
+        usoSel.onchange = toggleGen;
+        toggleGen();
+      }
+    } else {
+      extra.classList.add("d-none");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("tr.fila-mp").forEach(row => {
+      const sel = row.querySelector("select[name='lote_id']");
+      if (sel) sel.onchange = () => refreshLevaduraRow(row);
+      refreshLevaduraRow(row);
+    });
+  });
+
+
   document.addEventListener("DOMContentLoaded", function () {
     const tablaBody = document.getElementById("tabla-mp-body");
     const btnAgregar = document.getElementById("btn-agregar-fila");
@@ -312,28 +407,54 @@
           if (filas.length > 1) {
             fila.remove();
           } else {
-            // Limpiar la fila si es la única
             fila.querySelectorAll("input").forEach(inp => inp.value = "");
             fila.querySelectorAll("select").forEach(sel => sel.selectedIndex = 0);
+            refreshLevaduraRow(fila);
           }
         };
       });
     }
 
+    function agregarListenersCambioLote(row) {
+      const select = row.querySelector("select[name='lote_id']");
+      if (!select) return;
+      select.addEventListener("change", function () {
+        refreshLevaduraRow(row);
+      });
+      refreshLevaduraRow(row);
+    }
+
+    // Inicializar filas existentes
+    document.querySelectorAll(".mp-row").forEach(row => {
+      agregarListenersCambioLote(row);
+    });
+
     if (btnAgregar) {
       btnAgregar.addEventListener("click", function () {
         const primeraFila = tablaBody.querySelector("tr.fila-mp");
         const nueva = primeraFila.cloneNode(true);
+
+        // limpiar valores
         nueva.querySelectorAll("input").forEach(inp => inp.value = "");
         nueva.querySelectorAll("select").forEach(sel => sel.selectedIndex = 0);
+
+        // ocultar sección levadura al clonar
+        const extra = nueva.querySelector(".levadura-extra");
+        if (extra) extra.classList.add("d-none");
+        const genBox = nueva.querySelector(".lev-gen");
+        if (genBox) genBox.classList.add("d-none");
+
         tablaBody.appendChild(nueva);
+
         agregarListenersEliminar();
+        agregarListenersCambioLote(nueva);
       });
     }
 
     agregarListenersEliminar();
   });
 </script>
+
 <script>
 function agregarMedicion() {
   const tbody = document.querySelector("#tabla-mediciones tbody");
@@ -365,6 +486,7 @@ function agregarMedicion() {
   tbody.appendChild(row);
 }
 </script>
+
 <!-- Modal receta -->
 <div class="modal fade" id="modalReceta" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -403,6 +525,6 @@ function mostrarReceta() {
   const modal = bootstrap.Modal.getOrCreateInstance(el);
   modal.show();
 }
-</script>>
-{% endblock %}
+</script>
 
+{% endblock %}

@@ -12,6 +12,7 @@ from app.models import (
     Bache,
     Receta,
     BacheMateriaPrima,
+    BacheLevaduraUso,
     LoteMateriaPrima,
     MateriaPrima,
     MedicionBache,
@@ -32,6 +33,7 @@ baches_bp = Blueprint(
     url_prefix="/baches",
 )
 
+
 def _to_sg(x):
     """Convierte densidad a SG:
     - si viene como 1055 -> 1.055
@@ -44,6 +46,7 @@ def _to_sg(x):
     except Exception:
         return None
     return v / 1000.0 if v > 10 else v
+
 
 def _bache_detalle_context(bache):
     # materias primas usadas
@@ -62,6 +65,9 @@ def _bache_detalle_context(bache):
         .order_by(MedicionBache.fecha.desc())
         .all()
     )
+
+    usos_levadura_por_lote = _usos_levadura_por_lote(bache.id)
+
 
     # últimas por tipo
     def last_of(tipo):
@@ -96,7 +102,87 @@ def _bache_detalle_context(bache):
         "fg": fg,
         "abv": abv,
         "atenuacion": atenuacion,
+        "usos_levadura_por_lote": usos_levadura_por_lote,
     }
+
+
+def _guardar_usos_levadura(bache, lote_ids, lev_tipo_uso, lev_generacion, lev_comentarios):
+    """
+    Crea/actualiza BacheLevaduraUso para las filas donde el lote sea de MateriaPrima tipo LEVADURA.
+    Se asume que los arrays son paralelos a las filas del formulario (mismo índice).
+    """
+    # Prefetch lotes para evitar N queries
+    lotes_int = []
+    for lid in lote_ids:
+        if lid:
+            try:
+                lotes_int.append(int(lid))
+            except Exception:
+                pass
+
+    lotes_map = {}
+    if lotes_int:
+        for l in LoteMateriaPrima.query.filter(LoteMateriaPrima.id.in_(lotes_int)).all():
+            lotes_map[l.id] = l
+
+    for i in range(len(lote_ids)):
+        lid = lote_ids[i]
+        if not lid:
+            continue
+
+        try:
+            lid_int = int(lid)
+        except Exception:
+            continue
+
+        lote = lotes_map.get(lid_int)
+        if not lote:
+            continue
+
+        # Solo levadura
+        if not lote.materia_prima or lote.materia_prima.tipo != "LEVADURA":
+            continue
+
+        tipo = (lev_tipo_uso[i] if i < len(lev_tipo_uso) else "NUEVA") or "NUEVA"
+        if tipo not in ("NUEVA", "REUTILIZADA"):
+            tipo = "NUEVA"
+
+        gen = 0
+        if tipo == "REUTILIZADA":
+            try:
+                gen = int(lev_generacion[i]) if i < len(lev_generacion) and lev_generacion[i] else 1
+            except Exception:
+                gen = 1
+            gen = max(1, min(8, gen))
+        else:
+            gen = 0
+
+        comentario = lev_comentarios[i] if i < len(lev_comentarios) else None
+        comentario = comentario or None
+
+        uso = BacheLevaduraUso.query.filter_by(id_bache=bache.id, id_lote=lote.id).first()
+        if not uso:
+            uso = BacheLevaduraUso(
+                id_bache=bache.id,
+                id_lote=lote.id,
+                fecha_inoculacion=datetime.utcnow(),
+            )
+            db.session.add(uso)
+
+        uso.tipo_uso = tipo
+        uso.generacion = gen
+        uso.comentarios = comentario
+
+def _usos_levadura_por_lote(bache_id: int) -> dict:
+    """
+    Retorna {id_lote: BacheLevaduraUso} para un bache.
+    """
+    usos = (
+        BacheLevaduraUso.query
+        .filter_by(id_bache=bache_id)
+        .all()
+    )
+    return {u.id_lote: u for u in usos}
 
 @baches_bp.route("/")
 @login_required
@@ -106,9 +192,7 @@ def lista():
 
     query = Bache.query
 
-    # Búsqueda por código (exacta o parcial)
     if q:
-        # parcial (contiene)
         query = query.filter(Bache.codigo_bache.ilike(f"%{q}%"))
 
     pagination = query.order_by(Bache.fecha_coccion.desc()).paginate(
@@ -175,7 +259,7 @@ def crear():
             ph_macerado=float(ph_macerado) if ph_macerado else None,
             ph_fin_hervido=float(ph_fin_hervido) if ph_fin_hervido else None,
             temp_maceracion=float(temp_maceracion) if temp_maceracion else None,
-            temp_mashoff=float(temp_mashoff) if temp_mashoff else None,          
+            temp_mashoff=float(temp_mashoff) if temp_mashoff else None,
             estado=estado,
             notas=notas,
         )
@@ -215,11 +299,17 @@ def crear():
             )
             db.session.add(bmp)
 
+        # ---------- Uso de levadura (por filas donde el lote es LEVADURA) ----------
+        lev_tipo_uso = request.form.getlist("lev_tipo_uso")
+        lev_generacion = request.form.getlist("lev_generacion")
+        lev_comentarios = request.form.getlist("lev_comentarios")
+
+        _guardar_usos_levadura(bache, lote_ids, lev_tipo_uso, lev_generacion, lev_comentarios)
+
         db.session.commit()
         flash("Bache creado correctamente", "success")
         return redirect(url_for("baches.detalle", bache_id=bache.id))
 
-    # GET
     return render_template(
         "baches/formulario.html",
         accion="crear",
@@ -295,8 +385,9 @@ def editar(bache_id):
             flash("Código, nombre de cerveza y fecha de cocción son obligatorios", "danger")
             return redirect(url_for("baches.editar", bache_id=bache.id))
 
-        # Limpiar las materias primas actuales y reinsertar desde el formulario
+        # Limpiar MP y usos de levadura actuales y reinsertar desde el formulario
         BacheMateriaPrima.query.filter_by(id_bache=bache.id).delete()
+        BacheLevaduraUso.query.filter_by(id_bache=bache.id).delete()
 
         lote_ids = request.form.getlist("lote_id")
         cantidades = request.form.getlist("cantidad")
@@ -330,6 +421,12 @@ def editar(bache_id):
             )
             db.session.add(bmp)
 
+        # ---------- Uso de levadura ----------
+        lev_tipo_uso = request.form.getlist("lev_tipo_uso")
+        lev_generacion = request.form.getlist("lev_generacion")
+        lev_comentarios = request.form.getlist("lev_comentarios")
+        _guardar_usos_levadura(bache, lote_ids, lev_tipo_uso, lev_generacion, lev_comentarios)
+
         # ============================
         # Guardar nuevas mediciones
         # ============================
@@ -356,7 +453,6 @@ def editar(bache_id):
         return redirect(url_for("baches.detalle", bache_id=bache.id))
 
     # GET
-    # Cargar materias primas asociadas actuales para rellenar formulario
     materias = (
         db.session.query(BacheMateriaPrima, LoteMateriaPrima, MateriaPrima)
         .join(LoteMateriaPrima, BacheMateriaPrima.id_lote == LoteMateriaPrima.id)
@@ -372,6 +468,8 @@ def editar(bache_id):
         .all()
     )
 
+    usos_levadura_por_lote = _usos_levadura_por_lote(bache.id)
+
     return render_template(
         "baches/formulario.html",
         accion="editar",
@@ -382,6 +480,7 @@ def editar(bache_id):
         unidades=unidades,
         materias=materias,
         mediciones=mediciones,
+        usos_levadura_por_lote=usos_levadura_por_lote,
     )
 
 
@@ -394,6 +493,7 @@ def eliminar(bache_id):
     db.session.commit()
     flash("Bache eliminado correctamente", "success")
     return redirect(url_for("baches.lista"))
+
 
 @baches_bp.route("/<int:bache_id>/exportar.pdf")
 @login_required
@@ -410,18 +510,16 @@ def exportar_pdf(bache_id):
 
     def draw_line(text, dy=1):
         nonlocal y
-        c.drawString(40, y, text[:110])  # recorte simple para no salir
+        c.drawString(40, y, text[:200])
         y -= line_h * dy
         if y < 60:
             c.showPage()
             y = height - 40
 
-    # Título
     c.setFont("Helvetica-Bold", 14)
     draw_line(f"Reporte de Bache: {bache.codigo_bache} - {bache.nombre_cerveza}", dy=1.5)
     c.setFont("Helvetica", 10)
 
-    # Info general
     draw_line(f"Fecha cocción: {bache.fecha_coccion} | Estado: {bache.estado}")
     if bache.receta:
         draw_line(f"Receta: {bache.receta.nombre} ({bache.receta.estilo or '-'})")
@@ -437,7 +535,6 @@ def exportar_pdf(bache_id):
         for chunk in str(bache.notas).splitlines():
             draw_line(f"  {chunk}")
 
-    # Indicadores
     draw_line("", dy=1)
     c.setFont("Helvetica-Bold", 12)
     draw_line("Indicadores (calculados)", dy=1.2)
@@ -452,7 +549,6 @@ def exportar_pdf(bache_id):
     draw_line(f"ABV aprox: {abv:.2f} %" if abv is not None else "ABV aprox: -")
     draw_line(f"Atenuación aparente: {atn:.1f} %" if atn is not None else "Atenuación aparente: -")
 
-    # Últimas mediciones
     draw_line("", dy=1)
     c.setFont("Helvetica-Bold", 12)
     draw_line("Últimas mediciones", dy=1.2)
@@ -467,21 +563,26 @@ def exportar_pdf(bache_id):
     draw_line(f"Temperatura: {fmt_med(ctx['ult_temp'])}")
     draw_line(f"pH: {fmt_med(ctx['ult_ph'])}")
 
-    # Materias primas usadas
     draw_line("", dy=1)
-    c.setFont("Helvetica-Bold", 12)
-    draw_line("Materias primas usadas", dy=1.2)
+    c.setFont("Helvetica-Bold", 11)
+    draw_line("Materias primas usadas", dy=1)
     c.setFont("Helvetica", 9)
 
     for m, lote, mp in ctx["materias"]:
+        uso = ctx["usos_levadura_por_lote"].get(lote.id)
+        extra = ""
+        if mp.tipo == "LEVADURA" and uso:
+            if uso.tipo_uso == "REUTILIZADA":
+                extra = f" | Uso levadura: REUTILIZADA | G:{uso.generacion}"
+            else:
+                extra = f" | Uso levadura: NUEVA"
+
         draw_line(
             f"- {mp.nombre} ({mp.tipo}) | Lote: {lote.codigo_lote} | "
-            f"{m.cantidad_usada} {m.unidad} | Etapa: {m.etapa_proceso} | "
-            f"Tipo: {m.tipo_aplicacion} | Hervor(min): {m.tiempo_minutos_desde_inicio_hervor or '-'} | "
-            f"Días ferm: {m.dias_desde_inicio_fermentacion or '-'}"
+            f"{m.cantidad_usada} {m.unidad} | Etapa: {m.etapa_proceso}"
+            f"{extra}"
         )
 
-    # Histórico mediciones (opcional pero útil para “toda la info”)
     draw_line("", dy=1)
     c.setFont("Helvetica-Bold", 12)
     draw_line("Histórico de mediciones", dy=1.2)
