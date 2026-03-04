@@ -1,0 +1,93 @@
+:root{
+  --libre-brown: #54301A;     /* Pantone 476C aprox (RGB 84,48,26) */
+  --libre-brown-900:#3E2313;
+  --libre-brown-100:#E9DED3;
+  --libre-cream: #F3EEE7;
+  --libre-ink: #24150C;
+}
+
+/* Fondo general tipo "papel" */
+body{
+  background: var(--libre-cream);
+  color: var(--libre-ink);
+}
+
+/* Navbar */
+.navbar.bg-dark{
+  background-color: var(--libre-brown) !important;
+}
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .navbar-text{
+  color: #F7F1EA !important;
+}
+.navbar .nav-link:hover{
+  color: var(--libre-brown-100) !important;
+}
+
+/* Botones: reemplazar el azul por café */
+.btn-primary{
+  background-color: var(--libre-brown) !important;
+  border-color: var(--libre-brown) !important;
+}
+.btn-primary:hover, .btn-primary:focus{
+  background-color: var(--libre-brown-900) !important;
+  border-color: var(--libre-brown-900) !important;
+}
+.btn-outline-primary{
+  color: var(--libre-brown) !important;
+  border-color: var(--libre-brown) !important;
+}
+.btn-outline-primary:hover{
+  background-color: var(--libre-brown) !important;
+  border-color: var(--libre-brown) !important;
+  color: #fff !important;
+}
+
+/* Links */
+a{
+  color: var(--libre-brown);
+}
+a:hover{
+  color: var(--libre-brown-900);
+}
+
+/* Cards / contenedores */
+.card{
+  border-color: #d8c8b8;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.card-header{
+  background: #EFE5DA;
+  border-bottom: 1px solid #d8c8b8;
+}
+
+/* Tablas */
+.table thead th{
+  background: #EFE5DA;
+  color: var(--libre-ink);
+}
+.table-hover tbody tr:hover{
+  background: #EFE5DA;
+}
+
+/* Inputs: foco en café */
+.form-control:focus, .form-select:focus{
+  border-color: var(--libre-brown);
+  box-shadow: 0 0 0 .25rem rgba(84,48,26,.20);
+}
+
+/* Alerts (suaviza el look) */
+.alert{
+  border-color: #d8c8b8;
+}
+
+/* Badges */
+.badge.bg-primary{
+  background-color: var(--libre-brown) !important;
+}
+
+/* Ajuste: que los toggles se vean bien */
+.navbar-toggler{
+  border-color: rgba(255,255,255,.35);
+}
