@@ -238,8 +238,11 @@
             </select>
 
             <!-- Extra levadura -->
-          {% set uso = usos_levadura_por_lote.get(lote.id) %}
-          <div class="levadura-extra mt-2 {% if mp.tipo != 'LEVADURA' %}d-none{% endif %}">
+          {% set uso = None %}
+          {% if usos_levadura_por_lote is defined and lote is defined %}
+            {% set uso = usos_levadura_por_lote.get(lote.id) %}
+          {% endif %}
+          <div class="levadura-extra mt-2 {% if mp is not defined or mp.tipo != 'LEVADURA' %}d-none{% endif %}">
             <div class="row g-2">
               <div class="col-md-4">
                 <label class="form-label mb-0 small">Uso levadura</label>
