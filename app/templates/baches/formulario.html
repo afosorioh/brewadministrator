@@ -230,7 +230,7 @@
             <select class="form-select form-select-sm" name="lote_id">
               <option value="">-- Seleccionar lote --</option>
               {% for l in lotes %}
-                <option value="{{ l.id }}" data-mp-tipo="{{ l.materia_prima.tipo }}" {% if l.id == lote.id %}selected{% endif %}>
+                <option value="{{ l.id }}" data-mp-tipo="{{ l.materia_prima.tipo }}" {% if lote is defined and l.id == lote.id %}selected{% endif %}>
                   {{ l.materia_prima.nombre }} - lote {{ l.codigo_lote }}
                   ({{ l.cantidad_disponible }} {{ l.materia_prima.unidad_base }})
                 </option>
