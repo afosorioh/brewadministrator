@@ -389,3 +389,67 @@ def entrega():
         barriles=barriles,
         clientes=clientes,
     )
+
+@barriles_bp.route("/devolucion", methods=["GET", "POST"])
+@login_required
+@role_required("ADMIN", "GESTOR")
+def devolucion():
+    barriles = (
+        Barril.query
+        .filter(Barril.estado_actual == "ENTREGADO")
+        .order_by(Barril.codigo_barril.asc())
+        .all()
+    )
+
+    if request.method == "POST":
+        id_barril = request.form.get("id_barril") or None
+        comentario = request.form.get("comentario") or None
+
+        if not id_barril:
+            flash("Debes seleccionar un barril.", "danger")
+            return redirect(url_for("barriles.devolucion"))
+
+        barril = Barril.query.get(id_barril)
+
+        if not barril:
+            flash("El barril seleccionado no existe.", "danger")
+            return redirect(url_for("barriles.devolucion"))
+
+        if barril.estado_actual != "ENTREGADO":
+            flash("Solo se pueden devolver barriles en estado ENTREGADO.", "danger")
+            return redirect(url_for("barriles.devolucion"))
+
+        ultima_entrega = (
+            MovimientoBarril.query
+            .filter_by(id_barril=barril.id, tipo_movimiento="ENTREGADO")
+            .order_by(MovimientoBarril.fecha_hora.desc())
+            .first()
+        )
+
+        if not ultima_entrega:
+            flash("No se encontró una entrega previa para este barril.", "danger")
+            return redirect(url_for("barriles.devolucion"))
+
+        movimiento = MovimientoBarril(
+            id_barril=barril.id,
+            fecha_hora=datetime.utcnow(),
+            tipo_movimiento="DEVUELTO",
+            id_bache=ultima_entrega.id_bache,
+            id_cliente=ultima_entrega.id_cliente,
+            id_usuario=current_user.id,
+            volumen_litros=ultima_entrega.volumen_litros,
+            comentario=comentario,
+        )
+        db.session.add(movimiento)
+
+        barril.estado_actual = "SUCIO"
+
+        db.session.commit()
+
+        flash("Devolución de barril registrada correctamente.", "success")
+        return redirect(url_for("barriles.detalle", barril_id=barril.id))
+
+    return render_template(
+        "barriles/devolucion.html",
+        barriles=barriles,
+    )
