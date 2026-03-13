@@ -47,7 +47,6 @@ def _to_sg(x):
         return None
     return v / 1000.0 if v > 10 else v
 
-
 def _bache_detalle_context(bache):
     # materias primas usadas
     materias = (

@@ -11,7 +11,7 @@
 {% block content %}
 <h1 class="h3 mb-3">{{ titulo }}</h1>
 
-<form method="post">
+<form method="post" id="form-bache">
   <div class="row mb-3">
     <div class="col-md-4">
       <label class="form-label">Código de bache</label>
@@ -76,18 +76,21 @@
   <div class="row mb-3">
     <div class="col-md-3">
       <label class="form-label">Densidad inicial</label>
-      <input type="number" step="0.001" class="form-control" name="densidad_inicial"
-             value="{{ bache.densidad_inicial if bache and bache.densidad_inicial is not none else '' }}">
+      <input type="text" class="form-control" id="densidad_inicial" name="densidad_inicial"
+       inputmode="decimal" placeholder="Ej: 1.062"
+       value="{{ bache.densidad_inicial if bache and bache.densidad_inicial is not none else '' }}">
     </div>
     <div class="col-md-3">
       <label class="form-label">pH macerado</label>
-      <input type="number" step="0.01" class="form-control" name="ph_macerado"
-            value="{{ bache.ph_macerado if bache and bache.ph_macerado is not none else '' }}">
+      <input type="text" class="form-control" id="ph_macerado" name="ph_macerado"
+       inputmode="decimal" placeholder="Ej: 5.60"
+       value="{{ bache.ph_macerado if bache and bache.ph_macerado is not none else '' }}">
     </div>
     <div class="col-md-3">
       <label class="form-label">pH fin de hervido</label>
-      <input type="number" step="0.01" class="form-control" name="ph_fin_hervido"
-            value="{{ bache.ph_fin_hervido if bache and bache.ph_fin_hervido is not none else '' }}">
+      <input type="text" class="form-control" id="ph_fin_hervido" name="ph_fin_hervido"
+       inputmode="decimal" placeholder="Ej: 5.15"
+       value="{{ bache.ph_fin_hervido if bache and bache.ph_fin_hervido is not none else '' }}">
     </div>
     <div class="col-md-3">
       <label class="form-label">Temp. maceración (°C)</label>
@@ -476,7 +479,11 @@ function agregarMedicion() {
       </select>
     </td>
     <td>
-      <input type="number" step="0.001" name="med_valor[]" class="form-control form-control-sm">
+      <input type="text"
+             name="med_valor[]"
+             class="form-control form-control-sm"
+             inputmode="decimal"
+             placeholder="Ej: 1.062 / 5.60 / 18.50">
     </td>
     <td>
       <input type="text" name="med_comentario[]" class="form-control form-control-sm">
@@ -529,5 +536,189 @@ function mostrarReceta() {
   modal.show();
 }
 </script>
+<script>
+function validarDecimalEstricto(valor, min = null, max = null) {
+  const limpio = String(valor || "").trim().replace(",", ".");
 
+  if (limpio === "") {
+    return { ok: true, value: "" };
+  }
+
+  // exige parte decimal: 1.062, 5.60, 18.50
+  if (!/^\d+\.\d+$/.test(limpio)) {
+    return { ok: false, value: limpio };
+  }
+
+  const numero = Number(limpio);
+  if (Number.isNaN(numero)) {
+    return { ok: false, value: limpio };
+  }
+
+  if (min !== null && numero < min) {
+    return { ok: false, value: limpio };
+  }
+
+  if (max !== null && numero > max) {
+    return { ok: false, value: limpio };
+  }
+
+  return { ok: true, value: limpio, number: numero };
+}
+
+function validarNumeroFlexible(valor, min = null, max = null) {
+  const limpio = String(valor || "").trim().replace(",", ".");
+
+  if (limpio === "") {
+    return { ok: true, value: "" };
+  }
+
+  if (!/^\d+(\.\d+)?$/.test(limpio)) {
+    return { ok: false, value: limpio };
+  }
+
+  const numero = Number(limpio);
+  if (Number.isNaN(numero)) {
+    return { ok: false, value: limpio };
+  }
+
+  if (min !== null && numero < min) {
+    return { ok: false, value: limpio };
+  }
+
+  if (max !== null && numero > max) {
+    return { ok: false, value: limpio };
+  }
+
+  return { ok: true, value: limpio, number: numero };
+}
+</script>
+<script>
+function validarDecimal(valor, min = null, max = null) {
+  if (valor === null || valor === undefined) return { ok: true, value: "" };
+
+  const limpio = String(valor).trim().replace(",", ".");
+
+  if (limpio === "") {
+    return { ok: true, value: "" };
+  }
+
+  // Debe tener parte decimal obligatoria: 1.062, 5.60, etc.
+  if (!/^\d+\.\d+$/.test(limpio)) {
+    return { ok: false, value: limpio };
+  }
+
+  const numero = Number(limpio);
+  if (Number.isNaN(numero)) {
+    return { ok: false, value: limpio };
+  }
+
+  if (min !== null && numero < min) {
+    return { ok: false, value: limpio };
+  }
+
+  if (max !== null && numero > max) {
+    return { ok: false, value: limpio };
+  }
+
+  return { ok: true, value: limpio, number: numero };
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("form-bache");
+  if (!form) return;
+
+  form.addEventListener("submit", function (e) {
+    const densidadInput = document.getElementById("densidad_inicial");
+    const phMaceradoInput = document.getElementById("ph_macerado");
+    const phFinInput = document.getElementById("ph_fin_hervido");
+
+    const errores = [];
+
+    // Densidad: obligatorio decimal si viene informado, rango razonable cerveza
+    if (densidadInput) {
+      const resDensidad = validarDecimal(densidadInput.value, 0.900, 2.000);
+      if (!resDensidad.ok) {
+        errores.push("La densidad inicial debe ingresarse en formato decimal, por ejemplo 1.062");
+      } else if (resDensidad.value !== "") {
+        densidadInput.value = resDensidad.value;
+      }
+    }
+
+    // pH macerado: decimal, rango razonable 0 - 14
+    if (phMaceradoInput) {
+      const resPhM = validarDecimal(phMaceradoInput.value, 0.00, 14.00);
+      if (!resPhM.ok) {
+        errores.push("El pH macerado debe ingresarse en formato decimal, por ejemplo 5.60");
+      } else if (resPhM.value !== "") {
+        phMaceradoInput.value = resPhM.value;
+      }
+    }
+
+    // pH fin hervido: decimal, rango razonable 0 - 14
+    if (phFinInput) {
+      const resPhF = validarDecimal(phFinInput.value, 0.00, 14.00);
+      if (!resPhF.ok) {
+        errores.push("El pH fin de hervido debe ingresarse en formato decimal, por ejemplo 5.15");
+      } else if (resPhF.value !== "") {
+        phFinInput.value = resPhF.value;
+      }
+    }
+
+    // Validación de mediciones dinámicas
+    const filasMediciones = document.querySelectorAll("#tabla-mediciones tbody tr");
+
+    filasMediciones.forEach((fila, idx) => {
+      const tipoInput = fila.querySelector("select[name='med_tipo[]']");
+      const valorInput = fila.querySelector("input[name='med_valor[]']");
+
+      if (!tipoInput || !valorInput) return;
+
+      const tipo = tipoInput.value;
+      const valorOriginal = valorInput.value;
+
+      if (String(valorOriginal).trim() === "") {
+        return;
+      }
+
+      let res = null;
+
+      if (tipo === "DENSIDAD") {
+        res = validarDecimalEstricto(valorOriginal, 0.900, 2.000);
+        if (!res.ok) {
+          errores.push(`Medición ${idx + 1}: la densidad debe estar en formato decimal, por ejemplo 1.062`);
+        } else {
+          valorInput.value = res.value;
+        }
+      } else if (tipo === "PH") {
+        res = validarDecimalEstricto(valorOriginal, 0.00, 14.00);
+        if (!res.ok) {
+          errores.push(`Medición ${idx + 1}: el pH debe estar en formato decimal, por ejemplo 5.60`);
+        } else {
+          valorInput.value = res.value;
+        }
+      } else if (tipo === "TEMPERATURA") {
+        res = validarDecimalEstricto(valorOriginal, -20.00, 150.00);
+        if (!res.ok) {
+          errores.push(`Medición ${idx + 1}: la temperatura debe estar en formato decimal, por ejemplo 18.50`);
+        } else {
+          valorInput.value = res.value;
+        }
+      } else {
+        // OTRO
+        res = validarNumeroFlexible(valorOriginal);
+        if (!res.ok) {
+          errores.push(`Medición ${idx + 1}: el valor ingresado no es numérico válido.`);
+        } else {
+          valorInput.value = res.value;
+        }
+      }
+    });
+    
+    if (errores.length > 0) {
+      e.preventDefault();
+      alert(errores.join("\n"));
+    }
+  });
+});
+</script>
 {% endblock %}
