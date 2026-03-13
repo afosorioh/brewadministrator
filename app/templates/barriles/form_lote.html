@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Alta por lote de barriles{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Alta por lote de barriles</h1>
+
+<form method="post" class="card p-3">
+  <div class="row g-3">
+    <div class="col-md-3">
+      <label class="form-label">Código inicio</label>
+      <input type="text" name="codigo_inicio" class="form-control" placeholder="A001" required>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Código fin</label>
+      <input type="text" name="codigo_fin" class="form-control" placeholder="A110" required>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Capacidad (L)</label>
+      <input type="number" step="0.01" name="capacidad_litros" class="form-control" placeholder="30" required>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Fecha ingreso</label>
+      <input type="date" name="fecha_ingreso" class="form-control">
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Notas</label>
+      <textarea name="notas" class="form-control" rows="2"></textarea>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <button class="btn btn-primary">Crear lote</button>
+    <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Cancelar</a>
+  </div>
+</form>
+
+<div class="alert alert-info mt-3">
+  Ejemplos válidos: A001 → A110, B001 → B050
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Detalle barril{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Barril {{ barril.codigo_barril }}</h1>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <div><strong>Código:</strong> {{ barril.codigo_barril }}</div>
+    <div><strong>Capacidad:</strong> {{ barril.capacidad_litros }} L</div>
+    <div><strong>Fecha ingreso:</strong> {{ barril.fecha_ingreso or "-" }}</div>
+    <div>
+      <strong>Estado actual:</strong>
+      {{ barril.estado_actual }}
+
+      {% if barril.estado_actual == "ENTREGADO" %}
+        <br>
+        <small class="text-muted">
+          Cliente: {{ cliente_actual or "-" }}
+          {% if cerveza_actual %}
+            | Cerveza: {{ cerveza_actual }}
+          {% endif %}
+        </small>
+      {% endif %}
+    </div>
+    <div><strong>Notas:</strong> {{ barril.notas or "-" }}</div>
+  </div>
+</div>
+
+<h2 class="h5">Historial de movimientos</h2>
+
+{% if movimientos %}
+  <table class="table table-sm table-striped">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Tipo movimiento</th>
+        <th>Bache</th>
+        <th>Cliente</th>
+        <th>Usuario</th>
+        <th>Volumen</th>
+        <th>Comentario</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in movimientos %}
+      <tr>
+        <td>{{ m.fecha_hora }}</td>
+        <td>{{ m.tipo_movimiento }}</td>
+        <td>{{ m.bache.codigo_bache if m.bache else "-" }}</td>
+        <td>{{ m.cliente.nombre if m.cliente else "-" }}</td>
+        <td>{{ m.usuario.username if m.usuario else "-" }}</td>
+        <td>{{ m.volumen_litros or "-" }}</td>
+        <td>{{ m.comentario or "-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No hay movimientos registrados.</p>
+{% endif %}
+
+<a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Volver</a>
+{% endblock %}

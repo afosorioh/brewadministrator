@@ -47,6 +47,12 @@ def create_app():
     from app.routes.estadisticas import estadisticas_bp
     app.register_blueprint(estadisticas_bp)
 
+    from app.routes.barriles import barriles_bp
+    app.register_blueprint(barriles_bp)
+
+    from app.routes.clientes import clientes_bp
+    app.register_blueprint(clientes_bp)
+
     @app.route("/")
     def index():
         if current_user.is_authenticated:

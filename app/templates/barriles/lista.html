@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Barriles{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3">Barriles</h1>
+  {% if current_user.rol.nombre in ["ADMIN", "GESTOR"] %}
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('barriles.crear') }}" class="btn btn-primary">Alta individual</a>
+      <a href="{{ url_for('barriles.crear_lote') }}" class="btn btn-outline-primary">Alta por lote</a>
+      <a href="{{ url_for('barriles.llenado') }}" class="btn btn-outline-primary">Llenado</a>
+      <a href="{{ url_for('barriles.entrega') }}" class="btn btn-outline-primary">Entrega</a>
+    </div>
+  {% endif %}
+</div>
+
+<form method="get" class="card p-3 mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-5">
+      <label class="form-label">Buscar por código</label>
+      <input type="text" name="q" class="form-control" value="{{ q or '' }}" placeholder="Ej: A001">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Estado</label>
+      <select name="estado" class="form-select">
+        <option value="">-- Todos --</option>
+        {% for e in estados %}
+          <option value="{{ e }}" {% if estado == e %}selected{% endif %}>{{ e }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button class="btn btn-primary">Buscar</button>
+      <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+{% if barriles %}
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Capacidad (L)</th>
+        <th>Fecha ingreso</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in barriles %}
+      <tr>
+        <td>{{ b.codigo_barril }}</td>
+        <td>{{ b.capacidad_litros }}</td>
+        <td>{{ b.fecha_ingreso or "-" }}</td>
+        <td>{{ b.estado_actual }}</td>
+        <td>
+          <a href="{{ url_for('barriles.detalle', barril_id=b.id) }}" class="btn btn-sm btn-secondary">Ver</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if pagination and pagination.pages > 1 %}
+    <nav aria-label="Paginación barriles">
+      <ul class="pagination">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+          <a class="page-link"
+             href="{{ url_for('barriles.lista', page=pagination.prev_num, q=q, estado=estado) if pagination.has_prev else '#' }}">
+            Anterior
+          </a>
+        </li>
+
+        {% for p in range(1, pagination.pages + 1) %}
+          {% if p == 1 or p == pagination.pages or (p >= pagination.page - 2 and p <= pagination.page + 2) %}
+            <li class="page-item {% if p == pagination.page %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('barriles.lista', page=p, q=q, estado=estado) }}">{{ p }}</a>
+            </li>
+          {% elif p == 2 and pagination.page > 4 %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% elif p == pagination.pages - 1 and pagination.page < pagination.pages - 3 %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+          <a class="page-link"
+             href="{{ url_for('barriles.lista', page=pagination.next_num, q=q, estado=estado) if pagination.has_next else '#' }}">
+            Siguiente
+          </a>
+        </li>
+      </ul>
+    </nav>
+  {% endif %}
+{% else %}
+  <p>No hay barriles registrados.</p>
+{% endif %}
+{% endblock %}

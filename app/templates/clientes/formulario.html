@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% if accion == "crear" %}
+  {% set titulo = "Nuevo cliente" %}
+{% else %}
+  {% set titulo = "Editar cliente" %}
+{% endif %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">{{ titulo }}</h1>
+
+<form method="post" class="card p-3">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Nombre</label>
+      <input type="text" name="nombre" class="form-control"
+             value="{{ cliente.nombre if cliente else '' }}" required>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Tipo</label>
+      <select name="tipo" class="form-select">
+        <option value="">-- Seleccionar --</option>
+        {% for t in tipos %}
+          <option value="{{ t }}"
+            {% if cliente and cliente.tipo == t %}selected{% endif %}>
+            {{ t }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Contacto</label>
+      <input type="text" name="contacto" class="form-control"
+             value="{{ cliente.contacto if cliente else '' }}">
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Teléfono</label>
+      <input type="text" name="telefono" class="form-control"
+             value="{{ cliente.telefono if cliente else '' }}">
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Dirección</label>
+      <input type="text" name="direccion" class="form-control"
+             value="{{ cliente.direccion if cliente else '' }}">
+    </div>
+
+    <div class="col-12">
+      <div class="form-check">
+        <input type="checkbox" name="activo" id="activo" class="form-check-input"
+               {% if not cliente or cliente.activo %}checked{% endif %}>
+        <label for="activo" class="form-check-label">Cliente activo</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <button class="btn btn-primary">Guardar</button>
+    <a href="{{ url_for('clientes.lista') }}" class="btn btn-secondary">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

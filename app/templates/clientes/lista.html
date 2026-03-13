@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Clientes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3">Clientes</h1>
+  {% if current_user.rol.nombre in ["ADMIN", "GESTOR"] %}
+    <a href="{{ url_for('clientes.crear') }}" class="btn btn-primary">Nuevo cliente</a>
+  {% endif %}
+</div>
+
+<form method="get" class="card p-3 mb-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-6">
+      <label class="form-label">Buscar por nombre</label>
+      <input type="text" name="q" class="form-control" value="{{ q or '' }}" placeholder="Ej: Bar Central">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Activo</label>
+      <select name="activos" class="form-select">
+        <option value="">-- Todos --</option>
+        <option value="si" {% if activos == "si" %}selected{% endif %}>Sí</option>
+        <option value="no" {% if activos == "no" %}selected{% endif %}>No</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button class="btn btn-primary">Buscar</button>
+      <a href="{{ url_for('clientes.lista') }}" class="btn btn-secondary">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+{% if clientes %}
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th>Contacto</th>
+        <th>Teléfono</th>
+        <th>Dirección</th>
+        <th>Activo</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in clientes %}
+      <tr>
+        <td>{{ c.nombre }}</td>
+        <td>{{ c.tipo or "-" }}</td>
+        <td>{{ c.contacto or "-" }}</td>
+        <td>{{ c.telefono or "-" }}</td>
+        <td>{{ c.direccion or "-" }}</td>
+        <td>{{ "Sí" if c.activo else "No" }}</td>
+        <td>
+          {% if current_user.rol.nombre in ["ADMIN", "GESTOR"] %}
+            <a href="{{ url_for('clientes.editar', cliente_id=c.id) }}" class="btn btn-sm btn-warning">Editar</a>
+
+            <form action="{{ url_for('clientes.eliminar', cliente_id=c.id) }}"
+                  method="post"
+                  style="display:inline;"
+                  onsubmit="return confirm('¿Seguro que deseas eliminar este cliente?');">
+              <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No hay clientes registrados.</p>
+{% endif %}
+{% endblock %}

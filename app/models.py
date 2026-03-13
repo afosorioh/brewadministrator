@@ -444,53 +444,34 @@ class BacheLevaduraUso(db.Model):
 #   BARRILES Y CLIENTES
 # ============================
 
-class TipoBarril(db.Model):
-    __tablename__ = "tipo_barril"
-
-    id = db.Column("id_tipo_barril", db.Integer, primary_key=True)
-    capacidad_litros = db.Column(db.Numeric(10, 2), nullable=False)
-    descripcion = db.Column(db.String(100))
-
-    barriles = db.relationship("Barril", back_populates="tipo", lazy="dynamic")
-
-    def __repr__(self):
-        return f"<TipoBarril {self.id} {self.capacidad_litros}L>"
-
-
 class Barril(db.Model):
     __tablename__ = "barril"
 
     id = db.Column("id_barril", db.Integer, primary_key=True)
     codigo_barril = db.Column(db.String(100), nullable=False, unique=True)
-
-    id_tipo_barril = db.Column(
-        db.Integer,
-        db.ForeignKey("tipo_barril.id_tipo_barril", ondelete="RESTRICT"),
-        nullable=False,
-    )
-
+    capacidad_litros = db.Column(db.Numeric(10, 2), nullable=False)
     fecha_ingreso = db.Column(db.Date)
     estado_actual = db.Column(
         db.Enum(
-            "NUEVO",
-            "VACIO",
+            "LIMPIO",
             "LLENO",
-            "EN_CLIENTE",
-            "FUERA_SERVICIO",
+            "ENTREGADO",
+            "SUCIO",
+            "MANTENIMIENTO",
+            "BAJA",
             name="estado_barril",
         ),
-        default="NUEVO",
+        nullable=False,
+        default="LIMPIO",
     )
-
     notas = db.Column(db.Text)
 
-    tipo = db.relationship("TipoBarril", back_populates="barriles")
     movimientos = db.relationship(
-        "MovimientoBarril", back_populates="barril", lazy="dynamic"
+        "MovimientoBarril",
+        back_populates="barril",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
     )
-
-    def __repr__(self):
-        return f"<Barril {self.id} {self.codigo_barril}>"
 
 
 class Cliente(db.Model):
@@ -532,16 +513,17 @@ class MovimientoBarril(db.Model):
         nullable=False,
     )
 
-    fecha_hora = db.Column(db.DateTime, nullable=False)
+    fecha_hora = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     tipo_movimiento = db.Column(
         db.Enum(
-            "INGRESO",
-            "LLENADO",
-            "SALIDA_CLIENTE",
-            "RETORNO_VACIO",
+            "ALTA",
+            "LLENO",
+            "ENTREGADO",
+            "DEVUELTO",
+            "LATAS",
+            "LAVADO",
             "BAJA",
-            "MANTENIMIENTO",
             name="tipo_movimiento_barril",
         ),
         nullable=False,
@@ -559,13 +541,16 @@ class MovimientoBarril(db.Model):
         nullable=True,
     )
 
+    id_usuario = db.Column(
+        db.Integer,
+        db.ForeignKey("usuario.id_usuario", ondelete="SET NULL"),
+        nullable=True,
+    )
+
     volumen_litros = db.Column(db.Numeric(10, 2))
     comentario = db.Column(db.Text)
 
     barril = db.relationship("Barril", back_populates="movimientos")
-    bache = db.relationship("Bache", back_populates="movimientos_barril")
-    cliente = db.relationship("Cliente", back_populates="movimientos")
-
-    def __repr__(self):
-        return f"<MovimientoBarril {self.id} Barril:{self.id_barril} {self.tipo_movimiento}>"
-
+    bache = db.relationship("Bache")
+    cliente = db.relationship("Cliente")
+    usuario = db.relationship("Usuario")

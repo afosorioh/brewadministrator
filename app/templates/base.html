@@ -33,9 +33,15 @@
           <li class="nav-item"><a class="nav-link" href="{{ url_for('materias_primas.lista') }}">Materias primas</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('recetas.lista') }}">Recetas</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('baches.lista') }}">Baches</a></li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('barriles.lista') }}">Barriles</a>
+          </li>
           {% if current_user.rol.nombre == "ADMIN" %}
             <li class="nav-item"><a class="nav-link" href="{{ url_for('usuarios.lista') }}">Usuarios</a></li>
           {% endif %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('clientes.lista') }}">Clientes</a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('estadisticas.bache') }}">Estadísticas</a>
           </li>
