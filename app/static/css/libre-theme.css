@@ -91,3 +91,12 @@ a:hover{
 .navbar-toggler{
   border-color: rgba(255,255,255,.35);
 }
+
+.form-select.border-success,
+.form-control.border-success {
+  border-width: 2px;
+}
+
+.small.text-success {
+  display: block;
+}

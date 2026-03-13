@@ -7,16 +7,28 @@
 <form method="post" class="card p-3">
   <div class="row g-3">
     <div class="col-md-4">
-      <label class="form-label">Barril</label>
-      <select name="id_barril" class="form-select" required>
-        <option value="">-- Seleccionar barril --</option>
-        {% for b in barriles %}
-          <option value="{{ b.id }}" data-capacidad="{{ b.capacidad_litros }}">
-            {{ b.codigo_barril }} - {{ b.capacidad_litros }} L - {{ b.estado_actual }}
-          </option>
-        {% endfor %}
-      </select>
-      <div class="form-text">Solo aparecen barriles en estado LIMPIO.</div>
+    <label class="form-label">Barril</label>
+        <div class="input-group">
+            <select name="id_barril" id="id_barril_llenado" class="form-select" required>
+            <option value="">-- Seleccionar barril --</option>
+            {% for b in barriles %}
+                <option value="{{ b.id }}" data-codigo="{{ b.codigo_barril }}">
+                {{ b.codigo_barril }} - {{ b.capacidad_litros }} L - {{ b.estado_actual }}
+                </option>
+            {% endfor %}
+            </select>
+
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    onclick="abrirScannerQR({
+                    targetSelectId: 'id_barril_llenado',
+                    targetDisplayId: 'qr_result_llenado'
+                    })">
+            Escanear QR
+            </button>
+        </div>
+    <div id="qr_result_llenado" class="small mt-2 d-none"></div>
+    <div class="form-text">Solo aparecen barriles en estado LIMPIO.</div>
     </div>
 
     <div class="col-md-4">

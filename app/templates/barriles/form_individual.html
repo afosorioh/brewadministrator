@@ -8,7 +8,23 @@
   <div class="row g-3">
     <div class="col-md-4">
       <label class="form-label">Código barril</label>
-      <input type="text" name="codigo_barril" class="form-control" placeholder="Ej: A001" required>
+      <div class="input-group">
+        <input type="text"
+              id="codigo_barril"
+              name="codigo_barril"
+              class="form-control"
+              placeholder="Ej: A001"
+              required>
+        <button type="button"
+                class="btn btn-outline-secondary"
+                onclick="abrirScannerQR({
+                  targetInputId: 'codigo_barril',
+                  targetDisplayId: 'qr_result_alta'
+                })">
+          Escanear QR
+        </button>
+      </div>
+      <div id="qr_result_alta" class="small mt-2 d-none"></div>
     </div>
 
     <div class="col-md-4">

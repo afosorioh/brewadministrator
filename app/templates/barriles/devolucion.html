@@ -7,18 +7,30 @@
 <form method="post" class="card p-3">
   <div class="row g-3">
     <div class="col-md-8">
-      <label class="form-label">Barril</label>
-      <select name="id_barril" class="form-select" required>
+    <label class="form-label">Barril</label>
+    <div class="input-group">
+        <select name="id_barril" id="id_barril_devolucion" class="form-select" required>
         <option value="">-- Seleccionar barril --</option>
         {% for b in barriles %}
-          <option value="{{ b.id }}">
+            <option value="{{ b.id }}" data-codigo="{{ b.codigo_barril }}">
             {{ b.codigo_barril }} - {{ b.capacidad_litros }} L - {{ b.estado_actual }}
-          </option>
+            </option>
         {% endfor %}
-      </select>
-      <div class="form-text">
+        </select>
+
+        <button type="button"
+                class="btn btn-outline-secondary"
+                onclick="abrirScannerQR({
+                targetSelectId: 'id_barril_devolucion',
+                targetDisplayId: 'qr_result_devolucion'
+                })">
+        Escanear QR
+        </button>
+    </div>
+    <div id="qr_result_devolucion" class="small mt-2 d-none"></div>
+    <div class="form-text">
         Solo aparecen barriles en estado ENTREGADO. El sistema tomará automáticamente cliente, bache y volumen de la última entrega.
-      </div>
+    </div>
     </div>
 
     <div class="col-12">
