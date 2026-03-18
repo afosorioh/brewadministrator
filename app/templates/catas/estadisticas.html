@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Estadísticas de cata{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h3 mb-0">Estadísticas de la cata</h1>
+    <div class="text-muted">
+      Bache {{ sesion.bache.codigo_bache }} · {{ sesion.bache.nombre_cerveza }} · {{ sesion.titulo or sesion.codigo_publico }}
+    </div>
+  </div>
+  <div>
+    <a href="{{ url_for('catas.detalle', id_sesion_cata=sesion.id_sesion_cata) }}" class="btn btn-secondary">
+      Volver al detalle
+    </a>
+  </div>
+</div>
+
+{% if total_respuestas == 0 %}
+  <div class="alert alert-info">
+    Esta sesión todavía no tiene respuestas registradas.
+  </div>
+{% else %}
+  <div class="row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="card p-3 h-100">
+        <div class="text-muted small">Total catadores</div>
+        <div class="fs-3 fw-bold">{{ total_respuestas }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-3 h-100">
+        <div class="text-muted small">Promedio global</div>
+        <div class="fs-3 fw-bold">{{ promedio_global or "-" }}</div>
+        <div class="small text-muted">Escala 1 a 5</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-3 h-100">
+        <div class="text-muted small">Sesión</div>
+        <div class="fw-semibold">{{ "Activa" if sesion.activa else "Inactiva" }}</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-3 h-100">
+        <div class="text-muted small">Código público</div>
+        <div><code>{{ sesion.codigo_publico }}</code></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-lg-6">
+      <div class="card p-3 h-100">
+        <h2 class="h5">Promedios por dimensión</h2>
+        <table class="table table-sm align-middle mb-0">
+          <tbody>
+            <tr><th>Color</th><td>{{ promedios.color }}</td></tr>
+            <tr><th>Carbonatación y espuma</th><td>{{ promedios.carbonatacion_espuma }}</td></tr>
+            <tr><th>Sabor</th><td>{{ promedios.sabor }}</td></tr>
+            <tr><th>Aroma</th><td>{{ promedios.aroma }}</td></tr>
+            <tr><th>Impresión general</th><td>{{ promedios.impresion_general }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card p-3 h-100">
+        <h2 class="h5">Perfil demográfico</h2>
+
+        <h3 class="h6 mt-2">Sexo</h3>
+        <ul class="mb-2">
+          {% for item in porcentajes_sexo %}
+            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+          {% endfor %}
+        </ul>
+
+        <h3 class="h6">Edad</h3>
+        <ul class="mb-2">
+          {% for item in porcentajes_edad %}
+            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+          {% endfor %}
+        </ul>
+
+        <h3 class="h6">Nacionalidad</h3>
+        <ul class="mb-0">
+          {% for item in porcentajes_nacionalidad %}
+            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-lg-6">
+      <div class="card p-3 h-100">
+        <h2 class="h5">Percepción del producto</h2>
+
+        <h3 class="h6 mt-2">Color percibido</h3>
+        <ul>
+          {% for item in distribucion_color %}
+            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+          {% endfor %}
+        </ul>
+
+        <h3 class="h6">Carbonatación</h3>
+        <ul>
+          {% for item in distribucion_carbonatacion %}
+            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+          {% endfor %}
+        </ul>
+
+        <h3 class="h6">Espuma</h3>
+        <ul>
+          {% for item in distribucion_espuma %}
+            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+          {% endfor %}
+        </ul>
+
+        <h3 class="h6">Cuerpo</h3>
+        <ul class="mb-0">
+          {% for item in distribucion_cuerpo %}
+            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card p-3 h-100">
+        <h2 class="h5">Atributos sensoriales más frecuentes</h2>
+
+        <h3 class="h6 mt-2">Sabores</h3>
+        <ul>
+          {% for item in top_sabores[:10] %}
+            <li>{{ item.label }}: {{ item.cantidad }} menciones ({{ item.porcentaje }}%)</li>
+          {% endfor %}
+        </ul>
+
+        <h3 class="h6">Aromas</h3>
+        <ul class="mb-0">
+          {% for item in top_aromas[:10] %}
+            <li>{{ item.label }}: {{ item.cantidad }} menciones ({{ item.porcentaje }}%)</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {% if alertas %}
+    <div class="card p-3 border-warning">
+      <h2 class="h5">Hallazgos para mejora del bache</h2>
+      <ul class="mb-0">
+        {% for alerta in alertas %}
+          <li>{{ alerta }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

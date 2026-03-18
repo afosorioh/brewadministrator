@@ -44,6 +44,10 @@
                    class="btn btn-sm btn-outline-primary">
                   Ver
                 </a>
+                <a href="{{ url_for('catas.estadisticas', id_sesion_cata=s.id_sesion_cata) }}"
+                  class="btn btn-sm btn-outline-success">
+                  Estadísticas
+                </a>                
               </td>
             </tr>
           {% endfor %}
