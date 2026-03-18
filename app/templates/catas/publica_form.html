@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block title %}Cata pública{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+  <div class="card p-4 mt-4 mb-4">
+    <h1 class="h3 mb-1">Cata de cerveza</h1>
+    <p class="mb-1"><strong>Bache:</strong> {{ sesion.bache.codigo_bache }}</p>
+    <p class="mb-3"><strong>Cerveza:</strong> {{ sesion.bache.nombre_cerveza }}</p>
+
+    <form method="post" action="{{ url_for('catas_publicas.enviar_respuesta', codigo_publico=sesion.codigo_publico) }}">
+      <h2 class="h5 mt-2 mb-3">Datos del catador</h2>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Correo</label>
+          <input type="email" name="correo" class="form-control" required>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Sexo</label>
+          <select name="sexo" class="form-select" required>
+            <option value="">Seleccione</option>
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
+            <option value="otro">Otro</option>
+            <option value="prefiero_no_indicar">Prefiero no indicar</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Rango de edad</label>
+          <select name="rango_edad" class="form-select" required>
+            <option value="">Seleccione</option>
+            <option value="18_25">18 a 25</option>
+            <option value="26_35">26 a 35</option>
+            <option value="36_45">36 a 45</option>
+            <option value="46_55">46 a 55</option>
+            <option value="56_65">56 a 65</option>
+            <option value="66_mas">66 o más</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Nacionalidad</label>
+          <select name="nacionalidad" class="form-select" required>
+            <option value="">Seleccione</option>
+            <option value="colombiana">Colombiana</option>
+            <option value="extranjera">Extranjera</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <h2 class="h5 mb-3">1. Color</h2>
+
+      <div class="mb-3">
+        <label class="form-label">Calificación de color (1 a 5)</label>
+        <select name="puntaje_color" class="form-select" required>
+          <option value="">Seleccione</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Barra de color</label>
+        <input type="range"
+               class="form-range"
+               min="0"
+               max="100"
+               step="1"
+               value="20"
+               id="color_valor"
+               name="color_valor"
+               oninput="actualizarColorLabel(this.value)"
+               required>
+        <div class="d-flex justify-content-between small text-muted">
+          <span>Casi blanco</span>
+          <span>Amarillo</span>
+          <span>Rojo</span>
+          <span>Brown</span>
+          <span>Negro</span>
+        </div>
+        <div class="mt-2">
+          <strong>Selección actual:</strong> <span id="color_label">Amarillo</span>
+        </div>
+        <div class="mt-2" style="height:18px; border-radius:8px; background: linear-gradient(to right, #f8f8f2, #f5d76e, #c0392b, #6e3b1f, #111111);"></div>
+      </div>
+
+      <hr class="my-4">
+
+      <h2 class="h5 mb-3">2. Carbonatación y espuma</h2>
+
+      <div class="mb-3">
+        <label class="form-label">Calificación de carbonatación y espuma (1 a 5)</label>
+        <select name="puntaje_carbonatacion_espuma" class="form-select" required>
+          <option value="">Seleccione</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label d-block">Carbonatación</label>
+        <div class="btn-group" role="group">
+          <input type="radio" class="btn-check" name="carbonatacion_nivel" id="carbon_baja" value="baja" required>
+          <label class="btn btn-outline-secondary" for="carbon_baja">Baja</label>
+
+          <input type="radio" class="btn-check" name="carbonatacion_nivel" id="carbon_media" value="media" required>
+          <label class="btn btn-outline-secondary" for="carbon_media">Media</label>
+
+          <input type="radio" class="btn-check" name="carbonatacion_nivel" id="carbon_alta" value="alta" required>
+          <label class="btn btn-outline-secondary" for="carbon_alta">Alta</label>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label d-block">Espuma</label>
+        <div class="btn-group" role="group">
+          <input type="radio" class="btn-check" name="espuma_nivel" id="espuma_baja" value="baja" required>
+          <label class="btn btn-outline-secondary" for="espuma_baja">Poca</label>
+
+          <input type="radio" class="btn-check" name="espuma_nivel" id="espuma_media" value="media" required>
+          <label class="btn btn-outline-secondary" for="espuma_media">Media</label>
+
+          <input type="radio" class="btn-check" name="espuma_nivel" id="espuma_alta" value="alta" required>
+          <label class="btn btn-outline-secondary" for="espuma_alta">Alta</label>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <h2 class="h5 mb-3">3. Sabor</h2>
+
+      <div class="mb-3">
+        <label class="form-label">Calificación de sabor (1 a 5)</label>
+        <select name="puntaje_sabor" class="form-select" required>
+          <option value="">Seleccione</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label d-block">Amargor</label>
+        <div class="btn-group" role="group">
+          <input type="radio" class="btn-check" name="amargor_nivel" id="amargor_bajo" value="bajo">
+          <label class="btn btn-outline-secondary" for="amargor_bajo">Bajo</label>
+
+          <input type="radio" class="btn-check" name="amargor_nivel" id="amargor_medio" value="medio">
+          <label class="btn btn-outline-secondary" for="amargor_medio">Medio</label>
+
+          <input type="radio" class="btn-check" name="amargor_nivel" id="amargor_alto" value="alto">
+          <label class="btn btn-outline-secondary" for="amargor_alto">Alto</label>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label d-block">Características de sabor</label>
+        <div class="d-flex flex-wrap gap-2">
+          {% for s in ['dulce','citrico','acido','caramelo','chocolate_cafe','pan','frutal'] %}
+            <input type="checkbox" class="btn-check" name="sabores" id="sabor_{{ s }}" value="{{ s }}">
+            <label class="btn btn-outline-secondary btn-sm" for="sabor_{{ s }}">{{ s.replace('_', ' ')|title }}</label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label d-block">Cuerpo</label>
+        <div class="btn-group" role="group">
+          <input type="radio" class="btn-check" name="cuerpo_nivel" id="cuerpo_bajo" value="bajo" required>
+          <label class="btn btn-outline-secondary" for="cuerpo_bajo">Bajo</label>
+
+          <input type="radio" class="btn-check" name="cuerpo_nivel" id="cuerpo_medio" value="medio" required>
+          <label class="btn btn-outline-secondary" for="cuerpo_medio">Medio</label>
+
+          <input type="radio" class="btn-check" name="cuerpo_nivel" id="cuerpo_alto" value="alto" required>
+          <label class="btn btn-outline-secondary" for="cuerpo_alto">Alto</label>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <h2 class="h5 mb-3">4. Aroma</h2>
+
+      <div class="mb-3">
+        <label class="form-label">Calificación de aroma (1 a 5)</label>
+        <select name="puntaje_aroma" class="form-select" required>
+          <option value="">Seleccione</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label d-block">Características de aroma</label>
+        <div class="d-flex flex-wrap gap-2">
+          {% for a in ['citrico','floral','frutal','terral','resinoso','acido','galleta','nueces','mantequilla','medicinal','cebolla'] %}
+            <input type="checkbox" class="btn-check" name="aromas" id="aroma_{{ a }}" value="{{ a }}">
+            <label class="btn btn-outline-secondary btn-sm" for="aroma_{{ a }}">{{ a.replace('_', ' ')|title }}</label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <h2 class="h5 mb-3">5. Impresión general</h2>
+
+      <div class="mb-3">
+        <label class="form-label">Calificación general (1 a 5)</label>
+        <select name="puntaje_impresion_general" class="form-select" required>
+          <option value="">Seleccione</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Comentario abierto</label>
+        <textarea name="impresion_general_texto" class="form-control" rows="4"
+                  placeholder="Describe tu impresión general de la cerveza"></textarea>
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Enviar cata</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function actualizarColorLabel(valor) {
+  valor = parseInt(valor);
+  let texto = "Negro";
+  if (valor <= 10) texto = "Casi blanco";
+  else if (valor <= 30) texto = "Amarillo";
+  else if (valor <= 50) texto = "Rojo";
+  else if (valor <= 75) texto = "Brown";
+  document.getElementById("color_label").textContent = texto;
+}
+actualizarColorLabel(document.getElementById("color_valor").value);
+</script>
+{% endblock %}

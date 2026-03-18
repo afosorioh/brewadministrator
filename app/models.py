@@ -621,6 +621,7 @@ class RespuestaCata(db.Model):
     carbonatacion_nivel = db.Column(db.String(10), nullable=False)
     espuma_nivel = db.Column(db.String(10), nullable=False)
     cuerpo_nivel = db.Column(db.String(10), nullable=True)
+    amargor_nivel = db.Column(db.String(10), nullable=True)
 
     impresion_general_texto = db.Column(db.Text, nullable=True)
 

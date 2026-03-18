@@ -22,7 +22,6 @@ def generar_codigo_unico():
         if not existe:
             return codigo
 
-
 def construir_link_publico(codigo_publico):
     public_base = current_app.config.get("PUBLIC_BASE_URL")
     if public_base:
@@ -136,21 +135,3 @@ def toggle_activa(id_sesion_cata):
         "success"
     )
     return redirect(url_for("catas.detalle", id_sesion_cata=sesion.id_sesion_cata))
-
-
-@bp.route("/c/<codigo_publico>")
-def acceso_publico_redirect(codigo_publico):
-    sesion = SesionCata.query.filter_by(codigo_publico=codigo_publico).first_or_404()
-    if not sesion.activa:
-        abort(404)
-
-    return redirect(url_for("catas.publica", codigo_publico=codigo_publico))
-
-
-@bp.route("/publica/<codigo_publico>")
-def publica(codigo_publico):
-    sesion = SesionCata.query.filter_by(codigo_publico=codigo_publico).first_or_404()
-    if not sesion.activa:
-        abort(404)
-
-    return render_template("catas/publica_placeholder.html", sesion=sesion)
