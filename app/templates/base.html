@@ -36,15 +36,18 @@
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('barriles.lista') }}">Barriles</a>
           </li>
-          {% if current_user.rol.nombre == "ADMIN" %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('usuarios.lista') }}">Usuarios</a></li>
-          {% endif %}
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('clientes.lista') }}">Clientes</a>
           </li>
           <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('catas.lista') }}">Catas</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{{ url_for('estadisticas.bache') }}">Estadísticas</a>
           </li>
+          {% if current_user.rol.nombre == "ADMIN" %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('usuarios.lista') }}">Usuarios</a></li>
+          {% endif %}
         {% endif %}
       </ul>
 

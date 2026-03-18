@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Sesiones de cata{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Sesiones de cata</h1>
+  <a href="{{ url_for('catas.nueva') }}" class="btn btn-primary">Nueva sesión</a>
+</div>
+
+<div class="card p-3">
+  {% if sesiones %}
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Bache</th>
+            <th>Cerveza</th>
+            <th>Título</th>
+            <th>Código público</th>
+            <th>Estado</th>
+            <th>Fecha creación</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in sesiones %}
+            <tr>
+              <td>{{ s.id_sesion_cata }}</td>
+              <td>{{ s.bache.codigo_bache }}</td>
+              <td>{{ s.bache.nombre_cerveza }}</td>
+              <td>{{ s.titulo or "-" }}</td>
+              <td><code>{{ s.codigo_publico }}</code></td>
+              <td>
+                {% if s.activa %}
+                  <span class="badge bg-success">Activa</span>
+                {% else %}
+                  <span class="badge bg-secondary">Inactiva</span>
+                {% endif %}
+              </td>
+              <td>{{ s.fecha_creacion.strftime("%Y-%m-%d %H:%M") }}</td>
+              <td>
+                <a href="{{ url_for('catas.detalle', id_sesion_cata=s.id_sesion_cata) }}"
+                   class="btn btn-sm btn-outline-primary">
+                  Ver
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted mb-0">No hay sesiones de cata registradas.</p>
+  {% endif %}
+</div>
+{% endblock %}

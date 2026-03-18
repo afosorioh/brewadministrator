@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Cata pública{% endblock %}
+
+{% block content %}
+<div class="card p-4">
+  <h1 class="h3">Cata pública</h1>
+  <p class="mb-1"><strong>Bache:</strong> {{ sesion.bache.codigo_bache }}</p>
+  <p class="mb-1"><strong>Cerveza:</strong> {{ sesion.bache.nombre_cerveza }}</p>
+  <p class="mb-3"><strong>Sesión:</strong> {{ sesion.titulo or sesion.codigo_publico }}</p>
+
+  <div class="alert alert-info mb-0">
+    Aquí vamos a montar el formulario público de cata en la siguiente fase.
+  </div>
+</div>
+{% endblock %}

@@ -302,6 +302,13 @@ class Bache(db.Model):
         "MovimientoBarril", back_populates="bache", lazy="dynamic"
     )
 
+    sesiones_cata = db.relationship(
+        'SesionCata',
+        backref='bache',
+        lazy=True,
+        cascade='all, delete-orphan'
+    )
+
     def __repr__(self):
         return f"<Bache {self.id} {self.codigo_bache}>"
 
@@ -554,3 +561,117 @@ class MovimientoBarril(db.Model):
     bache = db.relationship("Bache")
     cliente = db.relationship("Cliente")
     usuario = db.relationship("Usuario")
+
+class SesionCata(db.Model):
+    __tablename__ = 'sesion_cata'
+
+    id_sesion_cata = db.Column(db.Integer, primary_key=True)
+    id_bache = db.Column(db.Integer, db.ForeignKey('bache.id_bache'), nullable=False)
+
+    codigo_publico = db.Column(db.String(100), unique=True, nullable=False)
+    titulo = db.Column(db.String(200), nullable=True)
+    descripcion = db.Column(db.Text, nullable=True)
+
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    fecha_inicio = db.Column(db.DateTime, nullable=True)
+    fecha_fin = db.Column(db.DateTime, nullable=True)
+
+    activa = db.Column(db.Boolean, default=True, nullable=False)
+    creada_por = db.Column(db.Integer, nullable=True)
+    observaciones = db.Column(db.Text, nullable=True)
+
+    respuestas = db.relationship(
+        'RespuestaCata',
+        backref='sesion_cata',
+        lazy=True,
+        cascade='all, delete-orphan'
+    )
+
+    def __repr__(self):
+        return f"<SesionCata {self.id_sesion_cata} bache={self.id_bache} codigo={self.codigo_publico}>"
+
+
+
+class RespuestaCata(db.Model):
+    __tablename__ = 'respuesta_cata'
+
+    id_respuesta_cata = db.Column(db.Integer, primary_key=True)
+    id_sesion_cata = db.Column(
+        db.Integer,
+        db.ForeignKey('sesion_cata.id_sesion_cata', ondelete='CASCADE'),
+        nullable=False
+    )
+
+    fecha_respuesta = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    correo = db.Column(db.String(255), nullable=True)
+    sexo = db.Column(db.String(20), nullable=True)
+    rango_edad = db.Column(db.String(50), nullable=True)
+    nacionalidad = db.Column(db.String(20), nullable=True)
+
+    puntaje_color = db.Column(db.SmallInteger, nullable=False)
+    puntaje_carbonatacion_espuma = db.Column(db.SmallInteger, nullable=False)
+    puntaje_sabor = db.Column(db.SmallInteger, nullable=False)
+    puntaje_aroma = db.Column(db.SmallInteger, nullable=False)
+    puntaje_impresion_general = db.Column(db.SmallInteger, nullable=False)
+
+    color_valor = db.Column(db.SmallInteger, nullable=False)
+    color_categoria = db.Column(db.String(20), nullable=True)
+
+    carbonatacion_nivel = db.Column(db.String(10), nullable=False)
+    espuma_nivel = db.Column(db.String(10), nullable=False)
+    cuerpo_nivel = db.Column(db.String(10), nullable=True)
+
+    impresion_general_texto = db.Column(db.Text, nullable=True)
+
+    ip_origen = db.Column(db.String(100), nullable=True)
+    user_agent = db.Column(db.Text, nullable=True)
+
+    sabores = db.relationship(
+        'RespuestaCataSabor',
+        backref='respuesta_cata',
+        lazy=True,
+        cascade='all, delete-orphan'
+    )
+
+    aromas = db.relationship(
+        'RespuestaCataAroma',
+        backref='respuesta_cata',
+        lazy=True,
+        cascade='all, delete-orphan'
+    )
+
+    def __repr__(self):
+        return f"<RespuestaCata {self.id_respuesta_cata} sesion={self.id_sesion_cata}>"
+
+
+
+class RespuestaCataSabor(db.Model):
+    __tablename__ = 'respuesta_cata_sabor'
+
+    id_respuesta_cata_sabor = db.Column(db.Integer, primary_key=True)
+    id_respuesta_cata = db.Column(
+        db.Integer,
+        db.ForeignKey('respuesta_cata.id_respuesta_cata', ondelete='CASCADE'),
+        nullable=False
+    )
+    sabor = db.Column(db.String(50), nullable=False)
+
+    def __repr__(self):
+        return f"<RespuestaCataSabor respuesta={self.id_respuesta_cata} sabor={self.sabor}>"
+
+
+
+class RespuestaCataAroma(db.Model):
+    __tablename__ = 'respuesta_cata_aroma'
+
+    id_respuesta_cata_aroma = db.Column(db.Integer, primary_key=True)
+    id_respuesta_cata = db.Column(
+        db.Integer,
+        db.ForeignKey('respuesta_cata.id_respuesta_cata', ondelete='CASCADE'),
+        nullable=False
+    )
+    aroma = db.Column(db.String(50), nullable=False)
+
+    def __repr__(self):
+        return f"<RespuestaCataAroma respuesta={self.id_respuesta_cata} aroma={self.aroma}>"

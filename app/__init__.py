@@ -53,6 +53,9 @@ def create_app():
     from app.routes.clientes import clientes_bp
     app.register_blueprint(clientes_bp)
 
+    from app.routes.catas import bp as catas_bp
+    app.register_blueprint(catas_bp)
+
     @app.route("/")
     def index():
         if current_user.is_authenticated:
