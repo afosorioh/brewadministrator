@@ -11,6 +11,7 @@
       <a href="{{ url_for('barriles.llenado') }}" class="btn btn-outline-primary">Llenado</a>
       <a href="{{ url_for('barriles.entrega') }}" class="btn btn-outline-primary">Entrega</a>
       <a href="{{ url_for('barriles.devolucion') }}" class="btn btn-outline-primary">Devolución</a>
+      <a href="{{ url_for('barriles.lavado') }}" class="btn btn-outline-primary">Lavado</a>
     </div>
   {% endif %}
 </div>
@@ -22,7 +23,7 @@
       <input type="text" name="q" class="form-control" value="{{ q or '' }}" placeholder="Ej: A001">
     </div>
     <div class="col-md-4">
-      <label class="form-label">Estado</label>
+      <label class="form-label">Buscar por estado</label>
       <select name="estado" class="form-select">
         <option value="">-- Todos --</option>
         {% for e in estados %}
@@ -38,12 +39,14 @@
 </form>
 
 {% if barriles %}
-  <table class="table table-striped table-hover">
+  <table class="table table-striped table-hover align-middle">
     <thead>
       <tr>
         <th>Código</th>
         <th>Capacidad (L)</th>
-        <th>Fecha ingreso</th>
+        <th>Estilo</th>
+        <th>Bache</th>
+        <th>Fecha-Ultimo-Estado</th>
         <th>Estado</th>
         <th>Acciones</th>
       </tr>
@@ -52,8 +55,10 @@
       {% for b in barriles %}
       <tr>
         <td>{{ b.codigo_barril }}</td>
-        <td>{{ b.capacidad_litros }}</td>
-        <td>{{ b.fecha_ingreso or "-" }}</td>
+        <td>{{ b.capacidad_mostrar }}</td>
+        <td>{{ b.estilo_mostrar or "-" }}</td>
+        <td>{{ b.bache_mostrar or "-" }}</td>
+        <td>{{ b.fecha_ultimo_estado.strftime('%Y-%m-%d %H:%M') if b.fecha_ultimo_estado else "-" }}</td>
         <td>{{ b.estado_actual }}</td>
         <td>
           <a href="{{ url_for('barriles.detalle', barril_id=b.id) }}" class="btn btn-sm btn-secondary">Ver</a>

@@ -68,9 +68,46 @@ def lista():
 
     estados = ["LIMPIO", "LLENO", "ENTREGADO", "SUCIO", "MANTENIMIENTO", "BAJA"]
 
+    barriles_data = []
+    for barril in pagination.items:
+        ultimo_movimiento = (
+            MovimientoBarril.query
+            .filter_by(id_barril=barril.id)
+            .order_by(MovimientoBarril.fecha_hora.desc())
+            .first()
+        )
+
+        capacidad_mostrar = barril.capacidad_litros
+        estilo_mostrar = ""
+        bache_mostrar = ""
+
+        if (
+            barril.estado_actual == "LLENO"
+            and ultimo_movimiento
+            and ultimo_movimiento.tipo_movimiento == "LLENO"
+            and ultimo_movimiento.bache
+        ):
+            capacidad_mostrar = ultimo_movimiento.volumen_litros or barril.capacidad_litros
+            bache_mostrar = ultimo_movimiento.bache.codigo_bache or ""
+
+            if ultimo_movimiento.bache.receta and ultimo_movimiento.bache.receta.estilo:
+                estilo_mostrar = ultimo_movimiento.bache.receta.estilo
+            else:
+                estilo_mostrar = ultimo_movimiento.bache.nombre_cerveza or ""
+
+        barriles_data.append({
+            "id": barril.id,
+            "codigo_barril": barril.codigo_barril,
+            "capacidad_mostrar": capacidad_mostrar,
+            "fecha_ultimo_estado": ultimo_movimiento.fecha_hora if ultimo_movimiento else None,
+            "estado_actual": barril.estado_actual,
+            "estilo_mostrar": estilo_mostrar,
+            "bache_mostrar": bache_mostrar,
+        })
+
     return render_template(
         "barriles/lista.html",
-        barriles=pagination.items,
+        barriles=barriles_data,
         pagination=pagination,
         q=q,
         estado=estado,
@@ -451,5 +488,65 @@ def devolucion():
 
     return render_template(
         "barriles/devolucion.html",
+        barriles=barriles,
+    )
+
+@barriles_bp.route("/lavado", methods=["GET", "POST"])
+@login_required
+@role_required("ADMIN", "GESTOR")
+def lavado():
+    barriles = (
+        Barril.query
+        .filter(Barril.estado_actual == "SUCIO")
+        .order_by(Barril.codigo_barril.asc())
+        .all()
+    )
+
+    if request.method == "POST":
+        id_barril = request.form.get("id_barril") or None
+        comentario = request.form.get("comentario") or None
+
+        if not id_barril:
+            flash("Debes seleccionar un barril.", "danger")
+            return redirect(url_for("barriles.lavado"))
+
+        barril = Barril.query.get(id_barril)
+
+        if not barril:
+            flash("El barril seleccionado no existe.", "danger")
+            return redirect(url_for("barriles.lavado"))
+
+        if barril.estado_actual != "SUCIO":
+            flash("Solo se pueden lavar barriles en estado SUCIO.", "danger")
+            return redirect(url_for("barriles.lavado"))
+
+        ultimo_movimiento = (
+            MovimientoBarril.query
+            .filter_by(id_barril=barril.id)
+            .order_by(MovimientoBarril.fecha_hora.desc())
+            .first()
+        )
+
+        movimiento = MovimientoBarril(
+            id_barril=barril.id,
+            fecha_hora=datetime.utcnow(),
+            tipo_movimiento="LAVADO",
+            id_bache=ultimo_movimiento.id_bache if ultimo_movimiento else None,
+            id_cliente=ultimo_movimiento.id_cliente if ultimo_movimiento else None,
+            id_usuario=current_user.id,
+            volumen_litros=ultimo_movimiento.volumen_litros if ultimo_movimiento else None,
+            comentario=comentario,
+        )
+        db.session.add(movimiento)
+
+        barril.estado_actual = "LIMPIO"
+
+        db.session.commit()
+
+        flash("Lavado de barril registrado correctamente.", "success")
+        return redirect(url_for("barriles.detalle", barril_id=barril.id))
+
+    return render_template(
+        "barriles/lavado.html",
         barriles=barriles,
     )

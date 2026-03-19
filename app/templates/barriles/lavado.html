@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Lavado de barriles{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Lavado de barriles</h1>
+
+<form method="post" class="card p-3">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Barril</label>
+      <div class="input-group">
+        <select name="id_barril" id="id_barril_lavado" class="form-select" required>
+          <option value="">-- Seleccionar barril --</option>
+          {% for b in barriles %}
+            <option value="{{ b.id }}" data-codigo="{{ b.codigo_barril }}">
+              {{ b.codigo_barril }} - {{ b.capacidad_litros }} L - {{ b.estado_actual }}
+            </option>
+          {% endfor %}
+        </select>
+
+        <button type="button"
+                class="btn btn-outline-secondary"
+                onclick="abrirScannerQR({
+                  targetSelectId: 'id_barril_lavado',
+                  targetDisplayId: 'qr_result_lavado'
+                })">
+          Escanear QR
+        </button>
+      </div>
+
+      <div id="qr_result_lavado" class="small mt-2 d-none"></div>
+      <div class="form-text">Solo aparecen barriles en estado SUCIO.</div>
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Comentario</label>
+      <textarea name="comentario" class="form-control" rows="2"
+                placeholder="Ej: Lavado CIP, lavado manual, observaciones, etc."></textarea>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <button class="btn btn-primary">Registrar lavado</button>
+    <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
