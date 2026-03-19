@@ -82,9 +82,9 @@ def lista():
         bache_mostrar = ""
 
         if (
-            barril.estado_actual == "LLENO"
+            (barril.estado_actual == "LLENO" or barril.estado_actual == "ENTREGADO")
             and ultimo_movimiento
-            and ultimo_movimiento.tipo_movimiento == "LLENO"
+            and (ultimo_movimiento.tipo_movimiento == "LLENO" or ultimo_movimiento.tipo_movimiento == "ENTREGADO")
             and ultimo_movimiento.bache
         ):
             capacidad_mostrar = ultimo_movimiento.volumen_litros or barril.capacidad_litros
