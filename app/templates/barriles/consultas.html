@@ -7,46 +7,6 @@
   <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Volver a lista</a>
 </div>
 
-<form method="get" class="card shadow-sm border-0 mb-4">
-  <div class="card-body">
-    <div class="row g-3 align-items-end">
-      <div class="col-md-3">
-        <label class="form-label">Fecha desde</label>
-        <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Fecha hasta</label>
-        <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Cliente</label>
-        <select name="cliente_id" class="form-select">
-          <option value="">-- Todos --</option>
-          {% for c in clientes %}
-            <option value="{{ c.id }}" {% if cliente_id == c.id %}selected{% endif %}>
-              {{ c.nombre }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Estilo</label>
-        <select name="estilo" class="form-select">
-          <option value="">-- Todos --</option>
-          {% for e in estilos_disponibles %}
-            <option value="{{ e }}" {% if estilo == e %}selected{% endif %}>{{ e }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="col-12">
-        <button class="btn btn-primary">Aplicar filtros</button>
-        <a href="{{ url_for('barriles.consultas') }}" class="btn btn-outline-secondary">Limpiar</a>
-      </div>
-    </div>
-  </div>
-</form>
-
 <div class="row g-3 mb-4">
   <div class="col-md-3">
     <div class="card border-0 shadow-sm h-100">
@@ -99,6 +59,46 @@
   </div>
 </div>
 
+<form method="get" class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Fecha desde</label>
+        <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Fecha hasta</label>
+        <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Cliente</label>
+        <select name="cliente_id" class="form-select">
+          <option value="">-- Todos --</option>
+          {% for c in clientes %}
+            <option value="{{ c.id }}" {% if cliente_id == c.id %}selected{% endif %}>
+              {{ c.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Estilo</label>
+        <select name="estilo" class="form-select">
+          <option value="">-- Todos --</option>
+          {% for e in estilos_disponibles %}
+            <option value="{{ e }}" {% if estilo == e %}selected{% endif %}>{{ e }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12">
+        <button class="btn btn-primary">Aplicar filtros</button>
+        <a href="{{ url_for('barriles.consultas') }}" class="btn btn-outline-secondary">Limpiar</a>
+      </div>
+    </div>
+  </div>
+</form>
+
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-white d-flex justify-content-between align-items-center">
     <strong>Barriles entregados por cliente y estilo</strong>
@@ -134,7 +134,7 @@
 
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-white d-flex justify-content-between align-items-center">
-    <strong>Barriles llenos por estilo</strong>
+    <strong>Barriles llenos disponibles por estilo</strong>
     <span class="badge bg-dark">{{ llenos_por_estilo|length }} filas</span>
   </div>
   <div class="card-body">
