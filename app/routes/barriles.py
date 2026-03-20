@@ -390,26 +390,22 @@ def entrega():
 
     if request.method == "POST":
         id_barril = request.form.get("id_barril") or None
+        destino = (request.form.get("destino") or "CLIENTE").strip().upper()
         id_cliente = request.form.get("id_cliente") or None
         comentario = request.form.get("comentario") or None
 
-        if not id_barril or not id_cliente:
-            flash("Barril y cliente son obligatorios.", "danger")
+        if not id_barril:
+            flash("Debes seleccionar un barril.", "danger")
             return redirect(url_for("barriles.entrega"))
 
         barril = Barril.query.get(id_barril)
-        cliente = Cliente.query.get(id_cliente)
 
         if not barril:
             flash("El barril seleccionado no existe.", "danger")
             return redirect(url_for("barriles.entrega"))
 
-        if not cliente:
-            flash("El cliente seleccionado no existe.", "danger")
-            return redirect(url_for("barriles.entrega"))
-
         if barril.estado_actual != "LLENO":
-            flash("Solo se pueden entregar barriles en estado LLENO.", "danger")
+            flash("Solo se pueden procesar barriles en estado LLENO.", "danger")
             return redirect(url_for("barriles.entrega"))
 
         ultimo_llenado = (
@@ -423,24 +419,58 @@ def entrega():
             flash("No se encontró un movimiento de llenado previo para este barril.", "danger")
             return redirect(url_for("barriles.entrega"))
 
-        movimiento = MovimientoBarril(
-            id_barril=barril.id,
-            fecha_hora=datetime.utcnow(),
-            tipo_movimiento="ENTREGADO",
-            id_bache=ultimo_llenado.id_bache,
-            id_cliente=cliente.id,
-            id_usuario=current_user.id,
-            volumen_litros=ultimo_llenado.volumen_litros,
-            comentario=comentario,
-        )
-        db.session.add(movimiento)
+        if destino == "CLIENTE":
+            if not id_cliente:
+                flash("Debes seleccionar un cliente.", "danger")
+                return redirect(url_for("barriles.entrega"))
 
-        barril.estado_actual = "ENTREGADO"
+            cliente = Cliente.query.get(id_cliente)
+            if not cliente:
+                flash("El cliente seleccionado no existe.", "danger")
+                return redirect(url_for("barriles.entrega"))
 
-        db.session.commit()
+            movimiento = MovimientoBarril(
+                id_barril=barril.id,
+                fecha_hora=datetime.utcnow(),
+                tipo_movimiento="ENTREGADO",
+                id_bache=ultimo_llenado.id_bache,
+                id_cliente=cliente.id,
+                id_usuario=current_user.id,
+                volumen_litros=ultimo_llenado.volumen_litros,
+                comentario=comentario,
+            )
+            db.session.add(movimiento)
 
-        flash("Entrega de barril registrada correctamente.", "success")
-        return redirect(url_for("barriles.detalle", barril_id=barril.id))
+            barril.estado_actual = "ENTREGADO"
+
+            db.session.commit()
+
+            flash("Entrega de barril registrada correctamente.", "success")
+            return redirect(url_for("barriles.detalle", barril_id=barril.id))
+
+        elif destino == "LATAS":
+            movimiento = MovimientoBarril(
+                id_barril=barril.id,
+                fecha_hora=datetime.utcnow(),
+                tipo_movimiento="LATAS",
+                id_bache=ultimo_llenado.id_bache,
+                id_cliente=None,
+                id_usuario=current_user.id,
+                volumen_litros=ultimo_llenado.volumen_litros,
+                comentario=comentario,
+            )
+            db.session.add(movimiento)
+
+            barril.estado_actual = "SUCIO"
+
+            db.session.commit()
+
+            flash("Salida a latas registrada correctamente. El barril quedó en estado SUCIO.", "success")
+            return redirect(url_for("barriles.detalle", barril_id=barril.id))
+
+        else:
+            flash("Destino no válido.", "danger")
+            return redirect(url_for("barriles.entrega"))
 
     return render_template(
         "barriles/entrega.html",

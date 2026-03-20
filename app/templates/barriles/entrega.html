@@ -1,59 +1,86 @@
 {% extends "base.html" %}
-{% block title %}Entrega de barriles{% endblock %}
+{% block title %}Salida de barriles{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-3">Entrega de barriles al cliente</h1>
+<h1 class="h3 mb-3">Salida de barriles</h1>
 
 <form method="post" class="card p-3">
   <div class="row g-3">
-    <div class="col-md-6">
-    <label class="form-label">Barril</label>
-    <div class="input-group">
+    <div class="col-md-4">
+      <label class="form-label">Barril</label>
+      <div class="input-group">
         <select name="id_barril" id="id_barril_entrega" class="form-select" required>
-        <option value="">-- Seleccionar barril --</option>
-        {% for b in barriles %}
+          <option value="">-- Seleccionar barril --</option>
+          {% for b in barriles %}
             <option value="{{ b.id }}" data-codigo="{{ b.codigo_barril }}">
-            {{ b.codigo_barril }} - {{ b.capacidad_litros }} L - {{ b.estado_actual }}
+              {{ b.codigo_barril }} - {{ b.capacidad_litros }} L - {{ b.estado_actual }}
             </option>
-        {% endfor %}
+          {% endfor %}
         </select>
 
         <button type="button"
                 class="btn btn-outline-secondary"
                 onclick="abrirScannerQR({
-                targetSelectId: 'id_barril_entrega',
-                targetDisplayId: 'qr_result_entrega'
+                  targetSelectId: 'id_barril_entrega',
+                  targetDisplayId: 'qr_result_entrega'
                 })">
-        Escanear QR
+          Escanear QR
         </button>
-    </div>
-    <div id="qr_result_entrega" class="small mt-2 d-none"></div>
-    <div class="form-text">
-        Solo aparecen barriles en estado LLENO. El sistema copiará automáticamente el bache y el volumen del último llenado.
-    </div>
+      </div>
+      <div id="qr_result_entrega" class="small mt-2 d-none"></div>
+      <div class="form-text">Solo aparecen barriles en estado LLENO.</div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
+      <label class="form-label">Destino</label>
+      <select name="destino" id="destino" class="form-select" required onchange="toggleDestino()">
+        <option value="CLIENTE">Cliente</option>
+        <option value="LATAS">Latas</option>
+      </select>
+    </div>
+
+    <div class="col-md-4" id="bloque_cliente">
       <label class="form-label">Cliente</label>
-      <select name="id_cliente" class="form-select" required>
+      <select name="id_cliente" id="id_cliente" class="form-select">
         <option value="">-- Seleccionar cliente --</option>
         {% for c in clientes %}
           <option value="{{ c.id }}">
-            {{ c.nombre }}{% if c.tipo %} - {{ c.tipo }}{% endif %}
+            {{ c.nombre }}
           </option>
         {% endfor %}
       </select>
+      <div class="form-text">Obligatorio cuando el destino es Cliente.</div>
     </div>
 
     <div class="col-12">
       <label class="form-label">Comentario</label>
-      <textarea name="comentario" class="form-control" rows="2"></textarea>
+      <textarea name="comentario" class="form-control" rows="2"
+                placeholder="Ej: salida a cliente, envío a enlatado, observaciones"></textarea>
     </div>
   </div>
 
   <div class="mt-3">
-    <button class="btn btn-primary">Registrar entrega</button>
+    <button class="btn btn-primary">Registrar salida</button>
     <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Cancelar</a>
   </div>
 </form>
+
+<script>
+function toggleDestino() {
+  const destino = document.getElementById("destino").value;
+  const bloqueCliente = document.getElementById("bloque_cliente");
+  const selectCliente = document.getElementById("id_cliente");
+
+  if (destino === "CLIENTE") {
+    bloqueCliente.style.display = "";
+    selectCliente.setAttribute("required", "required");
+  } else {
+    bloqueCliente.style.display = "none";
+    selectCliente.removeAttribute("required");
+    selectCliente.value = "";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", toggleDestino);
+</script>
 {% endblock %}
