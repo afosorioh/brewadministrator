@@ -723,6 +723,7 @@ def consultas():
 
     query_llenos = (
         db.session.query(
+            mov_llenado.volumen_litros.label("tamano"),
             func.coalesce(receta_llenado.estilo, bache_llenado.nombre_cerveza, "SIN ESTILO").label("estilo"),
             func.count(Barril.id).label("cantidad"),
         )
@@ -753,8 +754,14 @@ def consultas():
 
     llenos_por_estilo = (
         query_llenos
-        .group_by(func.coalesce(receta_llenado.estilo, bache_llenado.nombre_cerveza, "SIN ESTILO"))
-        .order_by(func.count(Barril.id).desc())
+        .group_by(
+            mov_llenado.volumen_litros,
+            func.coalesce(receta_llenado.estilo, bache_llenado.nombre_cerveza, "SIN ESTILO")
+        )
+        .order_by(
+            mov_llenado.volumen_litros.asc(),
+            func.count(Barril.id).desc()
+        )
         .all()
     )
 

@@ -141,20 +141,28 @@
     {% if llenos_por_estilo %}
       <div class="table-responsive">
         <table class="table table-striped table-hover align-middle">
-          <thead>
+        <thead>
             <tr>
-              <th>Estilo</th>
-              <th>Cantidad</th>
+            <th>Tamaño</th>
+            <th>Estilo</th>
+            <th>Cantidad</th>
             </tr>
-          </thead>
-          <tbody>
+        </thead>
+        <tbody>
             {% for row in llenos_por_estilo %}
             <tr>
-              <td>{{ row.estilo or "SIN ESTILO" }}</td>
-              <td>{{ row.cantidad }}</td>
+            <td>
+                {% if row.tamano is not none %}
+                {{ row.tamano }} L
+                {% else %}
+                -
+                {% endif %}
+            </td>
+            <td>{{ row.estilo or "SIN ESTILO" }}</td>
+            <td>{{ row.cantidad }}</td>
             </tr>
             {% endfor %}
-          </tbody>
+        </tbody>
         </table>
       </div>
     {% else %}
