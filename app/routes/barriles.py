@@ -915,3 +915,31 @@ def consultas():
             "BAJA": "dark",
         },
     )
+
+@barriles_bp.route("/<int:barril_id>/baja", methods=["POST"])
+@login_required
+@role_required("ADMIN", "GESTOR")
+def baja(barril_id):
+    barril = Barril.query.get_or_404(barril_id)
+
+    if barril.estado_actual == "BAJA":
+        flash("El barril ya se encuentra en estado BAJA.", "warning")
+        return redirect(url_for("barriles.lista"))
+
+    # Registrar movimiento (importante para auditoría)
+    movimiento = MovimientoBarril(
+        id_barril=barril.id,
+        fecha_hora=datetime.utcnow(),
+        tipo_movimiento="BAJA",
+        id_usuario=current_user.id,
+        comentario="Baja manual del barril (dañado o perdido)",
+    )
+    db.session.add(movimiento)
+
+    # Cambiar estado
+    barril.estado_actual = "BAJA"
+
+    db.session.commit()
+
+    flash(f"Barril {barril.codigo_barril} dado de baja correctamente.", "success")
+    return redirect(url_for("barriles.lista"))

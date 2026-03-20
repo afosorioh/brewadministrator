@@ -62,7 +62,22 @@
         <td>{{ b.fecha_ultimo_estado.strftime('%Y-%m-%d %H:%M') if b.fecha_ultimo_estado else "-" }}</td>
         <td>{{ b.estado_actual }}</td>
         <td>
-          <a href="{{ url_for('barriles.detalle', barril_id=b.id) }}" class="btn btn-sm btn-secondary">Ver</a>
+          <div class="d-flex gap-1">
+            <a href="{{ url_for('barriles.detalle', barril_id=b.id) }}"
+              class="btn btn-sm btn-secondary">
+              Ver
+            </a>
+
+            {% if b.estado_actual != "BAJA" %}
+            <form method="post"
+                  action="{{ url_for('barriles.baja', barril_id=b.id) }}"
+                  onsubmit="return confirm('¿Seguro que deseas dar de baja este barril?');">
+              <button class="btn btn-sm btn-outline-danger">
+                Baja
+              </button>
+            </form>
+            {% endif %}
+          </div>
         </td>
       </tr>
       {% endfor %}
