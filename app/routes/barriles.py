@@ -1,13 +1,15 @@
 from datetime import date, datetime
+
 import re
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
+from sqlalchemy import func, and_
+from sqlalchemy.orm import aliased
 
 from app.authz import role_required
 from app.extensions import db
-from app.models import Barril, MovimientoBarril, Bache, Cliente
-
+from app.models import Barril, MovimientoBarril, Bache, Cliente, Receta
 
 barriles_bp = Blueprint(
     "barriles",
@@ -15,6 +17,25 @@ barriles_bp = Blueprint(
     url_prefix="/barriles",
 )
 
+def _parse_date(value):
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _estado_badge_class(estado: str) -> str:
+    mapa = {
+        "LIMPIO": "success",
+        "LLENO": "primary",
+        "ENTREGADO": "warning text-dark",
+        "SUCIO": "danger",
+        "MANTENIMIENTO": "secondary",
+        "BAJA": "dark",
+    }
+    return mapa.get(estado, "secondary")
 
 def _parse_codigo_barril(codigo: str):
     """
@@ -549,4 +570,341 @@ def lavado():
     return render_template(
         "barriles/lavado.html",
         barriles=barriles,
+    )
+
+@barriles_bp.route("/consultas")
+@login_required
+def consultas():
+    estados_orden = ["LIMPIO", "LLENO", "ENTREGADO", "SUCIO", "MANTENIMIENTO", "BAJA"]
+
+    fecha_desde_str = (request.args.get("fecha_desde") or "").strip()
+    fecha_hasta_str = (request.args.get("fecha_hasta") or "").strip()
+    cliente_id = request.args.get("cliente_id", type=int)
+    estilo = (request.args.get("estilo") or "").strip()
+
+    fecha_desde = _parse_date(fecha_desde_str)
+    fecha_hasta = _parse_date(fecha_hasta_str)
+
+    clientes = (
+        Cliente.query
+        .filter(Cliente.activo.is_(True))
+        .order_by(Cliente.nombre.asc())
+        .all()
+    )
+
+    estilos_disponibles = [
+        row[0]
+        for row in db.session.query(Receta.estilo)
+        .filter(Receta.estilo.isnot(None), Receta.estilo != "")
+        .distinct()
+        .order_by(Receta.estilo.asc())
+        .all()
+    ]
+
+    # ==========================================================
+    # 1) GRAFICA: barriles por estado x tamaño
+    # ==========================================================
+    query_resumen = (
+        db.session.query(
+            Barril.estado_actual.label("estado"),
+            Barril.capacidad_litros.label("capacidad"),
+            func.count(Barril.id).label("cantidad"),
+        )
+        .group_by(Barril.estado_actual, Barril.capacidad_litros)
+        .order_by(Barril.capacidad_litros.asc(), Barril.estado_actual.asc())
+    )
+
+    resumen_estado_tamano = query_resumen.all()
+
+    capacidades = sorted(
+        {float(r.capacidad) for r in resumen_estado_tamano if r.capacidad is not None}
+    )
+
+    grafica_labels = estados_orden
+    grafica_datasets = []
+
+    for capacidad in capacidades:
+        data = []
+        for estado_item in estados_orden:
+            cantidad = next(
+                (
+                    int(r.cantidad)
+                    for r in resumen_estado_tamano
+                    if float(r.capacidad) == capacidad and r.estado == estado_item
+                ),
+                0,
+            )
+            data.append(cantidad)
+
+        grafica_datasets.append({
+            "label": f"{capacidad:.0f} L" if capacidad == int(capacidad) else f"{capacidad} L",
+            "data": data,
+        })
+
+    # ==========================================================
+    # 2) SUBQUERY: última entrega por barril
+    # ==========================================================
+    subq_ultima_entrega = (
+        db.session.query(
+            MovimientoBarril.id_barril.label("id_barril"),
+            func.max(MovimientoBarril.fecha_hora).label("max_fecha"),
+        )
+        .filter(MovimientoBarril.tipo_movimiento == "ENTREGADO")
+        .group_by(MovimientoBarril.id_barril)
+        .subquery()
+    )
+
+    mov_entrega = aliased(MovimientoBarril)
+    bache_entrega = aliased(Bache)
+    receta_entrega = aliased(Receta)
+    cliente_entrega = aliased(Cliente)
+
+    query_entregados = (
+        db.session.query(
+            cliente_entrega.nombre.label("cliente"),
+            func.coalesce(receta_entrega.estilo, bache_entrega.nombre_cerveza, "SIN ESTILO").label("estilo"),
+            func.count(Barril.id).label("cantidad"),
+        )
+        .join(subq_ultima_entrega, subq_ultima_entrega.c.id_barril == Barril.id)
+        .join(
+            mov_entrega,
+            and_(
+                mov_entrega.id_barril == subq_ultima_entrega.c.id_barril,
+                mov_entrega.fecha_hora == subq_ultima_entrega.c.max_fecha,
+                mov_entrega.tipo_movimiento == "ENTREGADO",
+            ),
+        )
+        .outerjoin(cliente_entrega, cliente_entrega.id == mov_entrega.id_cliente)
+        .outerjoin(bache_entrega, bache_entrega.id == mov_entrega.id_bache)
+        .outerjoin(receta_entrega, receta_entrega.id == bache_entrega.id_receta)
+        .filter(Barril.estado_actual == "ENTREGADO")
+    )
+
+    if fecha_desde:
+        query_entregados = query_entregados.filter(func.date(mov_entrega.fecha_hora) >= fecha_desde)
+
+    if fecha_hasta:
+        query_entregados = query_entregados.filter(func.date(mov_entrega.fecha_hora) <= fecha_hasta)
+
+    if cliente_id:
+        query_entregados = query_entregados.filter(mov_entrega.id_cliente == cliente_id)
+
+    if estilo:
+        query_entregados = query_entregados.filter(
+            func.coalesce(receta_entrega.estilo, bache_entrega.nombre_cerveza) == estilo
+        )
+
+    entregados_por_cliente_estilo = (
+        query_entregados
+        .group_by(
+            cliente_entrega.nombre,
+            func.coalesce(receta_entrega.estilo, bache_entrega.nombre_cerveza, "SIN ESTILO"),
+        )
+        .order_by(cliente_entrega.nombre.asc(), func.count(Barril.id).desc())
+        .all()
+    )
+
+    # ==========================================================
+    # 3) SUBQUERY: último llenado por barril
+    # ==========================================================
+    subq_ultimo_llenado = (
+        db.session.query(
+            MovimientoBarril.id_barril.label("id_barril"),
+            func.max(MovimientoBarril.fecha_hora).label("max_fecha"),
+        )
+        .filter(MovimientoBarril.tipo_movimiento == "LLENO")
+        .group_by(MovimientoBarril.id_barril)
+        .subquery()
+    )
+
+    mov_llenado = aliased(MovimientoBarril)
+    bache_llenado = aliased(Bache)
+    receta_llenado = aliased(Receta)
+
+    query_llenos = (
+        db.session.query(
+            func.coalesce(receta_llenado.estilo, bache_llenado.nombre_cerveza, "SIN ESTILO").label("estilo"),
+            func.count(Barril.id).label("cantidad"),
+        )
+        .join(subq_ultimo_llenado, subq_ultimo_llenado.c.id_barril == Barril.id)
+        .join(
+            mov_llenado,
+            and_(
+                mov_llenado.id_barril == subq_ultimo_llenado.c.id_barril,
+                mov_llenado.fecha_hora == subq_ultimo_llenado.c.max_fecha,
+                mov_llenado.tipo_movimiento == "LLENO",
+            ),
+        )
+        .outerjoin(bache_llenado, bache_llenado.id == mov_llenado.id_bache)
+        .outerjoin(receta_llenado, receta_llenado.id == bache_llenado.id_receta)
+        .filter(Barril.estado_actual == "LLENO")
+    )
+
+    if fecha_desde:
+        query_llenos = query_llenos.filter(func.date(mov_llenado.fecha_hora) >= fecha_desde)
+
+    if fecha_hasta:
+        query_llenos = query_llenos.filter(func.date(mov_llenado.fecha_hora) <= fecha_hasta)
+
+    if estilo:
+        query_llenos = query_llenos.filter(
+            func.coalesce(receta_llenado.estilo, bache_llenado.nombre_cerveza) == estilo
+        )
+
+    llenos_por_estilo = (
+        query_llenos
+        .group_by(func.coalesce(receta_llenado.estilo, bache_llenado.nombre_cerveza, "SIN ESTILO"))
+        .order_by(func.count(Barril.id).desc())
+        .all()
+    )
+
+    # ==========================================================
+    # 4) TABLA EXTRA: rotación de barriles
+    #    Cantidad de entregas + última entrega + última devolución
+    # ==========================================================
+    subq_entregas_count = (
+        db.session.query(
+            MovimientoBarril.id_barril.label("id_barril"),
+            func.count(MovimientoBarril.id).label("total_entregas"),
+            func.max(MovimientoBarril.fecha_hora).label("ultima_entrega"),
+        )
+        .filter(MovimientoBarril.tipo_movimiento == "ENTREGADO")
+        .group_by(MovimientoBarril.id_barril)
+        .subquery()
+    )
+
+    subq_devolucion_max = (
+        db.session.query(
+            MovimientoBarril.id_barril.label("id_barril"),
+            func.max(MovimientoBarril.fecha_hora).label("ultima_devolucion"),
+        )
+        .filter(MovimientoBarril.tipo_movimiento == "DEVUELTO")
+        .group_by(MovimientoBarril.id_barril)
+        .subquery()
+    )
+
+    rotacion_barriles = (
+        db.session.query(
+            Barril.id.label("id"),
+            Barril.codigo_barril.label("codigo_barril"),
+            Barril.capacidad_litros.label("capacidad_litros"),
+            Barril.estado_actual.label("estado_actual"),
+            func.coalesce(subq_entregas_count.c.total_entregas, 0).label("total_entregas"),
+            subq_entregas_count.c.ultima_entrega.label("ultima_entrega"),
+            subq_devolucion_max.c.ultima_devolucion.label("ultima_devolucion"),
+        )
+        .outerjoin(subq_entregas_count, subq_entregas_count.c.id_barril == Barril.id)
+        .outerjoin(subq_devolucion_max, subq_devolucion_max.c.id_barril == Barril.id)
+        .order_by(func.coalesce(subq_entregas_count.c.total_entregas, 0).desc(), Barril.codigo_barril.asc())
+        .limit(25)
+        .all()
+    )
+
+    # ==========================================================
+    # 5) TABLA EXTRA: entregados pendientes de devolución
+    # ==========================================================
+    mov_entrega_det = aliased(MovimientoBarril)
+    bache_entrega_det = aliased(Bache)
+    receta_entrega_det = aliased(Receta)
+    cliente_entrega_det = aliased(Cliente)
+
+    query_pendientes = (
+        db.session.query(
+            Barril.id.label("id"),
+            Barril.codigo_barril.label("codigo_barril"),
+            Barril.capacidad_litros.label("capacidad_litros"),
+            mov_entrega_det.fecha_hora.label("fecha_entrega"),
+            cliente_entrega_det.nombre.label("cliente"),
+            bache_entrega_det.codigo_bache.label("codigo_bache"),
+            func.coalesce(receta_entrega_det.estilo, bache_entrega_det.nombre_cerveza, "SIN ESTILO").label("estilo"),
+        )
+        .join(subq_ultima_entrega, subq_ultima_entrega.c.id_barril == Barril.id)
+        .join(
+            mov_entrega_det,
+            and_(
+                mov_entrega_det.id_barril == subq_ultima_entrega.c.id_barril,
+                mov_entrega_det.fecha_hora == subq_ultima_entrega.c.max_fecha,
+                mov_entrega_det.tipo_movimiento == "ENTREGADO",
+            ),
+        )
+        .outerjoin(cliente_entrega_det, cliente_entrega_det.id == mov_entrega_det.id_cliente)
+        .outerjoin(bache_entrega_det, bache_entrega_det.id == mov_entrega_det.id_bache)
+        .outerjoin(receta_entrega_det, receta_entrega_det.id == bache_entrega_det.id_receta)
+        .filter(Barril.estado_actual == "ENTREGADO")
+    )
+
+    if fecha_desde:
+        query_pendientes = query_pendientes.filter(func.date(mov_entrega_det.fecha_hora) >= fecha_desde)
+
+    if fecha_hasta:
+        query_pendientes = query_pendientes.filter(func.date(mov_entrega_det.fecha_hora) <= fecha_hasta)
+
+    if cliente_id:
+        query_pendientes = query_pendientes.filter(mov_entrega_det.id_cliente == cliente_id)
+
+    if estilo:
+        query_pendientes = query_pendientes.filter(
+            func.coalesce(receta_entrega_det.estilo, bache_entrega_det.nombre_cerveza) == estilo
+        )
+
+    pendientes_devolucion_raw = (
+        query_pendientes
+        .order_by(mov_entrega_det.fecha_hora.asc())
+        .all()
+    )
+
+    hoy = date.today()
+    pendientes_devolucion = []
+    for row in pendientes_devolucion_raw:
+        dias_fuera = None
+        if row.fecha_entrega:
+            dias_fuera = (hoy - row.fecha_entrega.date()).days
+
+        pendientes_devolucion.append({
+            "id": row.id,
+            "codigo_barril": row.codigo_barril,
+            "capacidad_litros": row.capacidad_litros,
+            "fecha_entrega": row.fecha_entrega,
+            "cliente": row.cliente,
+            "codigo_bache": row.codigo_bache,
+            "estilo": row.estilo,
+            "dias_fuera": dias_fuera,
+        })
+
+    # ==========================================================
+    # 6) TARJETAS RESUMEN
+    # ==========================================================
+    total_barriles = Barril.query.count()
+    total_limpios = Barril.query.filter(Barril.estado_actual == "LIMPIO").count()
+    total_llenos = Barril.query.filter(Barril.estado_actual == "LLENO").count()
+    total_entregados = Barril.query.filter(Barril.estado_actual == "ENTREGADO").count()
+    total_sucios = Barril.query.filter(Barril.estado_actual == "SUCIO").count()
+
+    return render_template(
+        "barriles/consultas.html",
+        grafica_labels=grafica_labels,
+        grafica_datasets=grafica_datasets,
+        entregados_por_cliente_estilo=entregados_por_cliente_estilo,
+        llenos_por_estilo=llenos_por_estilo,
+        rotacion_barriles=rotacion_barriles,
+        pendientes_devolucion=pendientes_devolucion,
+        clientes=clientes,
+        estilos_disponibles=estilos_disponibles,
+        fecha_desde=fecha_desde_str,
+        fecha_hasta=fecha_hasta_str,
+        cliente_id=cliente_id,
+        estilo=estilo,
+        total_barriles=total_barriles,
+        total_limpios=total_limpios,
+        total_llenos=total_llenos,
+        total_entregados=total_entregados,
+        total_sucios=total_sucios,
+        estado_badge_map={
+            "LIMPIO": "success",
+            "LLENO": "primary",
+            "ENTREGADO": "warning text-dark",
+            "SUCIO": "danger",
+            "MANTENIMIENTO": "secondary",
+            "BAJA": "dark",
+        },
     )

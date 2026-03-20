@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+{% block title %}Consultas de barriles{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Consultas de barriles</h1>
+  <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Volver a lista</a>
+</div>
+
+<form method="get" class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Fecha desde</label>
+        <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Fecha hasta</label>
+        <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Cliente</label>
+        <select name="cliente_id" class="form-select">
+          <option value="">-- Todos --</option>
+          {% for c in clientes %}
+            <option value="{{ c.id }}" {% if cliente_id == c.id %}selected{% endif %}>
+              {{ c.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Estilo</label>
+        <select name="estilo" class="form-select">
+          <option value="">-- Todos --</option>
+          {% for e in estilos_disponibles %}
+            <option value="{{ e }}" {% if estilo == e %}selected{% endif %}>{{ e }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12">
+        <button class="btn btn-primary">Aplicar filtros</button>
+        <a href="{{ url_for('barriles.consultas') }}" class="btn btn-outline-secondary">Limpiar</a>
+      </div>
+    </div>
+  </div>
+</form>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Total barriles</div>
+        <div class="fs-3 fw-bold">{{ total_barriles }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Limpios</div>
+        <div class="fs-3 fw-bold text-success">{{ total_limpios }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Llenos</div>
+        <div class="fs-3 fw-bold text-primary">{{ total_llenos }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Entregados</div>
+        <div class="fs-3 fw-bold text-warning">{{ total_entregados }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Sucios</div>
+        <div class="fs-3 fw-bold text-danger">{{ total_sucios }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white">
+    <strong>Cantidad de barriles por estado y tamaño</strong>
+  </div>
+  <div class="card-body">
+    <canvas id="graficaBarrilesEstadoTamano" height="95"></canvas>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <strong>Barriles entregados por cliente y estilo</strong>
+    <span class="badge bg-dark">{{ entregados_por_cliente_estilo|length }} filas</span>
+  </div>
+  <div class="card-body">
+    {% if entregados_por_cliente_estilo %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Estilo</th>
+              <th>Cantidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in entregados_por_cliente_estilo %}
+            <tr>
+              <td>{{ row.cliente or "SIN CLIENTE" }}</td>
+              <td>{{ row.estilo or "SIN ESTILO" }}</td>
+              <td>{{ row.cantidad }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="mb-0 text-muted">No hay resultados para los filtros seleccionados.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <strong>Barriles llenos por estilo</strong>
+    <span class="badge bg-dark">{{ llenos_por_estilo|length }} filas</span>
+  </div>
+  <div class="card-body">
+    {% if llenos_por_estilo %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Estilo</th>
+              <th>Cantidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in llenos_por_estilo %}
+            <tr>
+              <td>{{ row.estilo or "SIN ESTILO" }}</td>
+              <td>{{ row.cantidad }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="mb-0 text-muted">No hay barriles actualmente en estado LLENO con esos filtros.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <strong>Rotación de barriles</strong>
+    <span class="badge bg-dark">{{ rotacion_barriles|length }} barriles</span>
+  </div>
+  <div class="card-body">
+    {% if rotacion_barriles %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Capacidad</th>
+              <th>Estado</th>
+              <th>Total entregas</th>
+              <th>Última entrega</th>
+              <th>Última devolución</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rotacion_barriles %}
+            <tr>
+              <td>{{ row.codigo_barril }}</td>
+              <td>{{ row.capacidad_litros }}</td>
+              <td>
+                <span class="badge bg-{{ estado_badge_map.get(row.estado_actual, 'secondary') }}">
+                  {{ row.estado_actual }}
+                </span>
+              </td>
+              <td>{{ row.total_entregas }}</td>
+              <td>{{ row.ultima_entrega.strftime('%Y-%m-%d %H:%M') if row.ultima_entrega else '-' }}</td>
+              <td>{{ row.ultima_devolucion.strftime('%Y-%m-%d %H:%M') if row.ultima_devolucion else '-' }}</td>
+              <td>
+                <a href="{{ url_for('barriles.detalle', barril_id=row.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="mb-0 text-muted">No hay datos de rotación.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center">
+    <strong>Barriles entregados pendientes de devolución</strong>
+    <span class="badge bg-danger">{{ pendientes_devolucion|length }} pendientes</span>
+  </div>
+  <div class="card-body">
+    {% if pendientes_devolucion %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Capacidad</th>
+              <th>Cliente</th>
+              <th>Estilo</th>
+              <th>Bache</th>
+              <th>Fecha entrega</th>
+              <th>Días fuera</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in pendientes_devolucion %}
+            <tr>
+              <td>{{ row.codigo_barril }}</td>
+              <td>{{ row.capacidad_litros }}</td>
+              <td>{{ row.cliente or "SIN CLIENTE" }}</td>
+              <td>{{ row.estilo or "SIN ESTILO" }}</td>
+              <td>{{ row.codigo_bache or "-" }}</td>
+              <td>{{ row.fecha_entrega.strftime('%Y-%m-%d %H:%M') if row.fecha_entrega else '-' }}</td>
+              <td>
+                {% if row.dias_fuera is not none %}
+                  <span class="badge {% if row.dias_fuera >= 30 %}bg-danger{% elif row.dias_fuera >= 15 %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                    {{ row.dias_fuera }} días
+                  </span>
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge bg-warning text-dark">ENTREGADO</span>
+              </td>
+              <td>
+                <a href="{{ url_for('barriles.detalle', barril_id=row.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="mb-0 text-muted">No hay barriles pendientes de devolución con esos filtros.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = {{ grafica_labels | tojson }};
+  const datasets = {{ grafica_datasets | tojson }};
+
+  const ctx = document.getElementById('graficaBarrilesEstadoTamano').getContext('2d');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: datasets.map((ds) => ({
+        label: ds.label,
+        data: ds.data,
+        borderWidth: 1
+      }))
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}
