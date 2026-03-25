@@ -194,7 +194,7 @@ def lista():
     if q:
         query = query.filter(Bache.codigo_bache.ilike(f"%{q}%"))
 
-    pagination = query.order_by(Bache.fecha_coccion.desc()).paginate(
+    pagination = query.order_by(Bache.codigo_bache.desc()).paginate(
         page=page, per_page=10, error_out=False
     )
 
