@@ -53,48 +53,7 @@
 
       <hr class="my-4">
 
-      <h2 class="h5 mb-3">1. Color</h2>
-
-      <div class="mb-3">
-        <label class="form-label">Calificación de color (1 a 5)</label>
-        <select name="puntaje_color" class="form-select" required>
-          <option value="">Seleccione</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Barra de color</label>
-        <input type="range"
-               class="form-range"
-               min="0"
-               max="100"
-               step="1"
-               value="20"
-               id="color_valor"
-               name="color_valor"
-               oninput="actualizarColorLabel(this.value)"
-               required>
-        <div class="d-flex justify-content-between small text-muted">
-          <span>Casi blanco</span>
-          <span>Amarillo</span>
-          <span>Rojo</span>
-          <span>Brown</span>
-          <span>Negro</span>
-        </div>
-        <div class="mt-2">
-          <strong>Selección actual:</strong> <span id="color_label">Amarillo</span>
-        </div>
-        <div class="mt-2" style="height:18px; border-radius:8px; background: linear-gradient(to right, #f8f8f2, #f5d76e, #c0392b, #6e3b1f, #111111);"></div>
-      </div>
-
-      <hr class="my-4">
-
-      <h2 class="h5 mb-3">2. Carbonatación y espuma</h2>
+      <h2 class="h5 mb-3">1. Carbonatación y espuma</h2>
 
       <div class="mb-3">
         <label class="form-label">Calificación de carbonatación y espuma (1 a 5)</label>
@@ -138,6 +97,32 @@
 
       <hr class="my-4">
 
+      <h2 class="h5 mb-3">2. Aroma</h2>
+
+      <div class="mb-3">
+        <label class="form-label">Calificación de aroma (1 a 5)</label>
+        <select name="puntaje_aroma" class="form-select" required>
+          <option value="">Seleccione</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label d-block">Características de aroma</label>
+        <div class="d-flex flex-wrap gap-2">
+          {% for a in ['citrico','floral','frutal','terral','resinoso','cereal','galleta','nueces','mantequilla','medicinal','cebolla','humedo'] %}
+            <input type="checkbox" class="btn-check" name="aromas" id="aroma_{{ a }}" value="{{ a }}">
+            <label class="btn btn-outline-secondary btn-sm" for="aroma_{{ a }}">{{ a.replace('_', ' ')|title }}</label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <hr class="my-4">
+
       <h2 class="h5 mb-3">3. Sabor</h2>
 
       <div class="mb-3">
@@ -169,7 +154,7 @@
       <div class="mb-3">
         <label class="form-label d-block">Características de sabor</label>
         <div class="d-flex flex-wrap gap-2">
-          {% for s in ['dulce','citrico','acido','caramelo','chocolate_cafe','pan','frutal'] %}
+          {% for s in ['dulce','citrico','acido','caramelo','chocolate','cafe','pan','frutal','mantequilla','herbal'] %}
             <input type="checkbox" class="btn-check" name="sabores" id="sabor_{{ s }}" value="{{ s }}">
             <label class="btn btn-outline-secondary btn-sm" for="sabor_{{ s }}">{{ s.replace('_', ' ')|title }}</label>
           {% endfor %}
@@ -192,11 +177,11 @@
 
       <hr class="my-4">
 
-      <h2 class="h5 mb-3">4. Aroma</h2>
+      <h2 class="h5 mb-3">4. Color</h2>
 
       <div class="mb-3">
-        <label class="form-label">Calificación de aroma (1 a 5)</label>
-        <select name="puntaje_aroma" class="form-select" required>
+        <label class="form-label">Calificación de color (1 a 5)</label>
+        <select name="puntaje_color" class="form-select" required>
           <option value="">Seleccione</option>
           <option value="1">1</option>
           <option value="2">2</option>
@@ -207,13 +192,28 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label d-block">Características de aroma</label>
-        <div class="d-flex flex-wrap gap-2">
-          {% for a in ['citrico','floral','frutal','terral','resinoso','acido','galleta','nueces','mantequilla','medicinal','cebolla'] %}
-            <input type="checkbox" class="btn-check" name="aromas" id="aroma_{{ a }}" value="{{ a }}">
-            <label class="btn btn-outline-secondary btn-sm" for="aroma_{{ a }}">{{ a.replace('_', ' ')|title }}</label>
-          {% endfor %}
+        <label class="form-label">Barra de color</label>
+        <input type="range"
+               class="form-range"
+               min="0"
+               max="100"
+               step="1"
+               value="20"
+               id="color_valor"
+               name="color_valor"
+               oninput="actualizarColorLabel(this.value)"
+               required>
+        <div class="d-flex justify-content-between small text-muted">
+          <span>Casi blanco</span>
+          <span>Amarillo</span>
+          <span>Rojo</span>
+          <span>Brown</span>
+          <span>Negro</span>
         </div>
+        <div class="mt-2">
+          <strong>Selección actual:</strong> <span id="color_label">Amarillo</span>
+        </div>
+        <div class="mt-2" style="height:18px; border-radius:8px; background: linear-gradient(to right, #f8f8f2, #f5d76e, #c0392b, #6e3b1f, #111111);"></div>
       </div>
 
       <hr class="my-4">
