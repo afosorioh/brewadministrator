@@ -139,95 +139,98 @@
 
       {% if filas %}
         {% for m, lote, mp in filas %}
-          <tr class="fila-mp mp-row">
-            <td>
-              <select class="form-select form-select-sm" name="lote_id">
-                <option value="">-- Seleccionar lote --</option>
-                {% for l in lotes %}
-                <option value="{{ l.id }}"
-                        data-mp-tipo="{{ l.materia_prima.tipo }}"
-                        data-unidad="{{ l.materia_prima.unidad_base }}"
-                        data-disponible="{{ l.cantidad_disponible }}"
-                  {% if l.id == lote.id %}selected{% endif %}>
-                  {{ l.materia_prima.nombre }} - lote {{ l.codigo_lote }}
-                  ({{ l.cantidad_disponible }} {{ l.materia_prima.unidad_base }})
-                </option>
-                {% endfor %}
-              </select>
-              <div class="form-text disponible-text"></div>
+        <tr class="fila-mp mp-row">
+          <td>
+            <select class="form-select form-select-sm" name="lote_id">
+              <option value="">-- Seleccionar lote --</option>
+              {% for l in lotes %}
+              <option value="{{ l.id }}"
+                      data-mp-tipo="{{ l.materia_prima.tipo }}"
+                      data-unidad="{{ l.materia_prima.unidad_base }}"
+                      data-disponible="{{ l.cantidad_disponible }}"
+                      {% if lote is defined and l.id == lote.id %}selected{% endif %}>
+                {{ l.materia_prima.nombre }} - lote {{ l.codigo_lote }}
+                ({{ l.cantidad_disponible }} {{ l.materia_prima.unidad_base }})
+              </option>
+              {% endfor %}
+            </select>
+            <div class="form-text disponible-text"></div>
 
-              <!-- Extra levadura -->
+            {% set uso = None %}
+            {% if usos_levadura_por_lote is defined and lote is defined %}
               {% set uso = usos_levadura_por_lote.get(lote.id) %}
-              <div class="levadura-extra mt-2 {% if mp.tipo != 'LEVADURA' %}d-none{% endif %}">
-                <div class="d-flex flex-wrap gap-2 align-items-end">
-                  <div style="min-width: 140px;">
-                    <label class="form-label mb-0 small">Uso levadura</label>
-                    <select class="form-select form-select-sm" name="lev_tipo_uso">
-                      <option value="NUEVA" {% if uso and uso.tipo_uso == "NUEVA" %}selected{% endif %}>NUEVA</option>
-                      <option value="REUTILIZADA" {% if uso and uso.tipo_uso == "REUTILIZADA" %}selected{% endif %}>REUTILIZADA</option>
-                    </select>
-                  </div>
+            {% endif %}
+            <div class="levadura-extra mt-2 {% if mp is not defined or mp.tipo != 'LEVADURA' %}d-none{% endif %}">
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <label class="form-label mb-0 small">Uso levadura</label>
+                  <select class="form-select form-select-sm" name="lev_tipo_uso">
+                    <option value="NUEVA" {% if uso and uso.tipo_uso == "NUEVA" %}selected{% endif %}>NUEVA</option>
+                    <option value="REUTILIZADA" {% if uso and uso.tipo_uso == "REUTILIZADA" %}selected{% endif %}>REUTILIZADA</option>
+                  </select>
+                </div>
 
-                  <div class="lev-gen {% if not uso or uso.tipo_uso != 'REUTILIZADA' %}d-none{% endif %}" style="min-width: 120px;">
-                    <label class="form-label mb-0 small">Generación</label>
-                    <select class="form-select form-select-sm" name="lev_generacion">
-                      {% for g in range(1,9) %}
-                        <option value="{{ g }}" {% if uso and uso.generacion == g %}selected{% endif %}>{{ g }}GEN</option>
-                      {% endfor %}
-                    </select>
-                  </div>
+                <div class="col-md-4 lev-gen {% if not uso or uso.tipo_uso != 'REUTILIZADA' %}d-none{% endif %}">
+                  <label class="form-label mb-0 small">Generación</label>
+                  <select class="form-select form-select-sm" name="lev_generacion">
+                    {% for g in range(1,9) %}
+                      <option value="{{ g }}" {% if uso and uso.generacion == g %}selected{% endif %}>{{ g }}GEN</option>
+                    {% endfor %}
+                  </select>
+                </div>
 
-                  <div style="min-width: 220px; flex: 1 1 220px;">
-                    <label class="form-label mb-0 small">Comentarios</label>
-                    <input type="text" class="form-control form-control-sm" name="lev_comentarios"
-                          value="{{ uso.comentarios if uso else '' }}" placeholder="Opcional">
-                  </div>
+                <div class="col-md-4">
+                  <label class="form-label mb-0 small">Comentarios</label>
+                  <input type="text" class="form-control form-control-sm" name="lev_comentarios"
+                        value="{{ uso.comentarios if uso else '' }}" placeholder="Opcional">
                 </div>
               </div>
-            </td>
+            </div>
+          </td>
 
-            <td>
-              <input type="number" step="0.001" class="form-control form-control-sm"
-                     name="cantidad" value="{{ m.cantidad_usada }}">
-            </td>
-            <td>
-              <input type="text"
-                    class="form-control form-control-sm unidad-visible"
-                    value=""
-                    readonly>
-              <input type="hidden"
-                    name="unidad"
-                    class="unidad-hidden"
-                    value="">
-            </td>
-            <td>
-              <select class="form-select form-select-sm" name="etapa_proceso">
-                {% for val in ["MACERACION","HERVOR","WHIRLPOOL","FERMENTACION","MADURACION","OTRA"] %}
-                  <option value="{{ val }}">{{ val }}</option>
-                {% endfor %}
-              </select>
-            </td>
-            <td>
-              <select class="form-select form-select-sm" name="tipo_aplicacion">
-                {% for val in ["GENERAL","AMARGOR","SABOR","AROMA","DRY_HOP","NUTRIENTE","OTRA"] %}
-                  <option value="{{ val }}">{{ val }}</option>
-                {% endfor %}
-              </select>
-            </td>
-            <td>
-              <input type="number" class="form-control form-control-sm"
-                     name="tiempo_hervor"
-                     value="{{ m.tiempo_minutos_desde_inicio_hervor if m.tiempo_minutos_desde_inicio_hervor is not none else '' }}">
-            </td>
-            <td>
-              <input type="number" class="form-control form-control-sm"
-                     name="dias_fermentacion"
-                     value="{{ m.dias_desde_inicio_fermentacion if m.dias_desde_inicio_fermentacion is not none else '' }}">
-            </td>
-            <td>
-              <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-fila">&times;</button>
-            </td>
-          </tr>
+          <td>
+            <input type="number" step="0.001" class="form-control form-control-sm" name="cantidad">
+          </td>
+
+          <td>
+            <input type="text"
+                  class="form-control form-control-sm unidad-visible"
+                  value=""
+                  readonly>
+            <input type="hidden"
+                  name="unidad"
+                  class="unidad-hidden"
+                  value="">
+          </td>
+
+          <td>
+            <select class="form-select form-select-sm" name="etapa_proceso">
+              {% for val in ["MACERACION","HERVOR","WHIRLPOOL","FERMENTACION","MADURACION","OTRA"] %}
+                <option value="{{ val }}">{{ val }}</option>
+              {% endfor %}
+            </select>
+          </td>
+
+          <td>
+            <select class="form-select form-select-sm" name="tipo_aplicacion">
+              {% for val in ["GENERAL","AMARGOR","SABOR","AROMA","DRY_HOP","NUTRIENTE","OTRA"] %}
+                <option value="{{ val }}">{{ val }}</option>
+              {% endfor %}
+            </select>
+          </td>
+
+          <td>
+            <input type="number" class="form-control form-control-sm" name="tiempo_hervor">
+          </td>
+
+          <td>
+            <input type="number" class="form-control form-control-sm" name="dias_fermentacion">
+          </td>
+
+          <td>
+            <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-fila">&times;</button>
+          </td>
+        </tr>
         {% endfor %}
       {% else %}
         <!-- Fila vacía inicial -->
