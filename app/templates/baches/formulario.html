@@ -297,12 +297,15 @@
                   class="unidad-hidden"
                   value="">
           </td>
+
+          <td>
             <select class="form-select form-select-sm" name="etapa_proceso">
               {% for val in ["MACERACION","HERVOR","WHIRLPOOL","FERMENTACION","MADURACION","OTRA"] %}
                 <option value="{{ val }}">{{ val }}</option>
               {% endfor %}
             </select>
           </td>
+
           <td>
             <select class="form-select form-select-sm" name="tipo_aplicacion">
               {% for val in ["GENERAL","AMARGOR","SABOR","AROMA","DRY_HOP","NUTRIENTE","OTRA"] %}
