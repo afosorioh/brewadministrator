@@ -32,25 +32,51 @@
 
   <div class="row mb-3">
     <div class="col-md-4">
-      <label class="form-label">Cantidad inicial ({{ mp.unidad_base }})</label>
-      <input type="number" step="0.001" class="form-control" name="cantidad_inicial"
-             value="{{ lote.cantidad_inicial if lote and lote.cantidad_inicial is not none else '' }}" required>
-    </div>
-    <div class="col-md-4">
-      <label class="form-label">Cantidad disponible ({{ mp.unidad_base }})</label>
-      <input type="number" step="0.001" class="form-control" name="cantidad_disponible"
-             value="{{ lote.cantidad_disponible if lote and lote.cantidad_disponible is not none else '' }}">
+      <label class="form-label">
+        {% if accion == "crear" %}
+          Cantidad ({{ mp.unidad_base }})
+        {% else %}
+          Agregar cantidad ({{ mp.unidad_base }})
+        {% endif %}
+      </label>
+      <input type="number" step="0.001" min="0"
+            class="form-control"
+            name="cantidad_inicial"
+            value=""
+            {% if accion == "crear" %}required{% endif %}>
       <div class="form-text">
-        Si se deja vacío al crear, se usa el mismo valor que la cantidad inicial.
+        {% if accion == "crear" %}
+          Cantidad inicial con la que se crea el lote.
+        {% else %}
+          La cantidad ingresada aquí se suma al total del lote y a la cantidad disponible.
+        {% endif %}
       </div>
     </div>
+
+    <div class="col-md-4">
+      <label class="form-label">Cantidad disponible actual ({{ mp.unidad_base }})</label>
+      <input type="number" step="0.001" class="form-control"
+            value="{{ lote.cantidad_disponible if lote and lote.cantidad_disponible is not none else '' }}"
+            readonly>
+      <div class="form-text">
+        Este valor se descuenta automáticamente cuando el lote se usa en un bache.
+      </div>
+    </div>
+
     <div class="col-md-4">
       <label class="form-label">Costo unitario</label>
       <input type="number" step="0.01" class="form-control" name="costo_unitario"
-             value="{{ lote.costo_unitario if lote and lote.costo_unitario is not none else '' }}">
+            value="{{ lote.costo_unitario if lote and lote.costo_unitario is not none else '' }}">
     </div>
   </div>
 
+  {% if accion == "editar" and lote %}
+  <div class="alert alert-light border">
+    <strong>Total histórico del lote:</strong> {{ lote.cantidad_inicial }} {{ mp.unidad_base }}<br>
+    <strong>Disponible actual:</strong> {{ lote.cantidad_disponible }} {{ mp.unidad_base }}
+  </div>
+  {% endif %}
+  
   <div class="mb-3">
     <label class="form-label">Fecha vencimiento</label>
     <input type="date" class="form-control" name="fecha_vencimiento"

@@ -183,6 +183,123 @@ def _usos_levadura_por_lote(bache_id: int) -> dict:
     )
     return {u.id_lote: u for u in usos}
 
+def _parse_materias_primas_form():
+    lote_ids = request.form.getlist("lote_id")
+    cantidades = request.form.getlist("cantidad")
+    etapas = request.form.getlist("etapa_proceso")
+    tipos_aplic = request.form.getlist("tipo_aplicacion")
+    tiempos_hervor = request.form.getlist("tiempo_hervor")
+    dias_ferm = request.form.getlist("dias_fermentacion")
+
+    filas = []
+
+    # Prefetch lotes para evitar N queries
+    lotes_int = []
+    for lote_id in lote_ids:
+        if lote_id:
+            try:
+                lotes_int.append(int(lote_id))
+            except (TypeError, ValueError):
+                pass
+
+    lotes_map = {}
+    if lotes_int:
+        lotes = (
+            LoteMateriaPrima.query
+            .filter(LoteMateriaPrima.id.in_(lotes_int))
+            .all()
+        )
+        lotes_map = {l.id: l for l in lotes}
+
+    for i in range(len(lote_ids)):
+        lote_id = lote_ids[i]
+        cant = cantidades[i] if i < len(cantidades) else ""
+        etapa_proc = etapas[i] if i < len(etapas) else "OTRA"
+        tipo_ap = tipos_aplic[i] if i < len(tipos_aplic) else "GENERAL"
+        t_hervor = tiempos_hervor[i] if i < len(tiempos_hervor) else ""
+        d_ferm = dias_ferm[i] if i < len(dias_ferm) else ""
+
+        if not lote_id or not cant:
+            continue
+
+        try:
+            lote_id_int = int(lote_id)
+            cantidad_float = float(cant)
+        except (TypeError, ValueError):
+            return None, "Hay materias primas con lote o cantidad inválida."
+
+        if cantidad_float <= 0:
+            return None, "La cantidad usada de cada lote debe ser mayor que cero."
+
+        lote = lotes_map.get(lote_id_int)
+        if not lote:
+            return None, f"No existe el lote con ID {lote_id_int}."
+
+        if not lote.materia_prima or not lote.materia_prima.unidad_base:
+            return None, f"El lote {lote.codigo_lote} no tiene unidad base definida."
+
+        unidad_fija = lote.materia_prima.unidad_base
+
+        filas.append({
+            "id_lote": lote_id_int,
+            "cantidad": cantidad_float,
+            "unidad": unidad_fija,  # SIEMPRE la unidad base del lote/mp
+            "etapa_proceso": etapa_proc or "OTRA",
+            "tipo_aplicacion": tipo_ap or "GENERAL",
+            "tiempo_hervor": int(t_hervor) if t_hervor else None,
+            "dias_fermentacion": int(d_ferm) if d_ferm else None,
+        })
+
+    return filas, None
+
+
+def _validar_y_descontar_lotes(filas_mp):
+    lotes_ids = [f["id_lote"] for f in filas_mp]
+    lotes = LoteMateriaPrima.query.filter(LoteMateriaPrima.id.in_(lotes_ids)).all()
+    lotes_map = {l.id: l for l in lotes}
+
+    acumulado_por_lote = {}
+    for fila in filas_mp:
+        lote = lotes_map.get(fila["id_lote"])
+        if not lote:
+            return False, f"No existe el lote con ID {fila['id_lote']}."
+
+        unidad_base = lote.materia_prima.unidad_base if lote.materia_prima else None
+        if fila["unidad"] != unidad_base:
+            return (
+                False,
+                f"Unidad inválida para el lote {lote.codigo_lote}. "
+                f"Debe usarse {unidad_base}."
+            )
+
+        acumulado_por_lote.setdefault(fila["id_lote"], 0.0)
+        acumulado_por_lote[fila["id_lote"]] += fila["cantidad"]
+
+    for lote_id, total_usado in acumulado_por_lote.items():
+        lote = lotes_map.get(lote_id)
+        disponible = float(lote.cantidad_disponible)
+
+        if total_usado > disponible:
+            return (
+                False,
+                f"El lote {lote.codigo_lote} no tiene suficiente cantidad disponible. "
+                f"Disponible: {disponible}, solicitada: {total_usado}."
+            )
+
+    for lote_id, total_usado in acumulado_por_lote.items():
+        lote = lotes_map[lote_id]
+        lote.cantidad_disponible = float(lote.cantidad_disponible) - total_usado
+
+    return True, None
+
+
+def _reponer_lotes_de_bache(bache_id):
+    materias_previas = BacheMateriaPrima.query.filter_by(id_bache=bache_id).all()
+    for mp in materias_previas:
+        lote = LoteMateriaPrima.query.get(mp.id_lote)
+        if lote:
+            lote.cantidad_disponible = float(lote.cantidad_disponible) + float(mp.cantidad_usada)
+
 @baches_bp.route("/")
 @login_required
 def lista():
@@ -266,35 +383,28 @@ def crear():
         db.session.flush()  # para tener bache.id
 
         # ---------- Materias primas asociadas ----------
-        lote_ids = request.form.getlist("lote_id")
-        cantidades = request.form.getlist("cantidad")
-        unidades_form = request.form.getlist("unidad")
-        etapas = request.form.getlist("etapa_proceso")
-        tipos_aplic = request.form.getlist("tipo_aplicacion")
-        tiempos_hervor = request.form.getlist("tiempo_hervor")
-        dias_ferm = request.form.getlist("dias_fermentacion")
+        filas_mp, error_mp = _parse_materias_primas_form()
+        if error_mp:
+            db.session.rollback()
+            flash(error_mp, "danger")
+            return redirect(url_for("baches.crear"))
 
-        for i in range(len(lote_ids)):
-            lote_id = lote_ids[i]
-            cant = cantidades[i] if i < len(cantidades) else ""
-            unidad = unidades_form[i] if i < len(unidades_form) else ""
-            etapa_proc = etapas[i] if i < len(etapas) else "OTRA"
-            tipo_ap = tipos_aplic[i] if i < len(tipos_aplic) else "GENERAL"
-            t_hervor = tiempos_hervor[i] if i < len(tiempos_hervor) else ""
-            d_ferm = dias_ferm[i] if i < len(dias_ferm) else ""
+        ok_stock, error_stock = _validar_y_descontar_lotes(filas_mp)
+        if not ok_stock:
+            db.session.rollback()
+            flash(error_stock, "danger")
+            return redirect(url_for("baches.crear"))
 
-            if not lote_id or not cant:
-                continue
-
+        for fila in filas_mp:
             bmp = BacheMateriaPrima(
                 id_bache=bache.id,
-                id_lote=int(lote_id),
-                cantidad_usada=float(cant),
-                unidad=unidad or "KG",
-                etapa_proceso=etapa_proc or "OTRA",
-                tipo_aplicacion=tipo_ap or "GENERAL",
-                tiempo_minutos_desde_inicio_hervor=int(t_hervor) if t_hervor else None,
-                dias_desde_inicio_fermentacion=int(d_ferm) if d_ferm else None,
+                id_lote=fila["id_lote"],
+                cantidad_usada=fila["cantidad"],
+                unidad=fila["unidad"],
+                etapa_proceso=fila["etapa_proceso"],
+                tipo_aplicacion=fila["tipo_aplicacion"],
+                tiempo_minutos_desde_inicio_hervor=fila["tiempo_hervor"],
+                dias_desde_inicio_fermentacion=fila["dias_fermentacion"],
             )
             db.session.add(bmp)
 
@@ -302,6 +412,7 @@ def crear():
         lev_tipo_uso = request.form.getlist("lev_tipo_uso")
         lev_generacion = request.form.getlist("lev_generacion")
         lev_comentarios = request.form.getlist("lev_comentarios")
+        lote_ids = [str(f["id_lote"]) for f in filas_mp]
 
         _guardar_usos_levadura(bache, lote_ids, lev_tipo_uso, lev_generacion, lev_comentarios)
 
@@ -384,39 +495,35 @@ def editar(bache_id):
             flash("Código, nombre de cerveza y fecha de cocción son obligatorios", "danger")
             return redirect(url_for("baches.editar", bache_id=bache.id))
 
+        # Reponer stock de materias primas previamente asociadas a este bache
+        _reponer_lotes_de_bache(bache.id)
+
         # Limpiar MP y usos de levadura actuales y reinsertar desde el formulario
         BacheMateriaPrima.query.filter_by(id_bache=bache.id).delete()
         BacheLevaduraUso.query.filter_by(id_bache=bache.id).delete()
 
-        lote_ids = request.form.getlist("lote_id")
-        cantidades = request.form.getlist("cantidad")
-        unidades_form = request.form.getlist("unidad")
-        etapas = request.form.getlist("etapa_proceso")
-        tipos_aplic = request.form.getlist("tipo_aplicacion")
-        tiempos_hervor = request.form.getlist("tiempo_hervor")
-        dias_ferm = request.form.getlist("dias_fermentacion")
+        filas_mp, error_mp = _parse_materias_primas_form()
+        if error_mp:
+            db.session.rollback()
+            flash(error_mp, "danger")
+            return redirect(url_for("baches.editar", bache_id=bache.id))
 
-        for i in range(len(lote_ids)):
-            lote_id = lote_ids[i]
-            cant = cantidades[i] if i < len(cantidades) else ""
-            unidad = unidades_form[i] if i < len(unidades_form) else ""
-            etapa_proc = etapas[i] if i < len(etapas) else "OTRA"
-            tipo_ap = tipos_aplic[i] if i < len(tipos_aplic) else "GENERAL"
-            t_hervor = tiempos_hervor[i] if i < len(tiempos_hervor) else ""
-            d_ferm = dias_ferm[i] if i < len(dias_ferm) else ""
+        ok_stock, error_stock = _validar_y_descontar_lotes(filas_mp)
+        if not ok_stock:
+            db.session.rollback()
+            flash(error_stock, "danger")
+            return redirect(url_for("baches.editar", bache_id=bache.id))
 
-            if not lote_id or not cant:
-                continue
-
+        for fila in filas_mp:
             bmp = BacheMateriaPrima(
                 id_bache=bache.id,
-                id_lote=int(lote_id),
-                cantidad_usada=float(cant),
-                unidad=unidad or "KG",
-                etapa_proceso=etapa_proc or "OTRA",
-                tipo_aplicacion=tipo_ap or "GENERAL",
-                tiempo_minutos_desde_inicio_hervor=int(t_hervor) if t_hervor else None,
-                dias_desde_inicio_fermentacion=int(d_ferm) if d_ferm else None,
+                id_lote=fila["id_lote"],
+                cantidad_usada=fila["cantidad"],
+                unidad=fila["unidad"],
+                etapa_proceso=fila["etapa_proceso"],
+                tipo_aplicacion=fila["tipo_aplicacion"],
+                tiempo_minutos_desde_inicio_hervor=fila["tiempo_hervor"],
+                dias_desde_inicio_fermentacion=fila["dias_fermentacion"],
             )
             db.session.add(bmp)
 
@@ -424,6 +531,8 @@ def editar(bache_id):
         lev_tipo_uso = request.form.getlist("lev_tipo_uso")
         lev_generacion = request.form.getlist("lev_generacion")
         lev_comentarios = request.form.getlist("lev_comentarios")
+        lote_ids = [str(f["id_lote"]) for f in filas_mp]
+
         _guardar_usos_levadura(bache, lote_ids, lev_tipo_uso, lev_generacion, lev_comentarios)
 
         # ============================

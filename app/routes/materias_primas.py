@@ -340,77 +340,101 @@ def eliminar(mp_id):
     return redirect(url_for("materias_primas.lista"))
 
 @materias_primas_bp.route("/<int:mp_id>/lotes/nuevo", methods=["GET", "POST"])
+@login_required
+@role_required("ADMIN", "GESTOR")
 def crear_lote(mp_id):
     mp = MateriaPrima.query.get_or_404(mp_id)
 
     if request.method == "POST":
-        codigo_lote = request.form.get("codigo_lote")
+        codigo_lote = (request.form.get("codigo_lote") or "").strip()
         fecha_compra = request.form.get("fecha_compra") or None
         proveedor = request.form.get("proveedor") or None
-        cantidad_inicial = request.form.get("cantidad_inicial") or None
-        cantidad_disponible = request.form.get("cantidad_disponible") or None
-        costo_unitario = request.form.get("costo_unitario") or None
+        cantidad = _to_float(request.form.get("cantidad_inicial"))
+        costo_unitario = _to_float(request.form.get("costo_unitario"))
         fecha_vencimiento = request.form.get("fecha_vencimiento") or None
         notas = request.form.get("notas") or None
 
-        if not codigo_lote or not cantidad_inicial:
-            flash("Código de lote y cantidad inicial son obligatorios", "danger")
+        if not codigo_lote or cantidad is None:
+            flash("Código de lote y cantidad son obligatorios.", "danger")
             return redirect(url_for("materias_primas.crear_lote", mp_id=mp.id))
 
-        if not cantidad_disponible:
-            cantidad_disponible = cantidad_inicial
+        if cantidad <= 0:
+            flash("La cantidad debe ser mayor que cero.", "danger")
+            return redirect(url_for("materias_primas.crear_lote", mp_id=mp.id))
 
         lote = LoteMateriaPrima(
             id_materia_prima=mp.id,
             codigo_lote=codigo_lote,
             fecha_compra=fecha_compra,
             proveedor=proveedor,
-            cantidad_inicial=float(cantidad_inicial),
-            cantidad_disponible=float(cantidad_disponible),
-            costo_unitario=float(costo_unitario) if costo_unitario else None,
+            cantidad_inicial=cantidad,
+            cantidad_disponible=cantidad,
+            costo_unitario=costo_unitario,
             fecha_vencimiento=fecha_vencimiento,
             notas=notas,
         )
         db.session.add(lote)
         db.session.commit()
-        flash("Lote creado correctamente", "success")
+
+        flash("Lote creado correctamente.", "success")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
-    # GET
-    return render_template("materias_primas/lote_formulario.html", mp=mp, lote=None, accion="crear")
+    return render_template(
+        "materias_primas/lote_formulario.html",
+        mp=mp,
+        lote=None,
+        accion="crear",
+    )
 
 @materias_primas_bp.route("/<int:mp_id>/lotes/<int:lote_id>/editar", methods=["GET", "POST"])
+@login_required
+@role_required("ADMIN", "GESTOR")
 def editar_lote(mp_id, lote_id):
     mp = MateriaPrima.query.get_or_404(mp_id)
     lote = LoteMateriaPrima.query.get_or_404(lote_id)
 
     if lote.id_materia_prima != mp.id:
-        flash("El lote no pertenece a esta materia prima", "danger")
+        flash("El lote no pertenece a esta materia prima.", "danger")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
     if request.method == "POST":
-        lote.codigo_lote = request.form.get("codigo_lote")
-        lote.fecha_compra = request.form.get("fecha_compra") or None
-        lote.proveedor = request.form.get("proveedor") or None
-        cantidad_inicial = request.form.get("cantidad_inicial") or None
-        cantidad_disponible = request.form.get("cantidad_disponible") or None
-        costo_unitario = request.form.get("costo_unitario") or None
-        lote.fecha_vencimiento = request.form.get("fecha_vencimiento") or None
-        lote.notas = request.form.get("notas") or None
+        codigo_lote = (request.form.get("codigo_lote") or "").strip()
+        fecha_compra = request.form.get("fecha_compra") or None
+        proveedor = request.form.get("proveedor") or None
+        cantidad_adicional = _to_float(request.form.get("cantidad_inicial"), 0.0)
+        costo_unitario = _to_float(request.form.get("costo_unitario"))
+        fecha_vencimiento = request.form.get("fecha_vencimiento") or None
+        notas = request.form.get("notas") or None
 
-        if not lote.codigo_lote or not cantidad_inicial:
-            flash("Código de lote y cantidad inicial son obligatorios", "danger")
+        if not codigo_lote:
+            flash("El código de lote es obligatorio.", "danger")
             return redirect(url_for("materias_primas.editar_lote", mp_id=mp.id, lote_id=lote.id))
 
-        lote.cantidad_inicial = float(cantidad_inicial)
-        lote.cantidad_disponible = float(cantidad_disponible) if cantidad_disponible else lote.cantidad_inicial
-        lote.costo_unitario = float(costo_unitario) if costo_unitario else None
+        if cantidad_adicional < 0:
+            flash("La cantidad a agregar no puede ser negativa.", "danger")
+            return redirect(url_for("materias_primas.editar_lote", mp_id=mp.id, lote_id=lote.id))
+
+        lote.codigo_lote = codigo_lote
+        lote.fecha_compra = fecha_compra
+        lote.proveedor = proveedor
+        lote.fecha_vencimiento = fecha_vencimiento
+        lote.notas = notas
+        lote.costo_unitario = costo_unitario
+
+        if cantidad_adicional > 0:
+            lote.cantidad_inicial = float(lote.cantidad_inicial) + cantidad_adicional
+            lote.cantidad_disponible = float(lote.cantidad_disponible) + cantidad_adicional
 
         db.session.commit()
-        flash("Lote actualizado correctamente", "success")
+        flash("Lote actualizado correctamente.", "success")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
-    return render_template("materias_primas/lote_formulario.html", mp=mp, lote=lote, accion="editar")
+    return render_template(
+        "materias_primas/lote_formulario.html",
+        mp=mp,
+        lote=lote,
+        accion="editar",
+    )
 
 @materias_primas_bp.route("/<int:mp_id>/lotes/<int:lote_id>/eliminar", methods=["POST"])
 def eliminar_lote(mp_id, lote_id):
@@ -426,3 +450,10 @@ def eliminar_lote(mp_id, lote_id):
     flash("Lote eliminado correctamente", "success")
     return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
+def _to_float(value, default=None):
+    if value is None or value == "":
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
