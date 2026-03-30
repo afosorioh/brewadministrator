@@ -61,7 +61,7 @@ def _bache_detalle_context(bache):
     mediciones = (
         MedicionBache.query
         .filter_by(id_bache=bache.id)
-        .order_by(MedicionBache.id_bache.desc())
+        .order_by(MedicionBache.fecha.desc())
         .all()
     )
 
@@ -73,7 +73,7 @@ def _bache_detalle_context(bache):
         return (
             MedicionBache.query
             .filter_by(id_bache=bache.id, tipo=tipo)
-            .order_by(MedicionBache.id_bache.desc())
+            .order_by(MedicionBache.fecha.desc())
             .first()
         )
 
