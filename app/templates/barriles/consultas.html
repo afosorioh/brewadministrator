@@ -59,6 +59,46 @@
   </div>
 </div>
 
+<form method="get" class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Fecha desde</label>
+        <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Fecha hasta</label>
+        <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Cliente</label>
+        <select name="cliente_id" class="form-select">
+          <option value="">-- Todos --</option>
+          {% for c in clientes %}
+            <option value="{{ c.id }}" {% if cliente_id == c.id %}selected{% endif %}>
+              {{ c.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Estilo</label>
+        <select name="estilo" class="form-select">
+          <option value="">-- Todos --</option>
+          {% for e in estilos_disponibles %}
+            <option value="{{ e }}" {% if estilo == e %}selected{% endif %}>{{ e }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12">
+        <button class="btn btn-primary">Aplicar filtros</button>
+        <a href="{{ url_for('barriles.consultas') }}" class="btn btn-outline-secondary">Limpiar</a>
+      </div>
+    </div>
+  </div>
+</form>
+
 <div class="card border-0 shadow-sm mb-4">
 <div class="card-header bg-white d-flex justify-content-between align-items-center">
   <strong>Barriles llenos por capacidad, volumen y estilo</strong>
@@ -114,46 +154,6 @@
 </div>
 </div>
 
-<form method="get" class="card shadow-sm border-0 mb-4">
-  <div class="card-body">
-    <div class="row g-3 align-items-end">
-      <div class="col-md-3">
-        <label class="form-label">Fecha desde</label>
-        <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Fecha hasta</label>
-        <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Cliente</label>
-        <select name="cliente_id" class="form-select">
-          <option value="">-- Todos --</option>
-          {% for c in clientes %}
-            <option value="{{ c.id }}" {% if cliente_id == c.id %}selected{% endif %}>
-              {{ c.nombre }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Estilo</label>
-        <select name="estilo" class="form-select">
-          <option value="">-- Todos --</option>
-          {% for e in estilos_disponibles %}
-            <option value="{{ e }}" {% if estilo == e %}selected{% endif %}>{{ e }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="col-12">
-        <button class="btn btn-primary">Aplicar filtros</button>
-        <a href="{{ url_for('barriles.consultas') }}" class="btn btn-outline-secondary">Limpiar</a>
-      </div>
-    </div>
-  </div>
-</form>
-
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-white d-flex justify-content-between align-items-center">
     <strong>Barriles entregados por cliente y estilo</strong>
@@ -163,22 +163,30 @@
     {% if entregados_por_cliente_estilo %}
       <div class="table-responsive">
         <table class="table table-striped table-hover align-middle">
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>Estilo</th>
-              <th>Cantidad</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for row in entregados_por_cliente_estilo %}
-            <tr>
-              <td>{{ row.cliente or "SIN CLIENTE" }}</td>
-              <td>{{ row.estilo or "SIN ESTILO" }}</td>
-              <td>{{ row.cantidad }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Capacidad barril</th>
+            <th>Estilo</th>
+            <th>Cantidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in entregados_por_cliente_estilo %}
+          <tr>
+            <td>{{ row.cliente or "SIN CLIENTE" }}</td>
+            <td>
+              {% if row.capacidad is not none %}
+                {{ row.capacidad }} L
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>{{ row.estilo or "SIN ESTILO" }}</td>
+            <td>{{ row.cantidad }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
         </table>
       </div>
     {% else %}

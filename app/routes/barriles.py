@@ -731,6 +731,7 @@ def consultas():
     query_entregados = (
         db.session.query(
             cliente_entrega.nombre.label("cliente"),
+            Barril.capacidad_litros.label("capacidad"),
             func.coalesce(receta_entrega.estilo, bache_entrega.nombre_cerveza, "SIN ESTILO").label("estilo"),
             func.count(Barril.id).label("cantidad"),
         )
@@ -767,9 +768,15 @@ def consultas():
         query_entregados
         .group_by(
             cliente_entrega.nombre,
+            Barril.capacidad_litros,
             func.coalesce(receta_entrega.estilo, bache_entrega.nombre_cerveza, "SIN ESTILO"),
         )
-        .order_by(cliente_entrega.nombre.asc(), func.count(Barril.id).desc())
+        .order_by(
+            cliente_entrega.nombre.asc(),
+            Barril.capacidad_litros.asc(),
+            func.count(Barril.id).desc(),
+            func.coalesce(receta_entrega.estilo, bache_entrega.nombre_cerveza, "SIN ESTILO").asc(),
+        )
         .all()
     )
 
