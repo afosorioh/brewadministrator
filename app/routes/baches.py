@@ -22,6 +22,7 @@ from flask_login import login_required
 from app.authz import role_required
 
 from app.utils.datetime_utils import now_bogota, today_bogota
+from datetime import datetime
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas

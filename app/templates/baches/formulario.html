@@ -554,7 +554,7 @@ function agregarMedicion() {
                placeholder="Ej: 1.062 / 5.60 / 18.50">
       </div>
 
-      <div class="vibilidad-wrap d-none border rounded p-2 bg-light mt-1">
+      <div class="viabilidad-wrap d-none border rounded p-2 bg-light mt-1">
         <div class="row g-2">
           <div class="col-md-4">
             <label class="form-label mb-0 small">Dilución</label>
@@ -797,7 +797,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const calc = calcularViabilidadDesdeFila(fila);
 
         if (!calc) {
-          errores.push(`Medición ${idx + 1}: completa correctamente los datos de VIBILIDAD.`);
+          errores.push(`Medición ${idx + 1}: completa correctamente los datos de VIABILIDAD.`);
           return;
         }
 
@@ -877,7 +877,6 @@ function calcularViabilidadDesdeFila(row) {
   const viabilidadPct = (vivas / total) * 100.0;
   const vivasPromedio = vivas / cuadrantes;
   const muertasPromedio = muertas / cuadrantes;
-  const totalPromedio = total / cuadrantes;
 
   return {
     dilucion,
@@ -888,11 +887,10 @@ function calcularViabilidadDesdeFila(row) {
     viabilidadPct,
     vivasPromedio,
     muertasPromedio,
-    totalPromedio
   };
 }
 
-function actualizarVistaVibilidad(row) {
+function actualizarVistaViabilidad(row) {
   const tipo = row.querySelector(".med-tipo")?.value;
   const normalWrap = row.querySelector(".med-normal-wrap");
   const viabilidadWrap = row.querySelector(".viabilidad-wrap");
@@ -901,10 +899,10 @@ function actualizarVistaVibilidad(row) {
   const resultado = row.querySelector(".vib-resultado");
 
   if (tipo === "VIABILIDAD") {
-    normalWrap.classList.add("d-none");
-    viabilidadWrap.classList.remove("d-none");
+    if (normalWrap) normalWrap.classList.add("d-none");
+    if (viabilidadWrap) viabilidadWrap.classList.remove("d-none");
 
-    const calc = calcularVibilidadDesdeFila(row);
+    const calc = calcularViabilidadDesdeFila(row);
 
     if (!calc) {
       if (resultado) {
@@ -940,8 +938,8 @@ function actualizarVistaVibilidad(row) {
       resultado.classList.add("text-success");
     }
   } else {
-    normalWrap.classList.remove("d-none");
-    viabilidadWrap.classList.add("d-none");
+    if (normalWrap) normalWrap.classList.remove("d-none");
+    if (viabilidadWrap) viabilidadWrap.classList.add("d-none");
   }
 }
 
@@ -951,20 +949,20 @@ function inicializarFilaMedicion(row) {
 
   if (tipoSel) {
     tipoSel.addEventListener("change", function () {
-      actualizarVistaVibilidad(row);
+      actualizarVistaViabilidad(row);
     });
   }
 
   vibInputs.forEach(inp => {
     inp.addEventListener("input", function () {
-      actualizarVistaVibilidad(row);
+      actualizarVistaViabilidad(row);
     });
     inp.addEventListener("change", function () {
-      actualizarVistaVibilidad(row);
+      actualizarVistaViabilidad(row);
     });
   });
 
-  actualizarVistaVibilidad(row);
+  actualizarVistaViabilidad(row);
 }
 </script>
 {% endblock %}
