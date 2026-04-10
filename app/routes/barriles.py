@@ -792,9 +792,8 @@ def consultas():
         )
         .order_by(
             Barril.capacidad_litros.asc(),
-            func.count(Barril.id).desc(),
-            mov_llenado.volumen_litros.asc(),
-            func.coalesce(receta_llenado.estilo, bache_llenado.nombre_cerveza, "SIN ESTILO").asc()
+            mov_llenado.volumen_litros.desc(),
+            func.count(Barril.id).desc()
         )
         .all()
     )
