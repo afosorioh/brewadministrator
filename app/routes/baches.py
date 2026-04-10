@@ -21,7 +21,7 @@ from app.models import (
 from flask_login import login_required
 from app.authz import role_required
 
-from datetime import datetime
+from app.utils.datetime_utils import now_bogota, today_bogota
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -164,7 +164,7 @@ def _guardar_usos_levadura(bache, lote_ids, lev_tipo_uso, lev_generacion, lev_co
             uso = BacheLevaduraUso(
                 id_bache=bache.id,
                 id_lote=lote.id,
-                fecha_inoculacion=datetime.utcnow(),
+                fecha_inoculacion=now_bogota(),
             )
             db.session.add(uso)
 

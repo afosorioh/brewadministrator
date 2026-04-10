@@ -1,5 +1,5 @@
-from datetime import date, datetime
-
+from app.utils.datetime_utils import now_bogota, today_bogota
+from datetime import datetime
 import re
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
@@ -58,7 +58,7 @@ def _parse_codigo_barril(codigo: str):
 def _registrar_movimiento_alta(barril, comentario="Alta inicial"):
     movimiento = MovimientoBarril(
         id_barril=barril.id,
-        fecha_hora=datetime.utcnow(),
+        fecha_hora=now_bogota(),
         tipo_movimiento="ALTA",
         id_usuario=current_user.id if current_user.is_authenticated else None,
         comentario=comentario,
@@ -158,7 +158,7 @@ def crear():
         barril = Barril(
             codigo_barril=codigo_barril,
             capacidad_litros=float(capacidad_litros),
-            fecha_ingreso=fecha_ingreso if fecha_ingreso else date.today(),
+            fecha_ingreso=fecha_ingreso if fecha_ingreso else today_bogota(),
             estado_actual="LIMPIO",
             notas=notas,
         )
@@ -229,7 +229,7 @@ def crear_lote():
             barril = Barril(
                 codigo_barril=codigo,
                 capacidad_litros=float(capacidad_litros),
-                fecha_ingreso=fecha_ingreso if fecha_ingreso else date.today(),
+                fecha_ingreso=fecha_ingreso if fecha_ingreso else today_bogota(),
                 estado_actual="LIMPIO",
                 notas=notas,
             )
@@ -347,7 +347,7 @@ def llenado():
 
         movimiento = MovimientoBarril(
             id_barril=barril.id,
-            fecha_hora=datetime.utcnow(),
+            fecha_hora=datetime.now_bogota(),
             tipo_movimiento="LLENO",
             id_bache=bache.id,
             id_cliente=None,
@@ -431,7 +431,7 @@ def entrega():
 
             movimiento = MovimientoBarril(
                 id_barril=barril.id,
-                fecha_hora=datetime.utcnow(),
+                fecha_hora=now_bogota(),
                 tipo_movimiento="ENTREGADO",
                 id_bache=ultimo_llenado.id_bache,
                 id_cliente=cliente.id,
@@ -451,7 +451,7 @@ def entrega():
         elif destino == "LATAS":
             movimiento = MovimientoBarril(
                 id_barril=barril.id,
-                fecha_hora=datetime.utcnow(),
+                fecha_hora=now_bogota(),
                 tipo_movimiento="LATAS",
                 id_bache=ultimo_llenado.id_bache,
                 id_cliente=None,
@@ -520,7 +520,7 @@ def devolucion():
 
         movimiento = MovimientoBarril(
             id_barril=barril.id,
-            fecha_hora=datetime.utcnow(),
+            fecha_hora=now_bogota(),
             tipo_movimiento="DEVUELTO",
             id_bache=ultima_entrega.id_bache,
             id_cliente=ultima_entrega.id_cliente,
@@ -580,7 +580,7 @@ def lavado():
 
         movimiento = MovimientoBarril(
             id_barril=barril.id,
-            fecha_hora=datetime.utcnow(),
+            fecha_hora=now_bogota(),
             tipo_movimiento="LAVADO",
             id_bache=ultimo_movimiento.id_bache if ultimo_movimiento else None,
             id_cliente=ultimo_movimiento.id_cliente if ultimo_movimiento else None,
@@ -753,7 +753,8 @@ def consultas():
 
     query_llenos = (
         db.session.query(
-            mov_llenado.volumen_litros.label("tamano"),
+            Barril.capacidad_litros.label("capacidad"),
+            mov_llenado.volumen_litros.label("volumen"),
             func.coalesce(receta_llenado.estilo, bache_llenado.nombre_cerveza, "SIN ESTILO").label("estilo"),
             func.count(Barril.id).label("cantidad"),
         )
@@ -785,15 +786,42 @@ def consultas():
     llenos_por_estilo = (
         query_llenos
         .group_by(
+            Barril.capacidad_litros,
             mov_llenado.volumen_litros,
             func.coalesce(receta_llenado.estilo, bache_llenado.nombre_cerveza, "SIN ESTILO")
         )
         .order_by(
+            Barril.capacidad_litros.asc(),
+            func.count(Barril.id).desc(),
             mov_llenado.volumen_litros.asc(),
-            func.count(Barril.id).desc()
+            func.coalesce(receta_llenado.estilo, bache_llenado.nombre_cerveza, "SIN ESTILO").asc()
         )
         .all()
     )
+
+    llenos_por_capacidad = []
+    capacidad_actual = None
+    grupo_actual = []
+
+    for row in llenos_por_estilo:
+        if row.capacidad != capacidad_actual:
+            if grupo_actual:
+                llenos_por_capacidad.append({
+                    "capacidad": capacidad_actual,
+                    "filas": grupo_actual,
+                    "rowspan": len(grupo_actual),
+                })
+            capacidad_actual = row.capacidad
+            grupo_actual = [row]
+        else:
+            grupo_actual.append(row)
+
+    if grupo_actual:
+        llenos_por_capacidad.append({
+            "capacidad": capacidad_actual,
+            "filas": grupo_actual,
+            "rowspan": len(grupo_actual),
+        })
 
     # ==========================================================
     # 4) TABLA EXTRA: rotación de barriles
@@ -890,7 +918,7 @@ def consultas():
         .all()
     )
 
-    hoy = date.today()
+    hoy = today_bogota()
     pendientes_devolucion = []
     for row in pendientes_devolucion_raw:
         dias_fuera = None
@@ -923,6 +951,7 @@ def consultas():
         grafica_datasets=grafica_datasets,
         entregados_por_cliente_estilo=entregados_por_cliente_estilo,
         llenos_por_estilo=llenos_por_estilo,
+        llenos_por_capacidad=llenos_por_capacidad, 
         rotacion_barriles=rotacion_barriles,
         pendientes_devolucion=pendientes_devolucion,
         clientes=clientes,
@@ -959,7 +988,7 @@ def baja(barril_id):
     # Registrar movimiento (importante para auditoría)
     movimiento = MovimientoBarril(
         id_barril=barril.id,
-        fecha_hora=datetime.utcnow(),
+        fecha_hora=now_bogota(),
         tipo_movimiento="BAJA",
         id_usuario=current_user.id,
         comentario="Baja manual del barril (dañado o perdido)",
