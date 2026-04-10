@@ -399,7 +399,7 @@ def llenado():
 
         movimiento = MovimientoBarril(
             id_barril=barril.id,
-            fecha_hora=datetime.now_bogota(),
+            fecha_hora=now_bogota(),
             tipo_movimiento="LLENO",
             id_bache=bache.id,
             id_cliente=None,
