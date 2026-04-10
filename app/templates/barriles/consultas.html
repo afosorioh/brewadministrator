@@ -59,6 +59,61 @@
   </div>
 </div>
 
+<div class="card border-0 shadow-sm mb-4">
+<div class="card-header bg-white d-flex justify-content-between align-items-center">
+  <strong>Barriles llenos por capacidad, volumen y estilo</strong>
+  <span class="badge bg-dark">{{ llenos_por_estilo|length }} filas</span>
+</div>
+
+<div class="card-body">
+  {% if llenos_por_capacidad %}
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Capacidad barril</th>
+            <th>Volumen llenado (L)</th>
+            <th>Estilo cerveza</th>
+            <th>Cantidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for grupo in llenos_por_capacidad %}
+            {% for row in grupo.filas %}
+            <tr>
+              {% if loop.first %}
+              <td rowspan="{{ grupo.rowspan }}" class="align-top fw-bold">
+                {{ grupo.capacidad }} L
+              </td>
+              {% endif %}
+
+              <td>
+                {% if row.volumen %}
+                  {{ row.volumen }} L
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+
+              <td>{{ row.estilo or "SIN ESTILO" }}</td>
+
+              <td>
+                <span class="badge bg-success">
+                  {{ row.cantidad }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="mb-0 text-muted">No hay barriles actualmente en estado LLENO con esos filtros.</p>
+  {% endif %}
+</div>
+</div>
+
 <form method="get" class="card shadow-sm border-0 mb-4">
   <div class="card-body">
     <div class="row g-3 align-items-end">
@@ -130,61 +185,6 @@
       <p class="mb-0 text-muted">No hay resultados para los filtros seleccionados.</p>
     {% endif %}
   </div>
-</div>
-
-<div class="card border-0 shadow-sm mb-4">
-<div class="card-header bg-white d-flex justify-content-between align-items-center">
-  <strong>Barriles llenos por capacidad, volumen y estilo</strong>
-  <span class="badge bg-dark">{{ llenos_por_estilo|length }} filas</span>
-</div>
-
-<div class="card-body">
-  {% if llenos_por_capacidad %}
-    <div class="table-responsive">
-      <table class="table table-striped table-hover align-middle">
-        <thead>
-          <tr>
-            <th>Capacidad barril</th>
-            <th>Volumen llenado (L)</th>
-            <th>Estilo cerveza</th>
-            <th>Cantidad</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for grupo in llenos_por_capacidad %}
-            {% for row in grupo.filas %}
-            <tr>
-              {% if loop.first %}
-              <td rowspan="{{ grupo.rowspan }}" class="align-top fw-bold">
-                {{ grupo.capacidad }} L
-              </td>
-              {% endif %}
-
-              <td>
-                {% if row.volumen %}
-                  {{ row.volumen }} L
-                {% else %}
-                  -
-                {% endif %}
-              </td>
-
-              <td>{{ row.estilo or "SIN ESTILO" }}</td>
-
-              <td>
-                <span class="badge bg-success">
-                  {{ row.cantidad }}
-                </span>
-              </td>
-            </tr>
-            {% endfor %}
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  {% else %}
-    <p class="mb-0 text-muted">No hay barriles actualmente en estado LLENO con esos filtros.</p>
-  {% endif %}
-</div>
 </div>
 
 <div class="card border-0 shadow-sm mb-4">
