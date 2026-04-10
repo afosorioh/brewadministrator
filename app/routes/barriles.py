@@ -65,7 +65,6 @@ def _registrar_movimiento_alta(barril, comentario="Alta inicial"):
     )
     db.session.add(movimiento)
 
-
 @barriles_bp.route("/")
 @login_required
 def lista():

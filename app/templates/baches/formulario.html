@@ -530,27 +530,64 @@ function agregarMedicion() {
   const tbody = document.querySelector("#tabla-mediciones tbody");
 
   const row = document.createElement("tr");
+  row.classList.add("med-row");
+
   row.innerHTML = `
     <td>
       <input type="datetime-local" name="med_fecha[]" class="form-control form-control-sm">
     </td>
     <td>
-      <select name="med_tipo[]" class="form-select form-select-sm">
+      <select name="med_tipo[]" class="form-select form-select-sm med-tipo">
         <option value="PH">PH</option>
         <option value="TEMPERATURA">Temperatura</option>
         <option value="DENSIDAD">Densidad</option>
+        <option value="VIABILIDAD">Viabilidad</option>
         <option value="OTRO">Otro</option>
       </select>
     </td>
     <td>
-      <input type="text"
-             name="med_valor[]"
-             class="form-control form-control-sm"
-             inputmode="decimal"
-             placeholder="Ej: 1.062 / 5.60 / 18.50">
+      <div class="med-normal-wrap">
+        <input type="text"
+               name="med_valor[]"
+               class="form-control form-control-sm med-valor"
+               inputmode="decimal"
+               placeholder="Ej: 1.062 / 5.60 / 18.50">
+      </div>
+
+      <div class="vibilidad-wrap d-none border rounded p-2 bg-light mt-1">
+        <div class="row g-2">
+          <div class="col-md-4">
+            <label class="form-label mb-0 small">Dilución</label>
+            <select class="form-select form-select-sm vib-dilucion">
+              <option value="100">1/100</option>
+              <option value="1000">1/1000</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label mb-0 small">Células vivas</label>
+            <input type="number" min="0" step="1" class="form-control form-control-sm vib-vivas" placeholder="Ej: 134">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label mb-0 small">Células muertas</label>
+            <input type="number" min="0" step="1" class="form-control form-control-sm vib-muertas" placeholder="Ej: 14">
+          </div>
+
+          <div class="col-12">
+            <div class="small">
+              <strong>Resultado:</strong>
+              <span class="vib-resultado text-muted">Completa los datos para calcular la viabilidad.</span>
+            </div>
+            <div class="form-text">
+              Se asumen 5 cuadrantes fijos en cámara de Neubauer.
+            </div>
+          </div>
+        </div>
+      </div>
     </td>
     <td>
-      <input type="text" name="med_comentario[]" class="form-control form-control-sm">
+      <input type="text" name="med_comentario[]" class="form-control form-control-sm med-comentario">
     </td>
     <td>
       <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">X</button>
@@ -558,6 +595,7 @@ function agregarMedicion() {
   `;
 
   tbody.appendChild(row);
+  inicializarFilaMedicion(row);
 }
 </script>
 
@@ -691,6 +729,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("form-bache");
   if (!form) return;
 
+    document.querySelectorAll("#tabla-mediciones tbody tr.med-row").forEach(row => {
+    inicializarFilaMedicion(row);
+    });
+
   form.addEventListener("submit", function (e) {
     const densidadInput = document.getElementById("densidad_inicial");
     const phMaceradoInput = document.getElementById("ph_macerado");
@@ -751,6 +793,31 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
+      if (tipo === "VIABILIDAD") {
+        const calc = calcularViabilidadDesdeFila(fila);
+
+        if (!calc) {
+          errores.push(`Medición ${idx + 1}: completa correctamente los datos de VIBILIDAD.`);
+          return;
+        }
+
+        valorInput.value = calc.viabilidadPct.toFixed(3);
+
+        const comentarioInput = fila.querySelector("input[name='med_comentario[]']");
+        if (comentarioInput) {
+          comentarioInput.value =
+            `Viabilidad ${calc.viabilidadPct.toFixed(2)}% | ` +
+            `Dilución 1/${calc.dilucion} | ` +
+            `Cuadrantes 5 | ` +
+            `Vivas ${calc.vivas} | ` +
+            `Muertas ${calc.muertas} | ` +
+            `Promedio vivas/cuadrante ${calc.vivasPromedio.toFixed(2)} | ` +
+            `Promedio muertas/cuadrante ${calc.muertasPromedio.toFixed(2)}`;
+        }
+
+        return;
+      }
+
       let res = null;
 
       if (tipo === "DENSIDAD") {
@@ -790,5 +857,114 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+</script>
+<script>
+function calcularViabilidadDesdeFila(row) {
+  const dilucion = Number(row.querySelector(".vib-dilucion")?.value || 0);
+  const vivas = Number(row.querySelector(".vib-vivas")?.value || 0);
+  const muertas = Number(row.querySelector(".vib-muertas")?.value || 0);
+  const cuadrantes = 5;
+
+  if (dilucion <= 0 || vivas < 0 || muertas < 0) {
+    return null;
+  }
+
+  const total = vivas + muertas;
+  if (total <= 0) {
+    return null;
+  }
+
+  const viabilidadPct = (vivas / total) * 100.0;
+  const vivasPromedio = vivas / cuadrantes;
+  const muertasPromedio = muertas / cuadrantes;
+  const totalPromedio = total / cuadrantes;
+
+  return {
+    dilucion,
+    cuadrantes,
+    vivas,
+    muertas,
+    total,
+    viabilidadPct,
+    vivasPromedio,
+    muertasPromedio,
+    totalPromedio
+  };
+}
+
+function actualizarVistaVibilidad(row) {
+  const tipo = row.querySelector(".med-tipo")?.value;
+  const normalWrap = row.querySelector(".med-normal-wrap");
+  const viabilidadWrap = row.querySelector(".viabilidad-wrap");
+  const valorInput = row.querySelector(".med-valor");
+  const comentarioInput = row.querySelector(".med-comentario");
+  const resultado = row.querySelector(".vib-resultado");
+
+  if (tipo === "VIABILIDAD") {
+    normalWrap.classList.add("d-none");
+    viabilidadWrap.classList.remove("d-none");
+
+    const calc = calcularVibilidadDesdeFila(row);
+
+    if (!calc) {
+      if (resultado) {
+        resultado.textContent = "Completa datos válidos para calcular la viabilidad.";
+        resultado.classList.remove("text-success");
+        resultado.classList.add("text-muted");
+      }
+      if (valorInput) valorInput.value = "";
+      return;
+    }
+
+    if (valorInput) {
+      valorInput.value = calc.viabilidadPct.toFixed(3);
+    }
+
+    if (comentarioInput) {
+      comentarioInput.value =
+        `Viabilidad ${calc.viabilidadPct.toFixed(2)}% | ` +
+        `Dilución 1/${calc.dilucion} | ` +
+        `Cuadrantes 5 | ` +
+        `Vivas ${calc.vivas} | ` +
+        `Muertas ${calc.muertas} | ` +
+        `Promedio vivas/cuadrante ${calc.vivasPromedio.toFixed(2)} | ` +
+        `Promedio muertas/cuadrante ${calc.muertasPromedio.toFixed(2)}`;
+    }
+
+    if (resultado) {
+      resultado.textContent =
+        `Viabilidad: ${calc.viabilidadPct.toFixed(2)}% | ` +
+        `Vivas: ${calc.vivas} | Muertas: ${calc.muertas} | ` +
+        `Dilución: 1/${calc.dilucion}`;
+      resultado.classList.remove("text-muted");
+      resultado.classList.add("text-success");
+    }
+  } else {
+    normalWrap.classList.remove("d-none");
+    viabilidadWrap.classList.add("d-none");
+  }
+}
+
+function inicializarFilaMedicion(row) {
+  const tipoSel = row.querySelector(".med-tipo");
+  const vibInputs = row.querySelectorAll(".vib-dilucion, .vib-vivas, .vib-muertas");
+
+  if (tipoSel) {
+    tipoSel.addEventListener("change", function () {
+      actualizarVistaVibilidad(row);
+    });
+  }
+
+  vibInputs.forEach(inp => {
+    inp.addEventListener("input", function () {
+      actualizarVistaVibilidad(row);
+    });
+    inp.addEventListener("change", function () {
+      actualizarVistaVibilidad(row);
+    });
+  });
+
+  actualizarVistaVibilidad(row);
+}
 </script>
 {% endblock %}

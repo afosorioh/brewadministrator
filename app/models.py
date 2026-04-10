@@ -394,7 +394,7 @@ class MedicionBache(db.Model):
     fecha = db.Column(db.DateTime, nullable=False)
 
     tipo = db.Column(
-        db.Enum("PH", "TEMPERATURA", "DENSIDAD", "OTRO", name="tipo_medicion_bache"),
+        db.Enum("PH", "TEMPERATURA", "DENSIDAD", "VIABILIDAD", "OTRO", name="tipo_medicion_bache"),
         nullable=False,
     )
 

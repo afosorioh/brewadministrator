@@ -300,6 +300,59 @@ def _reponer_lotes_de_bache(bache_id):
         if lote:
             lote.cantidad_disponible = float(lote.cantidad_disponible) + float(mp.cantidad_usada)
 
+def _parse_datetime_local(value):
+    """
+    Convierte un string de input datetime-local a datetime.
+    Espera formato 'YYYY-MM-DDTHH:MM'
+    """
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%dT%H:%M")
+    except ValueError:
+        try:
+            return datetime.fromisoformat(value)
+        except Exception:
+            return None
+
+
+def _guardar_mediciones_bache(bache):
+    fechas = request.form.getlist("med_fecha[]")
+    tipos = request.form.getlist("med_tipo[]")
+    valores = request.form.getlist("med_valor[]")
+    comentarios = request.form.getlist("med_comentario[]")
+
+    for i in range(len(fechas)):
+        fecha_raw = fechas[i] if i < len(fechas) else None
+        tipo_raw = tipos[i] if i < len(tipos) else None
+        valor_raw = valores[i] if i < len(valores) else None
+        comentario_raw = comentarios[i] if i < len(comentarios) else None
+
+        if not fecha_raw or not valor_raw:
+            continue
+
+        fecha_dt = _parse_datetime_local(fecha_raw)
+        if not fecha_dt:
+            return f"La fecha de la medición #{i + 1} no es válida."
+
+        tipo = (tipo_raw or "").strip().upper()
+
+        try:
+            valor_num = float(str(valor_raw).replace(",", "."))
+        except ValueError:
+            return f"El valor de la medición #{i + 1} no es numérico válido."
+
+        medicion = MedicionBache(
+            id_bache=bache.id,
+            fecha=fecha_dt,
+            tipo=tipo,
+            valor=valor_num,
+            comentario=(comentario_raw or None),
+        )
+        db.session.add(medicion)
+
+    return None
+
 @baches_bp.route("/")
 @login_required
 def lista():
@@ -538,23 +591,11 @@ def editar(bache_id):
         # ============================
         # Guardar nuevas mediciones
         # ============================
-        fechas = request.form.getlist("med_fecha[]")
-        tipos = request.form.getlist("med_tipo[]")
-        valores = request.form.getlist("med_valor[]")
-        comentarios = request.form.getlist("med_comentario[]")
-
-        for i in range(len(fechas)):
-            if not fechas[i] or not valores[i]:
-                continue
-
-            medicion = MedicionBache(
-                id_bache=bache.id,
-                fecha=fechas[i],
-                tipo=tipos[i],
-                valor=float(valores[i]),
-                comentario=comentarios[i] or None,
-            )
-            db.session.add(medicion)
+        error_med = _guardar_mediciones_bache(bache)
+        if error_med:
+            db.session.rollback()
+            flash(error_med, "danger")
+            return redirect(url_for("baches.editar", bache_id=bache.id))
 
         db.session.commit()
         flash("Bache actualizado correctamente", "success")
