@@ -30,7 +30,22 @@
             class="form-control"
             value="{{ codigo_bache or '' }}"
             placeholder="Ej: 26001">
-    </div>    
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Fecha inicio</label>
+      <input type="date"
+            name="fecha_inicio"
+            class="form-control"
+            value="{{ fecha_inicio or '' }}">
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label">Fecha fin</label>
+      <input type="date"
+            name="fecha_fin"
+            class="form-control"
+            value="{{ fecha_fin or '' }}">
+    </div>        
     <div class="col-md-4">
       <label class="form-label">Buscar por estado</label>
       <select name="estado" class="form-select">

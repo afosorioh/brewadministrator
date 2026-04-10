@@ -73,6 +73,8 @@ def lista():
     q = request.args.get("q", "", type=str).strip()
     estado = request.args.get("estado", "", type=str).strip()
     codigo_bache = request.args.get("codigo_bache", "", type=str).strip()
+    fecha_inicio = request.args.get("fecha_inicio", "", type=str).strip()
+    fecha_fin = request.args.get("fecha_fin", "", type=str).strip()
 
     query = Barril.query
 
@@ -82,14 +84,23 @@ def lista():
     if estado:
         query = query.filter(Barril.estado_actual == estado)
 
-    if codigo_bache:
+    if codigo_bache or fecha_inicio or fecha_fin:
         query = (
             query
             .join(MovimientoBarril, MovimientoBarril.id_barril == Barril.id)
-            .join(Bache, Bache.id == MovimientoBarril.id_bache)
-            .filter(Bache.codigo_bache.ilike(f"%{codigo_bache}%"))
-            .distinct()
+            .outerjoin(Bache, Bache.id == MovimientoBarril.id_bache)
         )
+
+        if codigo_bache:
+            query = query.filter(Bache.codigo_bache.ilike(f"%{codigo_bache}%"))
+
+        if fecha_inicio:
+            query = query.filter(func.date(MovimientoBarril.fecha_hora) >= fecha_inicio)
+
+        if fecha_fin:
+            query = query.filter(func.date(MovimientoBarril.fecha_hora) <= fecha_fin)
+
+        query = query.distinct()
 
     pagination = query.order_by(Barril.codigo_barril.asc()).paginate(
         page=page,
@@ -172,6 +183,8 @@ def lista():
         estado=estado,
         estados=estados,
         codigo_bache=codigo_bache,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin,
     )
 
 
