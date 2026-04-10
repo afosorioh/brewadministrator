@@ -23,6 +23,14 @@
       <label class="form-label">Buscar por código</label>
       <input type="text" name="q" class="form-control" value="{{ q or '' }}" placeholder="Ej: A001">
     </div>
+    <div class="col-md-3">
+      <label class="form-label">Código bache</label>
+      <input type="text"
+            name="codigo_bache"
+            class="form-control"
+            value="{{ codigo_bache or '' }}"
+            placeholder="Ej: 26001">
+    </div>    
     <div class="col-md-4">
       <label class="form-label">Buscar por estado</label>
       <select name="estado" class="form-select">
@@ -43,13 +51,15 @@
   <table class="table table-striped table-hover align-middle">
     <thead>
       <tr>
-        <th>Código</th>
-        <th>Capacidad (L)</th>
-        <th>Estilo</th>
-        <th>Bache</th>
-        <th>Fecha-Ultimo-Estado</th>
-        <th>Estado</th>
-        <th>Acciones</th>
+      <th>Código</th>
+      <th>Capacidad (L)</th>
+      <th>Estilo</th>
+      <th>Bache</th>
+      <th>Litros llenado</th>
+      <th>Ubicación</th>
+      <th>Fecha-Ultimo-Estado</th>
+      <th>Estado</th>
+      <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -57,10 +67,30 @@
       <tr>
         <td>{{ b.codigo_barril }}</td>
         <td>{{ b.capacidad_mostrar }}</td>
+        <td>
+          {% if b.litros_llenado %}
+            {{ b.litros_llenado }} L
+          {% else %}
+            -
+          {% endif %}
+        </td>        
         <td>{{ b.estilo_mostrar or "-" }}</td>
         <td>{{ b.bache_mostrar or "-" }}</td>
+        <td>{{ b.ubicacion or "-" }}</td>
         <td>{{ b.fecha_ultimo_estado.strftime('%Y-%m-%d %H:%M') if b.fecha_ultimo_estado else "-" }}</td>
-        <td>{{ b.estado_actual }}</td>
+        <td>
+          {% set badge_map = {
+            "LIMPIO": "success",
+            "LLENO": "primary",
+            "ENTREGADO": "warning text-dark",
+            "SUCIO": "danger",
+            "MANTENIMIENTO": "secondary",
+            "BAJA": "dark"
+          } %}
+          <span class="badge bg-{{ badge_map.get(b.estado_actual, 'secondary') }}">
+            {{ b.estado_actual }}
+          </span>
+        </td>
         <td>
           <div class="d-flex gap-1">
             <a href="{{ url_for('barriles.detalle', barril_id=b.id) }}"

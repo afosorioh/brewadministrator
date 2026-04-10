@@ -72,6 +72,7 @@ def lista():
     page = request.args.get("page", 1, type=int)
     q = request.args.get("q", "", type=str).strip()
     estado = request.args.get("estado", "", type=str).strip()
+    codigo_bache = request.args.get("codigo_bache", "", type=str).strip()
 
     query = Barril.query
 
@@ -80,6 +81,15 @@ def lista():
 
     if estado:
         query = query.filter(Barril.estado_actual == estado)
+
+    if codigo_bache:
+        query = (
+            query
+            .join(MovimientoBarril, MovimientoBarril.id_barril == Barril.id)
+            .join(Bache, Bache.id == MovimientoBarril.id_bache)
+            .filter(Bache.codigo_bache.ilike(f"%{codigo_bache}%"))
+            .distinct()
+        )
 
     pagination = query.order_by(Barril.codigo_barril.asc()).paginate(
         page=page,
@@ -98,23 +108,49 @@ def lista():
             .first()
         )
 
+        ultimo_llenado = (
+            MovimientoBarril.query
+            .filter_by(id_barril=barril.id, tipo_movimiento="LLENO")
+            .order_by(MovimientoBarril.fecha_hora.desc())
+            .first()
+        )
+
+        ultima_entrega = (
+            MovimientoBarril.query
+            .filter_by(id_barril=barril.id, tipo_movimiento="ENTREGADO")
+            .order_by(MovimientoBarril.fecha_hora.desc())
+            .first()
+        )
+
         capacidad_mostrar = barril.capacidad_litros
         estilo_mostrar = ""
         bache_mostrar = ""
+        litros_llenado = ""
+        ubicacion = ""
 
-        if (
-            (barril.estado_actual == "LLENO" or barril.estado_actual == "ENTREGADO")
-            and ultimo_movimiento
-            and (ultimo_movimiento.tipo_movimiento == "LLENO" or ultimo_movimiento.tipo_movimiento == "ENTREGADO")
-            and ultimo_movimiento.bache
-        ):
-            capacidad_mostrar = ultimo_movimiento.volumen_litros or barril.capacidad_litros
-            bache_mostrar = ultimo_movimiento.bache.codigo_bache or ""
+        if barril.estado_actual == "LLENO" and ultimo_llenado:
+            capacidad_mostrar = ultimo_llenado.volumen_litros or barril.capacidad_litros
+            litros_llenado = ultimo_llenado.volumen_litros or ""
 
-            if ultimo_movimiento.bache.receta and ultimo_movimiento.bache.receta.estilo:
-                estilo_mostrar = ultimo_movimiento.bache.receta.estilo
-            else:
-                estilo_mostrar = ultimo_movimiento.bache.nombre_cerveza or ""
+            if ultimo_llenado.bache:
+                bache_mostrar = ultimo_llenado.bache.codigo_bache or ""
+                if ultimo_llenado.bache.receta and ultimo_llenado.bache.receta.estilo:
+                    estilo_mostrar = ultimo_llenado.bache.receta.estilo
+                else:
+                    estilo_mostrar = ultimo_llenado.bache.nombre_cerveza or ""
+
+        elif barril.estado_actual == "ENTREGADO" and ultima_entrega:
+            litros_llenado = ultima_entrega.volumen_litros or ""
+
+            if ultima_entrega.bache:
+                bache_mostrar = ultima_entrega.bache.codigo_bache or ""
+                if ultima_entrega.bache.receta and ultima_entrega.bache.receta.estilo:
+                    estilo_mostrar = ultima_entrega.bache.receta.estilo
+                else:
+                    estilo_mostrar = ultima_entrega.bache.nombre_cerveza or ""
+
+            if ultima_entrega.cliente:
+                ubicacion = ultima_entrega.cliente.nombre or ""
 
         barriles_data.append({
             "id": barril.id,
@@ -124,6 +160,8 @@ def lista():
             "estado_actual": barril.estado_actual,
             "estilo_mostrar": estilo_mostrar,
             "bache_mostrar": bache_mostrar,
+            "litros_llenado": litros_llenado,
+            "ubicacion": ubicacion,
         })
 
     return render_template(
@@ -133,6 +171,7 @@ def lista():
         q=q,
         estado=estado,
         estados=estados,
+        codigo_bache=codigo_bache,
     )
 
 
