@@ -40,6 +40,7 @@
         <th>Usuario</th>
         <th>Volumen</th>
         <th>Comentario</th>
+        <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -52,6 +53,23 @@
         <td>{{ m.usuario.username if m.usuario else "-" }}</td>
         <td>{{ m.volumen_litros or "-" }}</td>
         <td>{{ m.comentario or "-" }}</td>
+        <td>
+          {% if current_user.is_authenticated
+                and current_user.rol
+                and current_user.rol.nombre == "ADMIN"
+                and loop.first %}
+            <form method="post"
+                  action="{{ url_for('barriles.eliminar_ultimo_movimiento', barril_id=barril.id, movimiento_id=m.id) }}"
+                  onsubmit="return confirm('¿Seguro que deseas borrar el último movimiento de este barril?');"
+                  style="display:inline;">
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                Borrar
+              </button>
+            </form>
+          {% else %}
+            -
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>

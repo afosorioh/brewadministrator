@@ -65,6 +65,18 @@ def _registrar_movimiento_alta(barril, comentario="Alta inicial"):
     )
     db.session.add(movimiento)
 
+def mapear_estado_desde_movimiento(tipo_movimiento: str) -> str:
+    mapa = {
+        "ALTA": "LIMPIO",
+        "LAVADO": "LIMPIO",
+        "LLENO": "LLENO",
+        "ENTREGADO": "ENTREGADO",
+        "DEVUELTO": "SUCIO",
+        "LATAS": "SUCIO",
+        "BAJA": "BAJA",
+    }
+    return mapa.get(tipo_movimiento, "LIMPIO")
+
 @barriles_bp.route("/")
 @login_required
 def lista():
@@ -308,14 +320,14 @@ def detalle(barril_id):
     movimientos = (
         MovimientoBarril.query
         .filter_by(id_barril=barril.id)
-        .order_by(MovimientoBarril.fecha_hora.desc())
+        .order_by(MovimientoBarril.fecha_hora.desc(), MovimientoBarril.id.desc())
         .all()
     )
 
     ultimo_entregado = (
         MovimientoBarril.query
         .filter_by(id_barril=barril.id, tipo_movimiento="ENTREGADO")
-        .order_by(MovimientoBarril.fecha_hora.desc())
+        .order_by(MovimientoBarril.fecha_hora.desc(), MovimientoBarril.id.desc())
         .first()
     )
 
@@ -1059,3 +1071,60 @@ def baja(barril_id):
 
     flash(f"Barril {barril.codigo_barril} dado de baja correctamente.", "success")
     return redirect(url_for("barriles.lista"))
+
+@barriles_bp.route("/<int:barril_id>/movimientos/<int:movimiento_id>/eliminar", methods=["POST"])
+@login_required
+@role_required("ADMIN")
+def eliminar_ultimo_movimiento(barril_id, movimiento_id):
+    barril = Barril.query.get_or_404(barril_id)
+    movimiento = MovimientoBarril.query.get_or_404(movimiento_id)
+
+    # Validar que el movimiento pertenezca al barril
+    if movimiento.id_barril != barril.id:
+        flash("El movimiento no pertenece al barril indicado.", "danger")
+        return redirect(url_for("barriles.detalle", barril_id=barril.id))
+
+    # Obtener movimientos ordenados del más reciente al más antiguo
+    movimientos = (
+        MovimientoBarril.query
+        .filter_by(id_barril=barril.id)
+        .order_by(MovimientoBarril.fecha_hora.desc(), MovimientoBarril.id.desc())
+        .all()
+    )
+
+    if not movimientos:
+        flash("El barril no tiene movimientos para eliminar.", "warning")
+        return redirect(url_for("barriles.detalle", barril_id=barril.id))
+
+    ultimo = movimientos[0]
+
+    # Solo se permite borrar el último movimiento
+    if ultimo.id != movimiento.id:
+        flash("Solo se permite borrar el último movimiento del barril.", "danger")
+        return redirect(url_for("barriles.detalle", barril_id=barril.id))
+
+    try:
+        db.session.delete(movimiento)
+        db.session.flush()
+
+        # Buscar el nuevo último movimiento, después del borrado
+        nuevo_ultimo = (
+            MovimientoBarril.query
+            .filter_by(id_barril=barril.id)
+            .order_by(MovimientoBarril.fecha_hora.desc(), MovimientoBarril.id.desc())
+            .first()
+        )
+
+        if nuevo_ultimo:
+            barril.estado_actual = mapear_estado_desde_movimiento(nuevo_ultimo.tipo_movimiento)
+        else:
+            barril.estado_actual = "LIMPIO"
+
+        db.session.commit()
+        flash("Último movimiento eliminado correctamente.", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"No fue posible eliminar el movimiento: {e}", "danger")
+
+    return redirect(url_for("barriles.detalle", barril_id=barril.id))
