@@ -139,7 +139,9 @@
 
       {% if filas %}
         {% for m, lote, mp in filas %}
-        <tr class="fila-mp mp-row">
+        <tr class="fila-mp mp-row"
+    data-original-lote-id="{{ lote.id if lote is defined and lote else '' }}"
+    data-original-cantidad="{{ m.cantidad_usada|float if m.cantidad_usada is not none else 0 }}">
           <td>
             <select class="form-select form-select-sm" name="lote_id">
               <option value="">-- Seleccionar lote --</option>
@@ -445,19 +447,40 @@
 
     if (!opt || !inputCantidad) return true;
 
+    const loteActualId = String(sel.value || "").trim();
+    const loteOriginalId = String(row.dataset.originalLoteId || "").trim();
+
     const disponible = parseFloat(opt.dataset.disponible || "0");
     const cantidad = parseFloat(inputCantidad.value || "0");
+    const cantidadOriginal = parseFloat(row.dataset.originalCantidad || "0");
 
-    if (!inputCantidad.value) return true;
+    if (!inputCantidad.value) {
+      inputCantidad.classList.remove("is-invalid");
+      return true;
+    }
 
-    if (cantidad > disponible) {
+    if (Number.isNaN(cantidad)) {
+      inputCantidad.classList.add("is-invalid");
+      return false;
+    }
+
+    let maxPermitido = disponible;
+
+    // Si sigue siendo el mismo lote en una fila ya existente,
+    // se permite reutilizar la cantidad originalmente asociada al bache.
+    if (loteOriginalId && loteActualId === loteOriginalId) {
+      maxPermitido = disponible + cantidadOriginal;
+    }
+
+    if (cantidad > maxPermitido) {
       inputCantidad.classList.add("is-invalid");
       return false;
     } else {
       inputCantidad.classList.remove("is-invalid");
       return true;
     }
-  }  
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("tr.fila-mp").forEach(row => {
       const sel = row.querySelector("select[name='lote_id']");
@@ -517,6 +540,9 @@
       btnAgregar.addEventListener("click", function () {
         const primeraFila = tablaBody.querySelector("tr.fila-mp");
         const nueva = primeraFila.cloneNode(true);
+
+        nueva.dataset.originalLoteId = "";
+        nueva.dataset.originalCantidad = "0";
 
         // limpiar valores
         nueva.querySelectorAll("input").forEach(inp => inp.value = "");
