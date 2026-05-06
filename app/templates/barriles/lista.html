@@ -68,7 +68,7 @@
     {% set next_direction = 'desc' %}
   {% endif %}
 
-  <a class="text-decoration-none text-dark"
+  <a class="text-decoration-none text-dark fw-semibold"
      href="{{ url_for(
        'barriles.lista',
        page=1,
@@ -87,6 +87,8 @@
       {% else %}
         ▼
       {% endif %}
+    {% else %}
+      ↕
     {% endif %}
   </a>
 {% endmacro %}
