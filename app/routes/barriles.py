@@ -86,6 +86,8 @@ def lista():
     codigo_bache = request.args.get("codigo_bache", "", type=str).strip()
     fecha_inicio = request.args.get("fecha_inicio", "", type=str).strip()
     fecha_fin = request.args.get("fecha_fin", "", type=str).strip()
+    sort = request.args.get("sort", "fecha_ultimo_estado", type=str).strip()
+    direction = request.args.get("direction", "desc", type=str).strip().lower()
 
     query = Barril.query
 
@@ -94,6 +96,9 @@ def lista():
 
     if estado:
         query = query.filter(Barril.estado_actual == estado)
+
+    if direction not in ["asc", "desc"]:
+        direction = "desc"
 
     if codigo_bache or fecha_inicio or fecha_fin:
         query = (
@@ -113,7 +118,41 @@ def lista():
 
         query = query.distinct()
 
-    pagination = query.order_by(Barril.codigo_barril.asc()).paginate(
+    fecha_ultimo_estado_sq = (
+        db.session.query(func.max(MovimientoBarril.fecha_hora))
+        .filter(MovimientoBarril.id_barril == Barril.id)
+        .correlate(Barril)
+        .scalar_subquery()
+    )
+
+    bache_ultimo_sq = (
+        db.session.query(Bache.codigo_bache)
+        .join(MovimientoBarril, MovimientoBarril.id_bache == Bache.id)
+        .filter(
+            MovimientoBarril.id_barril == Barril.id,
+            MovimientoBarril.id_bache.isnot(None),
+        )
+        .order_by(MovimientoBarril.fecha_hora.desc(), MovimientoBarril.id.desc())
+        .limit(1)
+        .correlate(Barril)
+        .scalar_subquery()
+    )
+
+    sort_columns = {
+        "codigo": Barril.codigo_barril,
+        "bache": bache_ultimo_sq,
+        "fecha_ultimo_estado": fecha_ultimo_estado_sq,
+        "estado": Barril.estado_actual,
+    }
+
+    sort_column = sort_columns.get(sort, fecha_ultimo_estado_sq)
+
+    if direction == "asc":
+        query = query.order_by(sort_column.asc().nullslast(), Barril.codigo_barril.asc())
+    else:
+        query = query.order_by(sort_column.desc().nullslast(), Barril.codigo_barril.asc())
+
+    pagination = query.paginate(
         page=page,
         per_page=20,
         error_out=False,
@@ -196,6 +235,8 @@ def lista():
         codigo_bache=codigo_bache,
         fecha_inicio=fecha_inicio,
         fecha_fin=fecha_fin,
+        sort=sort,
+        direction=direction,
     )
 
 
