@@ -101,22 +101,27 @@ def lista():
         direction = "desc"
 
     if codigo_bache or fecha_inicio or fecha_fin:
-        query = (
-            query
-            .join(MovimientoBarril, MovimientoBarril.id_barril == Barril.id)
+        barriles_filtrados_sq = (
+            db.session.query(MovimientoBarril.id_barril)
             .outerjoin(Bache, Bache.id == MovimientoBarril.id_bache)
         )
 
         if codigo_bache:
-            query = query.filter(Bache.codigo_bache.ilike(f"%{codigo_bache}%"))
+            barriles_filtrados_sq = barriles_filtrados_sq.filter(
+                Bache.codigo_bache.ilike(f"%{codigo_bache}%")
+            )
 
         if fecha_inicio:
-            query = query.filter(func.date(MovimientoBarril.fecha_hora) >= fecha_inicio)
+            barriles_filtrados_sq = barriles_filtrados_sq.filter(
+                func.date(MovimientoBarril.fecha_hora) >= fecha_inicio
+            )
 
         if fecha_fin:
-            query = query.filter(func.date(MovimientoBarril.fecha_hora) <= fecha_fin)
+            barriles_filtrados_sq = barriles_filtrados_sq.filter(
+                func.date(MovimientoBarril.fecha_hora) <= fecha_fin
+            )
 
-        query = query.distinct()
+        query = query.filter(Barril.id.in_(barriles_filtrados_sq))
 
     fecha_ultimo_estado_sq = (
         db.session.query(func.max(MovimientoBarril.fecha_hora))
