@@ -21,7 +21,14 @@
             | Cerveza: {{ cerveza_actual }}
           {% endif %}
         </small>
+
+      {% elif barril.estado_actual == "LLENO" %}
+        <br>
+        <small class="text-muted">
+          Cerveza: {{ cerveza_actual or "-" }}
+        </small>
       {% endif %}
+
     </div>
     <div><strong>Notas:</strong> {{ barril.notas or "-" }}</div>
   </div>

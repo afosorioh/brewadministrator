@@ -331,6 +331,13 @@ def detalle(barril_id):
         .first()
     )
 
+    ultimo_llenado = (
+        MovimientoBarril.query
+        .filter_by(id_barril=barril.id, tipo_movimiento="LLENO")
+        .order_by(MovimientoBarril.fecha_hora.desc(), MovimientoBarril.id.desc())
+        .first()
+    )
+
     cliente_actual = None
     cerveza_actual = None
 
@@ -340,6 +347,10 @@ def detalle(barril_id):
 
         if ultimo_entregado.bache:
             cerveza_actual = ultimo_entregado.bache.nombre_cerveza
+
+    elif barril.estado_actual == "LLENO" and ultimo_llenado:
+        if ultimo_llenado.bache:
+            cerveza_actual = ultimo_llenado.bache.nombre_cerveza
 
     return render_template(
         "barriles/detalle.html",
