@@ -46,6 +46,7 @@
             <a class="nav-link" href="{{ url_for('estadisticas.bache') }}">Estadísticas</a>
           </li>
           {% if current_user.rol.nombre == "ADMIN" %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('inventario.lista') }}">Inventario</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('usuarios.lista') }}">Usuarios</a></li>
           {% endif %}
         {% endif %}
