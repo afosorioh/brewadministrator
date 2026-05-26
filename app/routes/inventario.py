@@ -13,6 +13,18 @@ from app.services.chatbot_inventory_client import (
     ChatbotInventoryError,
 )
 
+def _payload_from_form():
+    return {
+        "name": request.form.get("name"),
+        "style": request.form.get("style"),
+        "description": request.form.get("description"),
+        "presentation": request.form.get("presentation"),
+        "volume_ml": request.form.get("volume_ml") or None,
+        "price": request.form.get("price"),
+        "stock_quantity": request.form.get("stock_quantity") or 0,
+        "active": request.form.get("active") == "on",
+    }
+
 inventario_bp = Blueprint("inventario", __name__, url_prefix="/inventario")
 
 
@@ -43,3 +55,71 @@ def lista():
         products=products,
         active=active,
     )
+
+@inventario_bp.route("/nuevo", methods=["GET", "POST"])
+@login_required
+def nuevo():
+    if not admin_required():
+        return redirect(url_for("baches.lista"))
+
+    if request.method == "POST":
+        try:
+            create_product(_payload_from_form())
+            flash("Producto creado correctamente.", "success")
+            return redirect(url_for("inventario.lista"))
+        except ChatbotInventoryError as e:
+            flash(str(e), "danger")
+
+    return render_template("inventario/formulario.html", product=None)
+
+@inventario_bp.route("/<int:product_id>/editar", methods=["GET", "POST"])
+@login_required
+def editar(product_id):
+    if not admin_required():
+        return redirect(url_for("baches.lista"))
+
+    try:
+        product = get_product(product_id)
+    except ChatbotInventoryError as e:
+        flash(str(e), "danger")
+        return redirect(url_for("inventario.lista"))
+
+    if request.method == "POST":
+        try:
+            update_product(product_id, _payload_from_form())
+            flash("Producto actualizado correctamente.", "success")
+            return redirect(url_for("inventario.lista"))
+        except ChatbotInventoryError as e:
+            flash(str(e), "danger")
+
+    return render_template("inventario/formulario.html", product=product)
+
+
+@inventario_bp.route("/<int:product_id>/stock", methods=["POST"])
+@login_required
+def stock(product_id):
+    if not admin_required():
+        return redirect(url_for("baches.lista"))
+
+    try:
+        update_stock(product_id, request.form.get("stock_quantity"))
+        flash("Stock actualizado correctamente.", "success")
+    except ChatbotInventoryError as e:
+        flash(str(e), "danger")
+
+    return redirect(url_for("inventario.lista"))
+
+
+@inventario_bp.route("/<int:product_id>/borrar", methods=["POST"])
+@login_required
+def borrar(product_id):
+    if not admin_required():
+        return redirect(url_for("baches.lista"))
+
+    try:
+        delete_product(product_id)
+        flash("Producto desactivado correctamente.", "success")
+    except ChatbotInventoryError as e:
+        flash(str(e), "danger")
+
+    return redirect(url_for("inventario.lista"))
