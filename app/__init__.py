@@ -62,6 +62,9 @@ def create_app():
     from app.routes.inventario import inventario_bp
     app.register_blueprint(inventario_bp)
 
+    from app.routes.catalog import catalog_bp
+    app.register_blueprint(catalog_bp)
+
     @app.route("/")
     def index():
         if current_user.is_authenticated:
