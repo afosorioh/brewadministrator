@@ -65,6 +65,12 @@ def create_app():
     from app.routes.catalog import catalog_bp
     app.register_blueprint(catalog_bp)
 
+    from app.routes.temperatura import temperatura_bp
+    from app.routes.temperature_api import temperature_api_bp
+
+    app.register_blueprint(temperatura_bp)
+    app.register_blueprint(temperature_api_bp)
+
     @app.route("/")
     def index():
         if current_user.is_authenticated:
