@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ "Nuevo" if accion == "crear" else "Editar" }} controlador{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">{{ "Nuevo" if accion == "crear" else "Editar" }} controlador</h1>
+
+<form method="post" class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="nombre">Nombre</label>
+        <input class="form-control" id="nombre" name="nombre" maxlength="120"
+               value="{{ controller.nombre or '' }}" placeholder="Fermentador 5" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="codigo">Código interno</label>
+        <input class="form-control" id="codigo" name="codigo" maxlength="80"
+               value="{{ controller.codigo or '' }}" placeholder="fermentador-5" required>
+        <div class="form-text">Minúsculas, números y guiones. No debe cambiarse después de desplegarlo.</div>
+      </div>
+      <div class="col-md-8">
+        <label class="form-label" for="gateway_id">Gateway Raspberry</label>
+        <input class="form-control" id="gateway_id" name="gateway_id" maxlength="80"
+               value="{{ controller.gateway_id or 'brewery-main-rpi' }}" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="device_id">ID RS-485 (F30)</label>
+        <input class="form-control" id="device_id" name="device_id" type="number"
+               min="1" max="247" value="{{ controller.device_id or '' }}" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="setpoint_min_c">Setpoint mínimo</label>
+        <div class="input-group">
+          <input class="form-control" id="setpoint_min_c" name="setpoint_min_c"
+                 type="number" step="0.1" min="-50" max="200"
+                 value="{{ controller.setpoint_min_c }}" required>
+          <span class="input-group-text">°C</span>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="setpoint_max_c">Setpoint máximo</label>
+        <div class="input-group">
+          <input class="form-control" id="setpoint_max_c" name="setpoint_max_c"
+                 type="number" step="0.1" min="-50" max="200"
+                 value="{{ controller.setpoint_max_c }}" required>
+          <span class="input-group-text">°C</span>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="form-check">
+          <input class="form-check-input" id="activo" name="activo" type="checkbox"
+                 {% if controller.activo %}checked{% endif %}>
+          <label class="form-check-label" for="activo">Consultar este controlador desde la Raspberry</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer d-flex gap-2">
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <a class="btn btn-secondary" href="{{ url_for('temperatura.lista') }}">Cancelar</a>
+  </div>
+</form>
+
+{% if accion == "editar" and current_user.rol.nombre == "ADMIN" %}
+<form method="post" action="{{ url_for('temperatura.eliminar', controller_id=controller.id) }}"
+      class="mt-4" onsubmit="return confirm('¿Eliminar el controlador y todo su historial?');">
+  <button class="btn btn-outline-danger" type="submit">Eliminar controlador e historial</button>
+</form>
+{% endif %}
+{% endblock %}

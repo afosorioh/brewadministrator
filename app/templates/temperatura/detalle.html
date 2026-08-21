@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}{{ controller.nombre }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">{{ controller.nombre }}</h1>
+    <p class="text-muted mb-0">{{ controller.codigo }} · {{ controller.gateway_id }} · ID {{ controller.device_id }}</p>
+  </div>
+  <a class="btn btn-secondary" href="{{ url_for('temperatura.lista') }}">Volver</a>
+</div>
+
+{% if readings %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header"><strong>Últimas {{ readings|length }} lecturas</strong></div>
+  <div class="card-body"><canvas id="temperatureChart" height="90"></canvas></div>
+</div>
+{% endif %}
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header"><strong>Lecturas recientes</strong></div>
+  <div class="table-responsive">
+    <table class="table table-sm table-striped mb-0">
+      <thead><tr><th>Fecha UTC</th><th>Temperatura</th><th>Setpoint</th><th>Refrigeración</th><th>Sensor</th></tr></thead>
+      <tbody>
+      {% for reading in readings %}
+        <tr>
+          <td>{{ reading.observado_en.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+          <td>{{ "%.1f"|format(reading.temperatura_c|float) }} °C</td>
+          <td>{{ "%.1f"|format(reading.setpoint_c|float) }} °C</td>
+          <td>{{ "Activa" if reading.salida_activa else "Inactiva" }}</td>
+          <td>{{ "Error" if reading.error_sensor else "Normal" }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="text-muted">Sin lecturas.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header"><strong>Comandos recientes</strong></div>
+  <div class="table-responsive">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Creado UTC</th><th>Valor</th><th>Estado</th><th>Resultado</th></tr></thead>
+      <tbody>
+      {% for command in commands %}
+        <tr>
+          <td>{{ command.creado_en.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+          <td>{{ "%.1f"|format(command.valor|float) }} °C</td>
+          <td>{{ command.estado }}</td>
+          <td>{{ command.mensaje or "—" }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="text-muted">Sin comandos.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if readings %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+const labels = {{ readings|reverse|map(attribute='observado_en')|map('string')|list|tojson }};
+const temperatures = {{ readings|reverse|map(attribute='temperatura_c')|map('float')|list|tojson }};
+const setpoints = {{ readings|reverse|map(attribute='setpoint_c')|map('float')|list|tojson }};
+new Chart(document.getElementById('temperatureChart'), {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [
+      {label: 'Temperatura °C', data: temperatures, borderColor: '#dc3545', tension: 0.2, pointRadius: 1},
+      {label: 'Setpoint °C', data: setpoints, borderColor: '#0d6efd', borderDash: [6, 4], tension: 0, pointRadius: 0}
+    ]
+  },
+  options: {responsive: true, interaction: {mode: 'index', intersect: false}}
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Monitoreo de temperatura{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Monitoreo de temperatura</h1>
+    <p class="text-muted mb-0">Controladores MT-512E Log conectados a la Raspberry Pi.</p>
+  </div>
+  {% if current_user.rol.nombre in ["ADMIN", "GESTOR"] %}
+    <a class="btn btn-primary" href="{{ url_for('temperatura.crear') }}">Nuevo controlador</a>
+  {% endif %}
+</div>
+
+{% if controllers %}
+<div class="row g-4">
+  {% for controller in controllers %}
+    {% set age = ages[controller.id] %}
+    {% set online = age is not none and age <= 180 %}
+    {% set command = latest_commands[controller.id] %}
+    <div class="col-12 col-lg-6">
+      <div class="card h-100 shadow-sm {% if not controller.activo %}opacity-75{% endif %}">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ controller.nombre }}</strong>
+            <span class="text-muted ms-2">ID {{ controller.device_id }}</span>
+          </div>
+          {% if not controller.activo %}
+            <span class="badge text-bg-secondary">Inactivo</span>
+          {% elif online %}
+            <span class="badge text-bg-success">En línea</span>
+          {% else %}
+            <span class="badge text-bg-danger">Sin comunicación</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <div class="row text-center mb-3">
+            <div class="col-6 border-end">
+              <div class="text-muted small">Temperatura</div>
+              <div class="display-6 fw-semibold">
+                {% if controller.temperatura_actual_c is not none %}
+                  {{ "%.1f"|format(controller.temperatura_actual_c|float) }} °C
+                {% else %}—{% endif %}
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small">Setpoint</div>
+              <div class="display-6 fw-semibold">
+                {% if controller.setpoint_actual_c is not none %}
+                  {{ "%.1f"|format(controller.setpoint_actual_c|float) }} °C
+                {% else %}—{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap mb-3">
+            {% if controller.salida_activa is sameas true %}
+              <span class="badge text-bg-primary">Refrigeración activa</span>
+            {% elif controller.salida_activa is sameas false %}
+              <span class="badge text-bg-light border text-dark">Refrigeración inactiva</span>
+            {% endif %}
+            {% if controller.error_sensor %}
+              <span class="badge text-bg-danger">Error de sensor</span>
+            {% endif %}
+            {% if controller.firmware_version is not none %}
+              <span class="badge text-bg-light border text-dark">Firmware {{ controller.firmware_version }}</span>
+            {% endif %}
+          </div>
+
+          <p class="small text-muted">
+            {% if controller.ultima_lectura_en %}
+              Última lectura: {{ controller.ultima_lectura_en.strftime("%Y-%m-%d %H:%M:%S") }} UTC
+              {% if age is not none %}({{ age }} s){% endif %}
+            {% else %}
+              Todavía no se han recibido lecturas.
+            {% endif %}
+          </p>
+
+          {% if command %}
+            <div class="alert py-2 mb-3 {% if command.estado == 'completed' %}alert-success{% elif command.estado == 'failed' %}alert-danger{% else %}alert-warning{% endif %}">
+              Último comando: <strong>{{ command.estado }}</strong>
+              {% if command.mensaje %}— {{ command.mensaje }}{% endif %}
+            </div>
+          {% endif %}
+
+          {% if current_user.rol.nombre in ["ADMIN", "GESTOR"] %}
+            <form method="post" action="{{ url_for('temperatura.cambiar_setpoint', controller_id=controller.id) }}" class="row g-2 align-items-end">
+              <div class="col">
+                <label class="form-label" for="setpoint-{{ controller.id }}">Nuevo setpoint</label>
+                <div class="input-group">
+                  <input id="setpoint-{{ controller.id }}" name="setpoint_c" type="number"
+                         class="form-control" step="0.1"
+                         min="{{ controller.setpoint_min_c }}" max="{{ controller.setpoint_max_c }}"
+                         value="{{ controller.setpoint_actual_c if controller.setpoint_actual_c is not none else '' }}"
+                         required {% if not online or not controller.activo %}disabled{% endif %}>
+                  <span class="input-group-text">°C</span>
+                </div>
+              </div>
+              <div class="col-auto">
+                <button class="btn btn-warning" type="submit"
+                        {% if not online or not controller.activo %}disabled{% endif %}>
+                  Cambiar
+                </button>
+              </div>
+            </form>
+          {% endif %}
+        </div>
+        <div class="card-footer d-flex gap-2">
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('temperatura.detalle', controller_id=controller.id) }}">Historial</a>
+          {% if current_user.rol.nombre in ["ADMIN", "GESTOR"] %}
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('temperatura.editar', controller_id=controller.id) }}">Editar</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="alert alert-info">
+    No hay controladores registrados. Crea el primero para que la Raspberry comience a consultarlo.
+  </div>
+{% endif %}
+{% endblock %}
