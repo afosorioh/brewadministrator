@@ -129,7 +129,7 @@ class LupuloDetalle(db.Model):
     cohumulona_pct = db.Column(db.Numeric(5, 2))
     aceites_totales_ml_100g = db.Column(db.Numeric(5, 2))
     perfil_aroma = db.Column(db.String(200))
-    aÃ±o_cosecha = db.Column(db.Integer)  # YEAR tambiÃ©n se puede mapear como Integer
+    año_cosecha = db.Column(db.Integer)
 
     materia_prima = db.relationship(
         "MateriaPrima", back_populates="lupulo_detalle", uselist=False
