@@ -129,7 +129,7 @@ class LupuloDetalle(db.Model):
     cohumulona_pct = db.Column(db.Numeric(5, 2))
     aceites_totales_ml_100g = db.Column(db.Numeric(5, 2))
     perfil_aroma = db.Column(db.String(200))
-    año_cosecha = db.Column(db.Integer)  # YEAR también se puede mapear como Integer
+    aÃ±o_cosecha = db.Column(db.Integer)  # YEAR tambiÃ©n se puede mapear como Integer
 
     materia_prima = db.relationship(
         "MateriaPrima", back_populates="lupulo_detalle", uselist=False
@@ -177,7 +177,7 @@ class OtrosMtpDetalle(db.Model):
         primary_key=True,
     )
 
-    # nombre específico del insumo (ej. "Cascara de naranja dulce")
+    # nombre especÃ­fico del insumo (ej. "Cascara de naranja dulce")
     nombre = db.Column(db.String(100), nullable=False)
 
     # tipo de insumo OTRO
@@ -334,7 +334,7 @@ class BacheMateriaPrima(db.Model):
         nullable=False,
     )
 
-    # Etapa de proceso: maceración, hervor, whirlpool, fermentación, etc.
+    # Etapa de proceso: maceraciÃ³n, hervor, whirlpool, fermentaciÃ³n, etc.
     etapa_proceso = db.Column(
         db.Enum(
             "MACERACION",
@@ -349,7 +349,7 @@ class BacheMateriaPrima(db.Model):
         default="OTRA",
     )
 
-    # Tipo de aplicación: amargor, sabor, aroma, dry hop, etc.
+    # Tipo de aplicaciÃ³n: amargor, sabor, aroma, dry hop, etc.
     tipo_aplicacion = db.Column(
         db.Enum(
             "GENERAL",
@@ -368,7 +368,7 @@ class BacheMateriaPrima(db.Model):
     # Para hervido / whirlpool (minutos desde inicio de hervor)
     tiempo_minutos_desde_inicio_hervor = db.Column(db.Integer)
 
-    # Para fermentación (ej: dry hop a día 3)
+    # Para fermentaciÃ³n (ej: dry hop a dÃ­a 3)
     dias_desde_inicio_fermentacion = db.Column(db.Integer)
 
     notas = db.Column(db.Text)
@@ -676,3 +676,100 @@ class RespuestaCataAroma(db.Model):
 
     def __repr__(self):
         return f"<RespuestaCataAroma respuesta={self.id_respuesta_cata} aroma={self.aroma}>"
+
+
+# ============================
+#   MONITOREO DE TEMPERATURA
+# ============================
+
+class ControladorTemperatura(db.Model):
+    __tablename__ = "controlador_temperatura"
+
+    id = db.Column("id_controlador", db.Integer, primary_key=True)
+    codigo = db.Column(db.String(80), nullable=False, unique=True)
+    nombre = db.Column(db.String(120), nullable=False)
+    gateway_id = db.Column(db.String(80), nullable=False, index=True)
+    device_id = db.Column(db.SmallInteger, nullable=False)
+    setpoint_min_c = db.Column(db.Numeric(5, 1), nullable=False, default=-10.0)
+    setpoint_max_c = db.Column(db.Numeric(5, 1), nullable=False, default=30.0)
+    activo = db.Column(db.Boolean, nullable=False, default=True)
+
+    temperatura_actual_c = db.Column(db.Numeric(5, 1))
+    setpoint_actual_c = db.Column(db.Numeric(5, 1))
+    salida_activa = db.Column(db.Boolean)
+    error_sensor = db.Column(db.Boolean)
+    firmware_version = db.Column(db.SmallInteger)
+    ultima_lectura_en = db.Column(db.DateTime)
+
+    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    actualizado_en = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "gateway_id", "device_id", name="uq_controlador_gateway_device"
+        ),
+    )
+
+    lecturas = db.relationship(
+        "LecturaTemperatura", back_populates="controlador",
+        cascade="all, delete-orphan", lazy="dynamic"
+    )
+    comandos = db.relationship(
+        "ComandoControladorTemperatura", back_populates="controlador",
+        cascade="all, delete-orphan", lazy="dynamic"
+    )
+
+
+class LecturaTemperatura(db.Model):
+    __tablename__ = "lectura_temperatura"
+
+    reading_id = db.Column(db.String(36), primary_key=True)
+    id_controlador = db.Column(
+        db.Integer,
+        db.ForeignKey("controlador_temperatura.id_controlador", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    observado_en = db.Column(db.DateTime, nullable=False, index=True)
+    recibido_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    temperatura_c = db.Column(db.Numeric(5, 1), nullable=False)
+    setpoint_c = db.Column(db.Numeric(5, 1), nullable=False)
+    salida_activa = db.Column(db.Boolean, nullable=False)
+    error_sensor = db.Column(db.Boolean, nullable=False, default=False)
+    firmware_version = db.Column(db.SmallInteger)
+
+    controlador = db.relationship(
+        "ControladorTemperatura", back_populates="lecturas"
+    )
+
+
+class ComandoControladorTemperatura(db.Model):
+    __tablename__ = "comando_controlador_temperatura"
+
+    command_id = db.Column(db.String(36), primary_key=True)
+    id_controlador = db.Column(
+        db.Integer,
+        db.ForeignKey("controlador_temperatura.id_controlador", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    gateway_id = db.Column(db.String(80), nullable=False, index=True)
+    accion = db.Column(db.String(40), nullable=False)
+    valor = db.Column(db.Numeric(5, 1), nullable=False)
+    setpoint_esperado_c = db.Column(db.Numeric(5, 1), nullable=False)
+    estado = db.Column(db.String(20), nullable=False, default="pending", index=True)
+    mensaje = db.Column(db.Text)
+    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    entregado_en = db.Column(db.DateTime)
+    confirmado_en = db.Column(db.DateTime)
+    creado_por = db.Column(
+        db.Integer, db.ForeignKey("usuario.id_usuario", ondelete="SET NULL")
+    )
+
+    controlador = db.relationship(
+        "ControladorTemperatura", back_populates="comandos"
+    )
+    usuario = db.relationship("Usuario")
