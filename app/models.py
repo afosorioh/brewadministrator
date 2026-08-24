@@ -129,7 +129,7 @@ class LupuloDetalle(db.Model):
     cohumulona_pct = db.Column(db.Numeric(5, 2))
     aceites_totales_ml_100g = db.Column(db.Numeric(5, 2))
     perfil_aroma = db.Column(db.String(200))
-    año_cosecha = db.Column(db.Integer)
+    año_cosecha = db.Column(db.Integer)  # YEAR también se puede mapear como Integer
 
     materia_prima = db.relationship(
         "MateriaPrima", back_populates="lupulo_detalle", uselist=False
@@ -177,7 +177,7 @@ class OtrosMtpDetalle(db.Model):
         primary_key=True,
     )
 
-    # nombre especÃ­fico del insumo (ej. "Cascara de naranja dulce")
+    # nombre específico del insumo (ej. "Cascara de naranja dulce")
     nombre = db.Column(db.String(100), nullable=False)
 
     # tipo de insumo OTRO
@@ -334,7 +334,7 @@ class BacheMateriaPrima(db.Model):
         nullable=False,
     )
 
-    # Etapa de proceso: maceraciÃ³n, hervor, whirlpool, fermentaciÃ³n, etc.
+    # Etapa de proceso: maceración, hervor, whirlpool, fermentación, etc.
     etapa_proceso = db.Column(
         db.Enum(
             "MACERACION",
@@ -349,7 +349,7 @@ class BacheMateriaPrima(db.Model):
         default="OTRA",
     )
 
-    # Tipo de aplicaciÃ³n: amargor, sabor, aroma, dry hop, etc.
+    # Tipo de aplicación: amargor, sabor, aroma, dry hop, etc.
     tipo_aplicacion = db.Column(
         db.Enum(
             "GENERAL",
@@ -368,7 +368,7 @@ class BacheMateriaPrima(db.Model):
     # Para hervido / whirlpool (minutos desde inicio de hervor)
     tiempo_minutos_desde_inicio_hervor = db.Column(db.Integer)
 
-    # Para fermentaciÃ³n (ej: dry hop a dÃ­a 3)
+    # Para fermentación (ej: dry hop a día 3)
     dias_desde_inicio_fermentacion = db.Column(db.Integer)
 
     notas = db.Column(db.Text)
