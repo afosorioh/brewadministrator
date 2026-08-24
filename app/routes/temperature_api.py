@@ -9,6 +9,7 @@ from flask import Blueprint, current_app, jsonify, request
 
 from app.extensions import db
 from app.models import (
+    Bache,
     ComandoControladorTemperatura,
     ControladorTemperatura,
     LecturaTemperatura,
@@ -79,6 +80,7 @@ def controllers(gateway_id):
                 "device_id": item.device_id,
                 "minimum_setpoint_c": float(item.setpoint_min_c),
                 "maximum_setpoint_c": float(item.setpoint_max_c),
+                "batch_id": item.id_bache_actual,
             }
             for item in rows
         ]
@@ -136,10 +138,16 @@ def receive_readings():
                 raise ValueError("output_active y sensor_error deben ser booleanos")
             firmware = raw.get("firmware_version")
             firmware = int(firmware) if firmware is not None else None
+            batch_id = raw.get("batch_id", controller.id_bache_actual)
+            if batch_id is not None:
+                batch_id = int(batch_id)
+                if db.session.get(Bache, batch_id) is None:
+                    raise ValueError("batch_id no existe")
 
             reading = LecturaTemperatura(
                 reading_id=reading_id,
                 id_controlador=controller.id,
+                id_bache=batch_id,
                 observado_en=observed_at,
                 temperatura_c=temperature,
                 setpoint_c=setpoint,

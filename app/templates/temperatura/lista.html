@@ -54,6 +54,13 @@
           </div>
 
           <div class="d-flex gap-2 flex-wrap mb-3">
+            {% if controller.bache_actual %}
+              <span class="badge text-bg-dark">
+                Bache {{ controller.bache_actual.codigo_bache }}
+              </span>
+            {% else %}
+              <span class="badge text-bg-warning">Sin bache asignado</span>
+            {% endif %}
             {% if controller.salida_activa is sameas true %}
               <span class="badge text-bg-primary">Refrigeración activa</span>
             {% elif controller.salida_activa is sameas false %}

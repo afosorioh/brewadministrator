@@ -28,6 +28,32 @@
         <input class="form-control" id="device_id" name="device_id" type="number"
                min="1" max="247" value="{{ controller.device_id or '' }}" required>
       </div>
+      <div class="col-12">
+        <label class="form-label" for="id_bache_actual">Bache actualmente asociado</label>
+        <select class="form-select" id="id_bache_actual" name="id_bache_actual">
+          <option value="">Sin bache asignado</option>
+          {% for batch in batches %}
+            <option value="{{ batch.id }}"
+                    {% if controller.id_bache_actual == batch.id %}selected{% endif %}>
+              {{ batch.codigo_bache }} — {{ batch.nombre_cerveza }} ({{ batch.estado }})
+            </option>
+          {% endfor %}
+        </select>
+        <div class="form-text">
+          Las nuevas mediciones conservarán este bache aunque después el controlador sea asignado a otro.
+        </div>
+      </div>
+      {% if accion == "editar" %}
+      <div class="col-12">
+        <div class="form-check">
+          <input class="form-check-input" id="asignar_lecturas_sin_bache"
+                 name="asignar_lecturas_sin_bache" type="checkbox">
+          <label class="form-check-label" for="asignar_lecturas_sin_bache">
+            Asociar también a este bache las lecturas históricas que aún no tienen bache
+          </label>
+        </div>
+      </div>
+      {% endif %}
       <div class="col-md-6">
         <label class="form-label" for="setpoint_min_c">Setpoint mínimo</label>
         <div class="input-group">
@@ -50,7 +76,7 @@
         <div class="form-check">
           <input class="form-check-input" id="activo" name="activo" type="checkbox"
                  {% if controller.activo %}checked{% endif %}>
-          <label class="form-check-label" for="activo">Consultar este controlador desde el maestro serial</label>
+          <label class="form-check-label" for="activo">Consultar este controlador desde la Raspberry</label>
         </div>
       </div>
     </div>

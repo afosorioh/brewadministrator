@@ -5,7 +5,14 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <h1 class="h3 mb-1">{{ controller.nombre }}</h1>
-    <p class="text-muted mb-0">{{ controller.codigo }} · {{ controller.gateway_id }} · ID {{ controller.device_id }}</p>
+    <p class="text-muted mb-0">
+      {{ controller.codigo }} · {{ controller.gateway_id }} · ID {{ controller.device_id }}
+      {% if controller.bache_actual %}
+        · Bache actual: <strong>{{ controller.bache_actual.codigo_bache }}</strong>
+      {% else %}
+        · Sin bache asignado
+      {% endif %}
+    </p>
   </div>
   <a class="btn btn-secondary" href="{{ url_for('temperatura.lista') }}">Volver</a>
 </div>
@@ -21,18 +28,25 @@
   <div class="card-header"><strong>Lecturas recientes</strong></div>
   <div class="table-responsive">
     <table class="table table-sm table-striped mb-0">
-      <thead><tr><th>Fecha UTC</th><th>Temperatura</th><th>Setpoint</th><th>Refrigeración</th><th>Sensor</th></tr></thead>
+      <thead><tr><th>Fecha UTC</th><th>Bache</th><th>Temperatura</th><th>Setpoint</th><th>Refrigeración</th><th>Sensor</th></tr></thead>
       <tbody>
       {% for reading in readings %}
         <tr>
           <td>{{ reading.observado_en.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+          <td>
+            {% if reading.bache %}
+              {{ reading.bache.codigo_bache }}
+            {% else %}
+              <span class="text-muted">Sin asignar</span>
+            {% endif %}
+          </td>
           <td>{{ "%.1f"|format(reading.temperatura_c|float) }} °C</td>
           <td>{{ "%.1f"|format(reading.setpoint_c|float) }} °C</td>
           <td>{{ "Activa" if reading.salida_activa else "Inactiva" }}</td>
           <td>{{ "Error" if reading.error_sensor else "Normal" }}</td>
         </tr>
       {% else %}
-        <tr><td colspan="5" class="text-muted">Sin lecturas.</td></tr>
+        <tr><td colspan="6" class="text-muted">Sin lecturas.</td></tr>
       {% endfor %}
       </tbody>
     </table>

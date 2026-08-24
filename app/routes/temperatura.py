@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from app.authz import role_required
 from app.extensions import db
 from app.models import (
+    Bache,
     ComandoControladorTemperatura,
     ControladorTemperatura,
     LecturaTemperatura,
@@ -54,6 +55,16 @@ def _populate_from_form(controller):
     if minimum >= maximum:
         raise ValueError("El limite minimo debe ser menor que el maximo.")
 
+    batch_value = (request.form.get("id_bache_actual") or "").strip()
+    batch_id = None
+    if batch_value:
+        try:
+            batch_id = int(batch_value)
+        except ValueError:
+            raise ValueError("El bache seleccionado no es valido.")
+        if db.session.get(Bache, batch_id) is None:
+            raise ValueError("El bache seleccionado no existe.")
+
     controller.codigo = codigo
     controller.nombre = nombre
     controller.gateway_id = gateway_id
@@ -61,6 +72,13 @@ def _populate_from_form(controller):
     controller.setpoint_min_c = minimum
     controller.setpoint_max_c = maximum
     controller.activo = request.form.get("activo") == "on"
+    controller.id_bache_actual = batch_id
+
+
+def _batches_for_form():
+    return Bache.query.order_by(
+        Bache.fecha_coccion.desc(), Bache.codigo_bache.desc()
+    ).all()
 
 
 @temperatura_bp.get("/")
@@ -111,7 +129,8 @@ def crear():
             flash("Controlador creado. La Raspberry lo detectara en el siguiente ciclo.", "success")
             return redirect(url_for("temperatura.lista"))
     return render_template(
-        "temperatura/formulario.html", controller=controller, accion="crear"
+        "temperatura/formulario.html", controller=controller, accion="crear",
+        batches=_batches_for_form()
     )
 
 
@@ -123,6 +142,16 @@ def editar(controller_id):
     if request.method == "POST":
         try:
             _populate_from_form(controller)
+            if (
+                controller.id_bache_actual is not None
+                and request.form.get("asignar_lecturas_sin_bache") == "on"
+            ):
+                LecturaTemperatura.query.filter_by(
+                    id_controlador=controller.id, id_bache=None
+                ).update(
+                    {LecturaTemperatura.id_bache: controller.id_bache_actual},
+                    synchronize_session=False,
+                )
             db.session.commit()
         except ValueError as error:
             flash(str(error), "danger")
@@ -133,7 +162,8 @@ def editar(controller_id):
             flash("Controlador actualizado.", "success")
             return redirect(url_for("temperatura.lista"))
     return render_template(
-        "temperatura/formulario.html", controller=controller, accion="editar"
+        "temperatura/formulario.html", controller=controller, accion="editar",
+        batches=_batches_for_form()
     )
 
 

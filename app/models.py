@@ -309,6 +309,20 @@ class Bache(db.Model):
         cascade='all, delete-orphan'
     )
 
+    controladores_temperatura = db.relationship(
+        "ControladorTemperatura",
+        back_populates="bache_actual",
+        foreign_keys="ControladorTemperatura.id_bache_actual",
+        lazy="dynamic",
+    )
+
+    lecturas_temperatura = db.relationship(
+        "LecturaTemperatura",
+        back_populates="bache",
+        foreign_keys="LecturaTemperatura.id_bache",
+        lazy="dynamic",
+    )
+
     def __repr__(self):
         return f"<Bache {self.id} {self.codigo_bache}>"
 
@@ -693,6 +707,12 @@ class ControladorTemperatura(db.Model):
     setpoint_min_c = db.Column(db.Numeric(5, 1), nullable=False, default=-10.0)
     setpoint_max_c = db.Column(db.Numeric(5, 1), nullable=False, default=30.0)
     activo = db.Column(db.Boolean, nullable=False, default=True)
+    id_bache_actual = db.Column(
+        db.Integer,
+        db.ForeignKey("bache.id_bache", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
 
     temperatura_actual_c = db.Column(db.Numeric(5, 1))
     setpoint_actual_c = db.Column(db.Numeric(5, 1))
@@ -721,6 +741,10 @@ class ControladorTemperatura(db.Model):
         "ComandoControladorTemperatura", back_populates="controlador",
         cascade="all, delete-orphan", lazy="dynamic"
     )
+    bache_actual = db.relationship(
+        "Bache", back_populates="controladores_temperatura",
+        foreign_keys=[id_bache_actual]
+    )
 
 
 class LecturaTemperatura(db.Model):
@@ -733,6 +757,12 @@ class LecturaTemperatura(db.Model):
         nullable=False,
         index=True,
     )
+    id_bache = db.Column(
+        db.Integer,
+        db.ForeignKey("bache.id_bache", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     observado_en = db.Column(db.DateTime, nullable=False, index=True)
     recibido_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     temperatura_c = db.Column(db.Numeric(5, 1), nullable=False)
@@ -743,6 +773,10 @@ class LecturaTemperatura(db.Model):
 
     controlador = db.relationship(
         "ControladorTemperatura", back_populates="lecturas"
+    )
+    bache = db.relationship(
+        "Bache", back_populates="lecturas_temperatura",
+        foreign_keys=[id_bache]
     )
 
 
