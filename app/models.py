@@ -2,6 +2,7 @@ from app.extensions import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from app.utils.datetime_utils import utc_now
 
 class Rol(db.Model):
     __tablename__ = "rol"
@@ -721,10 +722,10 @@ class ControladorTemperatura(db.Model):
     firmware_version = db.Column(db.SmallInteger)
     ultima_lectura_en = db.Column(db.DateTime)
 
-    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    creado_en = db.Column(db.DateTime, nullable=False, default=utc_now)
     actualizado_en = db.Column(
-        db.DateTime, nullable=False, default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        db.DateTime, nullable=False, default=utc_now,
+        onupdate=utc_now
     )
 
     __table_args__ = (
@@ -764,7 +765,7 @@ class LecturaTemperatura(db.Model):
         index=True,
     )
     observado_en = db.Column(db.DateTime, nullable=False, index=True)
-    recibido_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    recibido_en = db.Column(db.DateTime, nullable=False, default=utc_now)
     temperatura_c = db.Column(db.Numeric(5, 1), nullable=False)
     setpoint_c = db.Column(db.Numeric(5, 1), nullable=False)
     salida_activa = db.Column(db.Boolean, nullable=False)
@@ -796,7 +797,7 @@ class ComandoControladorTemperatura(db.Model):
     setpoint_esperado_c = db.Column(db.Numeric(5, 1), nullable=False)
     estado = db.Column(db.String(20), nullable=False, default="pending", index=True)
     mensaje = db.Column(db.Text)
-    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    creado_en = db.Column(db.DateTime, nullable=False, default=utc_now)
     entregado_en = db.Column(db.DateTime)
     confirmado_en = db.Column(db.DateTime)
     creado_por = db.Column(

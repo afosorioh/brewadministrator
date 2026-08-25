@@ -14,6 +14,7 @@ from app.models import (
     ControladorTemperatura,
     LecturaTemperatura,
 )
+from app.utils.datetime_utils import utc_now
 
 
 temperature_api_bp = Blueprint("temperature_edge_api", __name__)
@@ -43,10 +44,13 @@ def _parse_datetime(value):
     if not isinstance(value, str) or not value:
         raise ValueError("observed_at es obligatorio")
     normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
-    parsed = datetime.fromisoformat(normalized)
-    if parsed.tzinfo is not None:
-        parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
-    return parsed
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as error:
+        raise ValueError("observed_at no tiene un formato ISO 8601 valido") from error
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("observed_at debe incluir zona horaria (Z u offset)")
+    return parsed.astimezone(timezone.utc).replace(tzinfo=None)
 
 
 def _decimal_tenth(value, field, minimum=-100.0, maximum=250.0):
@@ -128,7 +132,7 @@ def receive_readings():
                 raise ValueError("device_id no coincide para %s" % controller_code)
 
             observed_at = _parse_datetime(raw.get("observed_at"))
-            if observed_at > datetime.utcnow() + timedelta(minutes=5):
+            if observed_at > utc_now() + timedelta(minutes=5):
                 raise ValueError("observed_at no puede estar en el futuro")
             temperature = _decimal_tenth(raw.get("temperature_c"), "temperature_c")
             setpoint = _decimal_tenth(raw.get("setpoint_c"), "setpoint_c")
@@ -184,7 +188,7 @@ def commands(gateway_id):
         .limit(50)
         .all()
     )
-    now = datetime.utcnow()
+    now = utc_now()
     response = []
     for item in rows:
         if item.estado == "pending":
@@ -214,7 +218,7 @@ def acknowledge_command(command_id):
 
     command.estado = payload["status"]
     command.mensaje = str(payload.get("message", ""))[:2000]
-    command.confirmado_en = datetime.utcnow()
+    command.confirmado_en = utc_now()
     if command.estado == "completed":
         command.controlador.setpoint_actual_c = command.valor
     db.session.commit()

@@ -11,6 +11,16 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    from app.utils.datetime_utils import (
+        DEFAULT_TIMEZONE,
+        format_local_datetime,
+        utc_to_local,
+        validate_timezone_name,
+    )
+
+    app.config.setdefault("TIMEZONE", DEFAULT_TIMEZONE)
+    validate_timezone_name(app.config["TIMEZONE"])
+
 
     # Inicializar extensiones
     db.init_app(app)
@@ -23,9 +33,12 @@ def create_app():
     from app import models
 
     from app.models import Usuario
-    from app.utils.datetime_utils import utc_to_bogota
+    app.jinja_env.filters["local_datetime"] = utc_to_local
+    app.jinja_env.filters["format_local_datetime"] = format_local_datetime
 
-    app.jinja_env.filters["bogota_datetime"] = utc_to_bogota
+    @app.context_processor
+    def inject_timezone_config():
+        return {"configured_timezone": app.config["TIMEZONE"]}
 
     @login_manager.user_loader
     def load_user(user_id):
