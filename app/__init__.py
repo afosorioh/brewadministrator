@@ -23,6 +23,9 @@ def create_app():
     from app import models
 
     from app.models import Usuario
+    from app.utils.datetime_utils import utc_to_bogota
+
+    app.jinja_env.filters["bogota_datetime"] = utc_to_bogota
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -67,7 +70,6 @@ def create_app():
 
     from app.routes.temperatura import temperatura_bp
     from app.routes.temperature_api import temperature_api_bp
-
     app.register_blueprint(temperatura_bp)
     app.register_blueprint(temperature_api_bp)
 
