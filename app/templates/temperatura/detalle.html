@@ -9,6 +9,14 @@
       {{ controller.codigo }} · {{ controller.gateway_id }} · ID {{ controller.device_id }}
       {% if controller.bache_actual %}
         · Bache actual: <strong>{{ controller.bache_actual.codigo_bache }}</strong>
+        · Estilo:
+        <strong>
+          {% if controller.bache_actual.receta and controller.bache_actual.receta.estilo %}
+            {{ controller.bache_actual.receta.estilo }}
+          {% else %}
+            {{ controller.bache_actual.nombre_cerveza }}
+          {% endif %}
+        </strong>
       {% else %}
         · Sin bache asignado
       {% endif %}

@@ -33,9 +33,12 @@
         <select class="form-select" id="id_bache_actual" name="id_bache_actual">
           <option value="">Sin bache asignado</option>
           {% for batch in batches %}
+            {% set batch_style = batch.receta.estilo
+              if batch.receta and batch.receta.estilo
+              else batch.nombre_cerveza %}
             <option value="{{ batch.id }}"
                     {% if controller.id_bache_actual == batch.id %}selected{% endif %}>
-              {{ batch.codigo_bache }} — {{ batch.nombre_cerveza }} ({{ batch.estado }})
+              {{ batch.codigo_bache }} — {{ batch_style }} ({{ batch.estado }})
             </option>
           {% endfor %}
         </select>

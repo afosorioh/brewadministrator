@@ -58,6 +58,13 @@
               <span class="badge text-bg-dark">
                 Bache {{ controller.bache_actual.codigo_bache }}
               </span>
+              <span class="badge text-bg-secondary">
+                {% if controller.bache_actual.receta and controller.bache_actual.receta.estilo %}
+                  {{ controller.bache_actual.receta.estilo }}
+                {% else %}
+                  {{ controller.bache_actual.nombre_cerveza }}
+                {% endif %}
+              </span>
             {% else %}
               <span class="badge text-bg-warning">Sin bache asignado</span>
             {% endif %}
