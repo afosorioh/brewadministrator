@@ -67,7 +67,7 @@ Generate production and operational statistics, visual summaries, and PDF export
 
 The temperature module connects Full Gauge MT-512E Log v09 controllers to the
 management portal through a Raspberry Pi and an isolated USB–RS-485 adapter.
-The field service in [`app/rasp_mt512_v9.py`](app/rasp_mt512_v9.py)
+The field service in [`raspberry_gateway/gateway_mt512e_sitrad_py34.py`](raspberry_gateway/gateway_mt512e_sitrad_py34.py)
 communicates directly with the controllers through the validated Sitrad serial
 protocol, without requiring Sitrad Pro or a Windows computer.
 
