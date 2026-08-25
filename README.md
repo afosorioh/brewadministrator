@@ -50,7 +50,10 @@ Expose product availability for inventory workflows and external consumers, incl
 
 ### Tastings and quality control
 
-Record structured tasting evaluations for beers and batches, supporting both internal and public tasting workflows.
+Create tasting sessions linked to production batches and collect structured
+quality evaluations through internal or public workflows. Each active session
+provides a shareable URL and QR code so participants can open the tasting form
+without access to the management portal.
 
 ### Customers, users, and authorization
 
@@ -59,6 +62,25 @@ Manage customers and authenticated users with role-based access controls for adm
 ### Statistics and reports
 
 Generate production and operational statistics, visual summaries, and PDF exports using Matplotlib and ReportLab.
+
+### Temperature monitoring and control
+
+The temperature module connects Full Gauge MT-512E Log v09 controllers to the
+management portal through a Raspberry Pi and an isolated USB–RS-485 adapter.
+The field service in [`app/rasp_mt512_v9.py`](app/rasp_mt512_v9.py)
+communicates directly with the controllers through the validated Sitrad serial
+protocol, without requiring Sitrad Pro or a Windows computer.
+
+Current capabilities include:
+
+- Poll multiple controller IDs once per minute over a shared RS-485 bus.
+- Read temperature, setpoint, firmware version, sensor status, and refrigeration output.
+- Buffer measurements in a local SQLite outbox during Internet or VPS outages.
+- Upload idempotent reading batches to the Flask REST API over HTTPS.
+- Associate each controller and its historical readings with a production batch.
+- Display live status and historical temperature/setpoint charts in local Colombian time.
+- Queue remote setpoint changes and verify each write by reading the physical controller back.
+- Run continuously as a `systemd` service on an older Raspberry Pi with Python 3.4.2.
 
 ## Screenshots
 
@@ -83,6 +105,16 @@ Generate production and operational statistics, visual summaries, and PDF export
       <sub><b>Operational analytics:</b> status KPIs, capacity breakdowns, filters, and inventory detail.</sub>
     </td>
   </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/images/tasting-session.png" alt="Public tasting session with access QR code"><br>
+      <sub><b>Tasting sessions:</b> batch information, public access link, QR code, and session activation controls.</sub>
+    </td>
+    <td width="50%">
+      <img src="docs/images/temperature-monitoring.png" alt="Live fermentation temperature monitoring"><br>
+      <sub><b>Temperature monitoring:</b> live measurements, batch assignment, refrigeration output, connectivity, and verified setpoint control.</sub>
+    </td>
+  </tr>
 </table>
 
 ## Technology stack
@@ -95,6 +127,7 @@ Generate production and operational statistics, visual summaries, and PDF export
 | Authentication | Flask-Login, role-based authorization |
 | Schema evolution | Alembic, Flask-Migrate |
 | Reporting and analytics | Matplotlib, NumPy, ReportLab, Pillow |
+| Edge and industrial integration | Raspberry Pi, RS-485, PySerial, Sitrad, SQLite outbox, systemd |
 | Configuration | python-dotenv |
 | Production deployment | Ubuntu, Nginx, Gunicorn |
 | Version control | Git, GitHub |
@@ -112,6 +145,7 @@ brewadministrator/
 │   ├── authz.py         # Authorization helpers
 │   ├── extensions.py    # Flask extension instances
 │   ├── models.py        # Relational domain model
+│   ├── rasp_mt512_v9.py # Raspberry Pi temperature gateway
 │   └── __init__.py      # Application factory and blueprint registration
 ├── migrations/          # Alembic database migrations
 ├── sql/                 # Supporting SQL scripts
@@ -128,6 +162,8 @@ brewadministrator/
 - **Service boundary:** integrations such as chatbot inventory access are isolated from HTTP route handlers.
 - **Database migrations:** Alembic and Flask-Migrate provide controlled schema evolution.
 - **Production deployment:** the application runs behind Nginx and Gunicorn on Ubuntu with PostgreSQL.
+- **Resilient edge integration:** the Raspberry Pi persists readings locally before delivery, while UUID-based idempotency prevents duplicate measurements after retries.
+- **Verified remote control:** setpoint commands include expected-current-value and maximum-delta safeguards, physical acknowledgement, and read-back confirmation.
 
 ## Local development
 

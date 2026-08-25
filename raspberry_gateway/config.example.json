@@ -1,0 +1,24 @@
+{
+  "gateway_id": "brewery-main-rpi",
+  "serial_port": "/dev/ttyUSB0",
+  "database_path": "/var/lib/brew-temperature-gateway/gateway.db",
+  "poll_interval_seconds": 60,
+  "serial_timeout_seconds": 0.8,
+  "device_utc_offset_minutes": -300,
+  "api_enabled": true,
+  "api_base_url": "https://TU_DOMINIO",
+  "api_token_env": "BREW_TEMPERATURE_API_TOKEN",
+  "api_timeout_seconds": 10.0,
+  "batch_size": 100,
+  "command_max_delta_c": 5.0,
+  "fallback_controllers": [
+    {
+      "controller_id": "fermentador-5",
+      "name": "Fermentador 5",
+      "device_id": 5,
+      "batch_id": null,
+      "minimum_setpoint_c": -10.0,
+      "maximum_setpoint_c": 30.0
+    }
+  ]
+}
