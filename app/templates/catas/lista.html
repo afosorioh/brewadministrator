@@ -19,7 +19,7 @@
             <th>Título</th>
             <th>Código público</th>
             <th>Estado</th>
-            <th>Fecha creación</th>
+            <th>Fecha creación ({{ configured_timezone }})</th>
             <th></th>
           </tr>
         </thead>
@@ -38,7 +38,7 @@
                   <span class="badge bg-secondary">Inactiva</span>
                 {% endif %}
               </td>
-              <td>{{ s.fecha_creacion.strftime("%Y-%m-%d %H:%M") }}</td>
+              <td>{{ s.fecha_creacion|format_local_datetime('%Y-%m-%d %H:%M') }}</td>
               <td>
                 <a href="{{ url_for('catas.detalle', id_sesion_cata=s.id_sesion_cata) }}"
                    class="btn btn-sm btn-outline-primary">

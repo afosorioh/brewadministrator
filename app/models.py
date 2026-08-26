@@ -1,7 +1,6 @@
 from app.extensions import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
 from app.utils.datetime_utils import utc_now
 
 class Rol(db.Model):
@@ -21,8 +20,10 @@ class Usuario(UserMixin, db.Model):
 
     id_rol = db.Column(db.Integer, db.ForeignKey("rol.id_rol", ondelete="RESTRICT"), nullable=False)
 
-    creado_en = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    actualizado_en = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    creado_en = db.Column(db.DateTime, default=utc_now, nullable=False)
+    actualizado_en = db.Column(
+        db.DateTime, default=utc_now, onupdate=utc_now, nullable=False
+    )
 
     rol = db.relationship("Rol", back_populates="usuarios")
 
@@ -587,7 +588,7 @@ class SesionCata(db.Model):
     titulo = db.Column(db.String(200), nullable=True)
     descripcion = db.Column(db.Text, nullable=True)
 
-    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    fecha_creacion = db.Column(db.DateTime, default=utc_now, nullable=False)
     fecha_inicio = db.Column(db.DateTime, nullable=True)
     fecha_fin = db.Column(db.DateTime, nullable=True)
 
@@ -617,7 +618,7 @@ class RespuestaCata(db.Model):
         nullable=False
     )
 
-    fecha_respuesta = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    fecha_respuesta = db.Column(db.DateTime, default=utc_now, nullable=False)
 
     correo = db.Column(db.String(255), nullable=True)
     sexo = db.Column(db.String(20), nullable=True)

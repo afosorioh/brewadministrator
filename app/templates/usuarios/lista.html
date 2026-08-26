@@ -12,6 +12,8 @@
       <th>Usuario</th>
       <th>Rol</th>
       <th>Activo</th>
+      <th>Creado ({{ configured_timezone }})</th>
+      <th>Actualizado ({{ configured_timezone }})</th>
       <th style="width:120px;">Acciones</th>
     </tr>
   </thead>
@@ -21,6 +23,8 @@
       <td>{{ u.username }}</td>
       <td>{{ u.rol.nombre }}</td>
       <td>{{ "Sí" if u.activo else "No" }}</td>
+      <td>{{ u.creado_en|format_local_datetime('%Y-%m-%d %H:%M') }}</td>
+      <td>{{ u.actualizado_en|format_local_datetime('%Y-%m-%d %H:%M') }}</td>
       <td>
         <a class="btn btn-sm btn-warning" href="{{ url_for('usuarios.editar', user_id=u.id) }}">Editar</a>
       </td>

@@ -16,6 +16,21 @@
       <p class="mb-1"><strong>Título:</strong> {{ sesion.titulo or "-" }}</p>
       <p class="mb-1"><strong>Código público:</strong> <code>{{ sesion.codigo_publico }}</code></p>
       <p class="mb-1">
+        <strong>Creada:</strong>
+        {{ sesion.fecha_creacion|format_local_datetime }}
+        ({{ configured_timezone }})
+      </p>
+      {% if sesion.fecha_inicio %}
+        <p class="mb-1">
+          <strong>Inicio:</strong> {{ sesion.fecha_inicio|format_local_datetime }}
+        </p>
+      {% endif %}
+      {% if sesion.fecha_fin %}
+        <p class="mb-1">
+          <strong>Fin:</strong> {{ sesion.fecha_fin|format_local_datetime }}
+        </p>
+      {% endif %}
+      <p class="mb-1">
         <strong>Estado:</strong>
         {% if sesion.activa %}
           <span class="badge bg-success">Activa</span>

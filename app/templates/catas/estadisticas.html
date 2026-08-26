@@ -8,6 +8,10 @@
     <div class="text-muted">
       Bache {{ sesion.bache.codigo_bache }} · {{ sesion.bache.nombre_cerveza }} · {{ sesion.titulo or sesion.codigo_publico }}
     </div>
+    <div class="small text-muted">
+      Creada: {{ sesion.fecha_creacion|format_local_datetime }}
+      ({{ configured_timezone }})
+    </div>
   </div>
   <div>
     <a href="{{ url_for('catas.detalle', id_sesion_cata=sesion.id_sesion_cata) }}" class="btn btn-secondary">
