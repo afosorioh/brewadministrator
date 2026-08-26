@@ -535,7 +535,7 @@ class MovimientoBarril(db.Model):
         nullable=False,
     )
 
-    fecha_hora = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    fecha_hora = db.Column(db.DateTime, nullable=False, default=utc_now)
 
     tipo_movimiento = db.Column(
         db.Enum(

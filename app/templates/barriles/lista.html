@@ -32,7 +32,7 @@
             placeholder="Ej: 26001">
     </div>
     <div class="col-md-2">
-      <label class="form-label">Fecha inicio</label>
+      <label class="form-label">Fecha inicio ({{ configured_timezone }})</label>
       <input type="date"
             name="fecha_inicio"
             class="form-control"
@@ -40,7 +40,7 @@
     </div>
 
     <div class="col-md-2">
-      <label class="form-label">Fecha fin</label>
+      <label class="form-label">Fecha fin ({{ configured_timezone }})</label>
       <input type="date"
             name="fecha_fin"
             class="form-control"
@@ -103,7 +103,7 @@
       <th>Estilo</th>
       <th>{{ sort_link("Bache", "bache") }}</th>
       <th>Ubicación</th>
-      <th>{{ sort_link("Fecha-Ultimo-Estado", "fecha_ultimo_estado") }}</th>
+      <th>{{ sort_link("Fecha último estado (" ~ configured_timezone ~ ")", "fecha_ultimo_estado") }}</th>
       <th>{{ sort_link("Estado", "estado") }}</th>
       <th>Acciones</th>
       </tr>
@@ -123,7 +123,7 @@
         <td>{{ b.estilo_mostrar or "-" }}</td>
         <td>{{ b.bache_mostrar or "-" }}</td>
         <td>{{ b.ubicacion or "-" }}</td>
-        <td>{{ b.fecha_ultimo_estado.strftime('%Y-%m-%d %H:%M') if b.fecha_ultimo_estado else "-" }}</td>
+        <td>{{ b.fecha_ultimo_estado|format_local_datetime('%Y-%m-%d %H:%M') if b.fecha_ultimo_estado else "-" }}</td>
         <td>
           {% set badge_map = {
             "LIMPIO": "success",

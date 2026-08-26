@@ -63,11 +63,11 @@
   <div class="card-body">
     <div class="row g-3 align-items-end">
       <div class="col-md-3">
-        <label class="form-label">Fecha desde</label>
+        <label class="form-label">Fecha desde ({{ configured_timezone }})</label>
         <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
       </div>
       <div class="col-md-3">
-        <label class="form-label">Fecha hasta</label>
+        <label class="form-label">Fecha hasta ({{ configured_timezone }})</label>
         <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
       </div>
       <div class="col-md-3">
@@ -211,7 +211,7 @@
               <th>Cliente</th>
               <th>Estilo</th>
               <th>Bache</th>
-              <th>Fecha entrega</th>
+              <th>Fecha entrega ({{ configured_timezone }})</th>
               <th>Días fuera</th>
               <th>Estado</th>
               <th>Acciones</th>
@@ -225,7 +225,7 @@
               <td>{{ row.cliente or "SIN CLIENTE" }}</td>
               <td>{{ row.estilo or "SIN ESTILO" }}</td>
               <td>{{ row.codigo_bache or "-" }}</td>
-              <td>{{ row.fecha_entrega.strftime('%Y-%m-%d %H:%M') if row.fecha_entrega else '-' }}</td>
+              <td>{{ row.fecha_entrega|format_local_datetime('%Y-%m-%d %H:%M') if row.fecha_entrega else '-' }}</td>
               <td>
                 {% if row.dias_fuera is not none %}
                   <span class="badge {% if row.dias_fuera >= 30 %}bg-danger{% elif row.dias_fuera >= 15 %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">

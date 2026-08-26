@@ -1,11 +1,10 @@
-from datetime import datetime, timezone
+from datetime import datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import current_app
 
 
 DEFAULT_TIMEZONE = "America/Bogota"
-LEGACY_BOGOTA_TIMEZONE = ZoneInfo("America/Bogota")
 
 
 def validate_timezone_name(value):
@@ -64,11 +63,16 @@ def local_to_utc(value):
     return value.astimezone(timezone.utc).replace(tzinfo=None)
 
 
-# Compatibilidad temporal para baches y barriles. Estos modulos todavia
-# almacenan horas locales de Bogota y se migraran en sus pasos respectivos.
-def now_bogota():
-    return datetime.now(LEGACY_BOGOTA_TIMEZONE).replace(tzinfo=None)
-
-
-def today_bogota():
-    return datetime.now(LEGACY_BOGOTA_TIMEZONE).date()
+def local_date_to_utc_range(value):
+    """Return the inclusive/exclusive UTC bounds for one configured local day."""
+    if value is None:
+        return None, None
+    timezone_local = app_timezone()
+    start_local = datetime.combine(value, time.min).replace(tzinfo=timezone_local)
+    end_local = datetime.combine(
+        value + timedelta(days=1), time.min
+    ).replace(tzinfo=timezone_local)
+    return (
+        start_local.astimezone(timezone.utc).replace(tzinfo=None),
+        end_local.astimezone(timezone.utc).replace(tzinfo=None),
+    )

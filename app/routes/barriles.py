@@ -1,4 +1,9 @@
-from app.utils.datetime_utils import now_bogota, today_bogota
+from app.utils.datetime_utils import (
+    local_date_to_utc_range,
+    local_today,
+    utc_now,
+    utc_to_local,
+)
 from datetime import datetime
 import re
 
@@ -24,6 +29,17 @@ def _parse_date(value):
         return datetime.strptime(value, "%Y-%m-%d").date()
     except ValueError:
         return None
+
+
+def _filter_local_date_range(query, column, start_date=None, end_date=None):
+    """Apply local calendar dates to a datetime column stored as UTC."""
+    if start_date:
+        start_utc, _ = local_date_to_utc_range(start_date)
+        query = query.filter(column >= start_utc)
+    if end_date:
+        _, end_utc = local_date_to_utc_range(end_date)
+        query = query.filter(column < end_utc)
+    return query
 
 
 def _estado_badge_class(estado: str) -> str:
@@ -58,7 +74,7 @@ def _parse_codigo_barril(codigo: str):
 def _registrar_movimiento_alta(barril, comentario="Alta inicial"):
     movimiento = MovimientoBarril(
         id_barril=barril.id,
-        fecha_hora=now_bogota(),
+        fecha_hora=utc_now(),
         tipo_movimiento="ALTA",
         id_usuario=current_user.id if current_user.is_authenticated else None,
         comentario=comentario,
@@ -86,6 +102,8 @@ def lista():
     codigo_bache = request.args.get("codigo_bache", "", type=str).strip()
     fecha_inicio = request.args.get("fecha_inicio", "", type=str).strip()
     fecha_fin = request.args.get("fecha_fin", "", type=str).strip()
+    fecha_inicio_date = _parse_date(fecha_inicio)
+    fecha_fin_date = _parse_date(fecha_fin)
     sort = request.args.get("sort", "fecha_ultimo_estado", type=str).strip()
     direction = request.args.get("direction", "desc", type=str).strip().lower()
 
@@ -100,7 +118,7 @@ def lista():
     if direction not in ["asc", "desc"]:
         direction = "desc"
 
-    if codigo_bache or fecha_inicio or fecha_fin:
+    if codigo_bache or fecha_inicio_date or fecha_fin_date:
         barriles_filtrados_sq = (
             db.session.query(MovimientoBarril.id_barril)
             .outerjoin(Bache, Bache.id == MovimientoBarril.id_bache)
@@ -111,15 +129,12 @@ def lista():
                 Bache.codigo_bache.ilike(f"%{codigo_bache}%")
             )
 
-        if fecha_inicio:
-            barriles_filtrados_sq = barriles_filtrados_sq.filter(
-                func.date(MovimientoBarril.fecha_hora) >= fecha_inicio
-            )
-
-        if fecha_fin:
-            barriles_filtrados_sq = barriles_filtrados_sq.filter(
-                func.date(MovimientoBarril.fecha_hora) <= fecha_fin
-            )
+        barriles_filtrados_sq = _filter_local_date_range(
+            barriles_filtrados_sq,
+            MovimientoBarril.fecha_hora,
+            fecha_inicio_date,
+            fecha_fin_date,
+        )
 
         query = query.filter(Barril.id.in_(barriles_filtrados_sq))
 
@@ -267,7 +282,7 @@ def crear():
         barril = Barril(
             codigo_barril=codigo_barril,
             capacidad_litros=float(capacidad_litros),
-            fecha_ingreso=fecha_ingreso if fecha_ingreso else today_bogota(),
+            fecha_ingreso=fecha_ingreso if fecha_ingreso else local_today(),
             estado_actual="LIMPIO",
             notas=notas,
         )
@@ -338,7 +353,7 @@ def crear_lote():
             barril = Barril(
                 codigo_barril=codigo,
                 capacidad_litros=float(capacidad_litros),
-                fecha_ingreso=fecha_ingreso if fecha_ingreso else today_bogota(),
+                fecha_ingreso=fecha_ingreso if fecha_ingreso else local_today(),
                 estado_actual="LIMPIO",
                 notas=notas,
             )
@@ -467,7 +482,7 @@ def llenado():
 
         movimiento = MovimientoBarril(
             id_barril=barril.id,
-            fecha_hora=now_bogota(),
+            fecha_hora=utc_now(),
             tipo_movimiento="LLENO",
             id_bache=bache.id,
             id_cliente=None,
@@ -551,7 +566,7 @@ def entrega():
 
             movimiento = MovimientoBarril(
                 id_barril=barril.id,
-                fecha_hora=now_bogota(),
+                fecha_hora=utc_now(),
                 tipo_movimiento="ENTREGADO",
                 id_bache=ultimo_llenado.id_bache,
                 id_cliente=cliente.id,
@@ -571,7 +586,7 @@ def entrega():
         elif destino == "LATAS":
             movimiento = MovimientoBarril(
                 id_barril=barril.id,
-                fecha_hora=now_bogota(),
+                fecha_hora=utc_now(),
                 tipo_movimiento="LATAS",
                 id_bache=ultimo_llenado.id_bache,
                 id_cliente=None,
@@ -640,7 +655,7 @@ def devolucion():
 
         movimiento = MovimientoBarril(
             id_barril=barril.id,
-            fecha_hora=now_bogota(),
+            fecha_hora=utc_now(),
             tipo_movimiento="DEVUELTO",
             id_bache=ultima_entrega.id_bache,
             id_cliente=ultima_entrega.id_cliente,
@@ -700,7 +715,7 @@ def lavado():
 
         movimiento = MovimientoBarril(
             id_barril=barril.id,
-            fecha_hora=now_bogota(),
+            fecha_hora=utc_now(),
             tipo_movimiento="LAVADO",
             id_bache=ultimo_movimiento.id_bache if ultimo_movimiento else None,
             id_cliente=ultimo_movimiento.id_cliente if ultimo_movimiento else None,
@@ -831,11 +846,9 @@ def consultas():
         .filter(Barril.estado_actual == "ENTREGADO")
     )
 
-    if fecha_desde:
-        query_entregados = query_entregados.filter(func.date(mov_entrega.fecha_hora) >= fecha_desde)
-
-    if fecha_hasta:
-        query_entregados = query_entregados.filter(func.date(mov_entrega.fecha_hora) <= fecha_hasta)
+    query_entregados = _filter_local_date_range(
+        query_entregados, mov_entrega.fecha_hora, fecha_desde, fecha_hasta
+    )
 
     if cliente_id:
         query_entregados = query_entregados.filter(mov_entrega.id_cliente == cliente_id)
@@ -899,11 +912,9 @@ def consultas():
         .filter(Barril.estado_actual == "LLENO")
     )
 
-    if fecha_desde:
-        query_llenos = query_llenos.filter(func.date(mov_llenado.fecha_hora) >= fecha_desde)
-
-    if fecha_hasta:
-        query_llenos = query_llenos.filter(func.date(mov_llenado.fecha_hora) <= fecha_hasta)
+    query_llenos = _filter_local_date_range(
+        query_llenos, mov_llenado.fecha_hora, fecha_desde, fecha_hasta
+    )
 
     if estilo:
         query_llenos = query_llenos.filter(
@@ -1024,11 +1035,12 @@ def consultas():
         .filter(Barril.estado_actual == "ENTREGADO")
     )
 
-    if fecha_desde:
-        query_pendientes = query_pendientes.filter(func.date(mov_entrega_det.fecha_hora) >= fecha_desde)
-
-    if fecha_hasta:
-        query_pendientes = query_pendientes.filter(func.date(mov_entrega_det.fecha_hora) <= fecha_hasta)
+    query_pendientes = _filter_local_date_range(
+        query_pendientes,
+        mov_entrega_det.fecha_hora,
+        fecha_desde,
+        fecha_hasta,
+    )
 
     if cliente_id:
         query_pendientes = query_pendientes.filter(mov_entrega_det.id_cliente == cliente_id)
@@ -1044,12 +1056,13 @@ def consultas():
         .all()
     )
 
-    hoy = today_bogota()
+    hoy = local_today()
     pendientes_devolucion = []
     for row in pendientes_devolucion_raw:
         dias_fuera = None
         if row.fecha_entrega:
-            dias_fuera = (hoy - row.fecha_entrega.date()).days
+            fecha_entrega_local = utc_to_local(row.fecha_entrega).date()
+            dias_fuera = (hoy - fecha_entrega_local).days
 
         pendientes_devolucion.append({
             "id": row.id,
@@ -1114,7 +1127,7 @@ def baja(barril_id):
     # Registrar movimiento (importante para auditoría)
     movimiento = MovimientoBarril(
         id_barril=barril.id,
-        fecha_hora=now_bogota(),
+        fecha_hora=utc_now(),
         tipo_movimiento="BAJA",
         id_usuario=current_user.id,
         comentario="Baja manual del barril (dañado o perdido)",

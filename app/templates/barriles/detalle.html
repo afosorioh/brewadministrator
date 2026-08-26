@@ -40,7 +40,7 @@
   <table class="table table-sm table-striped">
     <thead>
       <tr>
-        <th>Fecha</th>
+        <th>Fecha ({{ configured_timezone }})</th>
         <th>Tipo movimiento</th>
         <th>Bache</th>
         <th>Cliente</th>
@@ -53,7 +53,7 @@
     <tbody>
       {% for m in movimientos %}
       <tr>
-        <td>{{ m.fecha_hora }}</td>
+        <td>{{ m.fecha_hora|format_local_datetime }}</td>
         <td>{{ m.tipo_movimiento }}</td>
         <td>{{ m.bache.codigo_bache if m.bache else "-" }}</td>
         <td>{{ m.cliente.nombre if m.cliente else "-" }}</td>
