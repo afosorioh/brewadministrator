@@ -23,11 +23,20 @@
     <li>Atenuación: {{ "%.1f"|format(stats.atenuacion) if stats.atenuacion else "-" }} %</li>
   </ul>
 
-  <h5>Últimas mediciones</h5>
+  <h5>Últimas mediciones ({{ configured_timezone }})</h5>
   <ul>
-    <li>Densidad: {{ stats.ult_dens.valor if stats.ult_dens else "-" }}</li>
-    <li>Temp: {{ stats.ult_temp.valor if stats.ult_temp else "-" }}</li>
-    <li>pH: {{ stats.ult_ph.valor if stats.ult_ph else "-" }}</li>
+    <li>
+      Densidad: {{ stats.ult_dens.valor if stats.ult_dens else "-" }}
+      {% if stats.ult_dens %}({{ stats.ult_dens.fecha|format_local_datetime }}){% endif %}
+    </li>
+    <li>
+      Temp: {{ stats.ult_temp.valor if stats.ult_temp else "-" }}
+      {% if stats.ult_temp %}({{ stats.ult_temp.fecha|format_local_datetime }}){% endif %}
+    </li>
+    <li>
+      pH: {{ stats.ult_ph.valor if stats.ult_ph else "-" }}
+      {% if stats.ult_ph %}({{ stats.ult_ph.fecha|format_local_datetime }}){% endif %}
+    </li>
   </ul>
 </div>
 

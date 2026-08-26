@@ -21,7 +21,11 @@ from app.models import (
 from flask_login import login_required
 from app.authz import role_required
 
-from app.utils.datetime_utils import now_bogota, today_bogota
+from app.utils.datetime_utils import (
+    format_local_datetime,
+    local_to_utc,
+    utc_now,
+)
 from datetime import datetime
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
@@ -165,7 +169,7 @@ def _guardar_usos_levadura(bache, lote_ids, lev_tipo_uso, lev_generacion, lev_co
             uso = BacheLevaduraUso(
                 id_bache=bache.id,
                 id_lote=lote.id,
-                fecha_inoculacion=now_bogota(),
+                fecha_inoculacion=utc_now(),
             )
             db.session.add(uso)
 
@@ -332,9 +336,10 @@ def _guardar_mediciones_bache(bache):
         if not fecha_raw or not valor_raw:
             continue
 
-        fecha_dt = _parse_datetime_local(fecha_raw)
-        if not fecha_dt:
+        fecha_local = _parse_datetime_local(fecha_raw)
+        if not fecha_local:
             return f"La fecha de la medición #{i + 1} no es válida."
+        fecha_utc = local_to_utc(fecha_local)
 
         tipo = (tipo_raw or "").strip().upper()
 
@@ -345,7 +350,7 @@ def _guardar_mediciones_bache(bache):
 
         medicion = MedicionBache(
             id_bache=bache.id,
-            fecha=fecha_dt,
+            fecha=fecha_utc,
             tipo=tipo,
             valor=valor_num,
             comentario=(comentario_raw or None),
@@ -707,7 +712,8 @@ def exportar_pdf(bache_id):
     def fmt_med(m):
         if not m:
             return "-"
-        return f"{m.valor} ({m.fecha})" + (f" | {m.comentario}" if m.comentario else "")
+        fecha_local = format_local_datetime(m.fecha)
+        return f"{m.valor} ({fecha_local})" + (f" | {m.comentario}" if m.comentario else "")
 
     draw_line(f"Densidad: {fmt_med(ctx['ult_dens'])}")
     draw_line(f"Temperatura: {fmt_med(ctx['ult_temp'])}")
@@ -740,7 +746,7 @@ def exportar_pdf(bache_id):
 
     for med in ctx["mediciones"]:
         draw_line(
-            f"- {med.fecha} | {med.tipo} | {med.valor}"
+            f"- {format_local_datetime(med.fecha)} | {med.tipo} | {med.valor}"
             + (f" | {med.comentario}" if med.comentario else "")
         )
 

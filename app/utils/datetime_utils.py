@@ -7,6 +7,7 @@ from flask import current_app
 DEFAULT_TIMEZONE = "America/Bogota"
 LEGACY_BOGOTA_TIMEZONE = ZoneInfo("America/Bogota")
 
+
 def validate_timezone_name(value):
     """Validate and return an IANA timezone configured for the application."""
     name = str(value or "").strip()
@@ -62,9 +63,9 @@ def local_to_utc(value):
         value = value.replace(tzinfo=app_timezone())
     return value.astimezone(timezone.utc).replace(tzinfo=None)
 
+
 # Compatibilidad temporal para baches y barriles. Estos modulos todavia
 # almacenan horas locales de Bogota y se migraran en sus pasos respectivos.
-
 def now_bogota():
     return datetime.now(LEGACY_BOGOTA_TIMEZONE).replace(tzinfo=None)
 

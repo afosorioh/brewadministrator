@@ -356,7 +356,7 @@
   <table class="table table-sm table-striped">
     <thead>
       <tr>
-        <th>Fecha</th>
+        <th>Fecha ({{ configured_timezone }})</th>
         <th>Tipo</th>
         <th>Valor</th>
         <th>Comentario</th>
@@ -365,7 +365,7 @@
     <tbody>
       {% for m in mediciones %}
       <tr>
-        <td>{{ m.fecha }}</td>
+        <td>{{ m.fecha|format_local_datetime }}</td>
         <td>{{ m.tipo }}</td>
         <td>{{ m.valor }}</td>
         <td>{{ m.comentario or "-" }}</td>
@@ -377,7 +377,7 @@
   <table class="table table-sm" id="tabla-mediciones">
     <thead>
       <tr>
-        <th>Fecha</th>
+        <th>Fecha ({{ configured_timezone }})</th>
         <th>Tipo</th>
         <th>Valor</th>
         <th>Comentario</th>

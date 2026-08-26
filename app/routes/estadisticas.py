@@ -1,11 +1,10 @@
 from io import BytesIO
-from datetime import datetime
-
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
 from flask_login import login_required
 
 from app.extensions import db
 from app.models import LoteMateriaPrima, MateriaPrima, Bache, BacheMateriaPrima, MedicionBache
+from app.utils.datetime_utils import app_timezone, utc_to_local
 
 import matplotlib
 matplotlib.use("Agg")  # importante para servidores sin GUI
@@ -171,7 +170,7 @@ def bache_grafica(bache_id):
         return x / 1000.0 if x and x > 10 else x
 
     for m in meds:
-        fechas[m.tipo].append(m.fecha)
+        fechas[m.tipo].append(utc_to_local(m.fecha))
         if m.tipo == "DENSIDAD":
             valores[m.tipo].append(_to_sg(float(m.valor)))
         else:
@@ -190,7 +189,11 @@ def bache_grafica(bache_id):
 
     for a in ax:
         a.grid(True)
-        a.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+        a.xaxis.set_major_formatter(
+            mdates.DateFormatter("%Y-%m-%d", tz=app_timezone())
+        )
+
+    ax[2].set_xlabel("Fecha y hora (%s)" % app_timezone())
 
     fig.autofmt_xdate()
     fig.tight_layout()

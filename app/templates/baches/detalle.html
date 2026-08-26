@@ -74,26 +74,26 @@
 
       <div class="col-md-4">
         <div class="border rounded p-3 mb-3">
-          <div class="mb-2"><strong>Últimas mediciones</strong></div>
+          <div class="mb-2"><strong>Últimas mediciones ({{ configured_timezone }})</strong></div>
 
           <div>
             <strong>Densidad:</strong>
             {% if ult_dens %}
-              {{ ult_dens.valor }} <small class="text-muted">({{ ult_dens.fecha }})</small>
+              {{ ult_dens.valor }} <small class="text-muted">({{ ult_dens.fecha|format_local_datetime }})</small>
             {% else %}-{% endif %}
           </div>
 
           <div>
             <strong>Temperatura:</strong>
             {% if ult_temp %}
-              {{ ult_temp.valor }} <small class="text-muted">({{ ult_temp.fecha }})</small>
+              {{ ult_temp.valor }} <small class="text-muted">({{ ult_temp.fecha|format_local_datetime }})</small>
             {% else %}-{% endif %}
           </div>
 
           <div>
             <strong>pH:</strong>
             {% if ult_ph %}
-              {{ ult_ph.valor }} <small class="text-muted">({{ ult_ph.fecha }})</small>
+              {{ ult_ph.valor }} <small class="text-muted">({{ ult_ph.fecha|format_local_datetime }})</small>
             {% else %}-{% endif %}
           </div>
         </div>
