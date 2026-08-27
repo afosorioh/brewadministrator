@@ -9,7 +9,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("materias_primas.lista"))
+        return redirect(url_for("dashboard.inicio"))
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -25,7 +25,7 @@ def login():
         next_page = request.args.get("next")
         if next_page:
             return redirect(next_page)
-        return redirect(url_for("baches.lista"))
+        return redirect(url_for("dashboard.inicio"))
 
     return render_template("auth/login.html")
 

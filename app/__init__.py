@@ -50,12 +50,14 @@ def create_app():
     from app.routes.baches import baches_bp
     from app.routes.materias_primas import materias_primas_bp
     from app.routes.recetas import recetas_bp
+    from app.routes.dashboard import dashboard_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(usuarios_bp)
     app.register_blueprint(baches_bp)
     app.register_blueprint(materias_primas_bp)
     app.register_blueprint(recetas_bp)
+    app.register_blueprint(dashboard_bp)
 
     from app.cli import register_cli
     register_cli(app)
@@ -89,7 +91,7 @@ def create_app():
     @app.route("/")
     def index():
         if current_user.is_authenticated:
-            return redirect(url_for("baches.lista"))
+            return redirect(url_for("dashboard.inicio"))
         return redirect(url_for("auth.login"))
     
     return app

@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio | Cervecería{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
+  <div class="dashboard-heading">
+    <h1 class="h2 mb-1">Resumen de operación</h1>
+    <p class="text-muted mb-0">
+      Estado general de la cervecería al {{ today.strftime('%d/%m/%Y') }}.
+    </p>
+  </div>
+  <span class="badge rounded-pill text-bg-light border px-3 py-2">
+    {{ current_user.username }} · {{ current_user.rol.nombre }}
+  </span>
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-xl-6">
+    <section class="card dashboard-panel h-100">
+      <div class="card-header d-flex justify-content-between align-items-center gap-3">
+        <div>
+          <h2 class="h5 mb-1">Materias primas</h2>
+          <p class="small text-muted mb-0">Inventario de insumos y vencimientos.</p>
+        </div>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('materias_primas.lista') }}">Gestionar</a>
+      </div>
+      <div class="card-body">
+        <div class="row g-2 mb-4">
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ raw_materials.active }}</span><span class="dashboard-stat-label">Referencias activas</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ raw_materials.available_lots }}</span><span class="dashboard-stat-label">Lotes con saldo</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ raw_materials.expiring_lots }}</span><span class="dashboard-stat-label">Vencen en 30 días</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value {% if raw_materials.expired_lots %}text-danger{% endif %}">{{ raw_materials.expired_lots }}</span><span class="dashboard-stat-label">Lotes vencidos</span></div></div>
+        </div>
+        <div class="dashboard-summary-list">
+          {% for type, total in raw_materials.by_type.items() %}
+            <div class="dashboard-summary-row"><span>{{ type|capitalize }}</span><strong>{{ total }}</strong></div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col-12 col-xl-6">
+    <section class="card dashboard-panel h-100">
+      <div class="card-header d-flex justify-content-between align-items-center gap-3">
+        <div>
+          <h2 class="h5 mb-1">Baches</h2>
+          <p class="small text-muted mb-0">Producción activa y últimos baches.</p>
+        </div>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('baches.lista') }}">Gestionar</a>
+      </div>
+      <div class="card-body">
+        <div class="row g-2 mb-4">
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ batches.active }}</span><span class="dashboard-stat-label">Activos</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ batches.by_state.FERMENTANDO }}</span><span class="dashboard-stat-label">Fermentando</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ batches.by_state.MADURANDO }}</span><span class="dashboard-stat-label">Madurando</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ batches.completed }}</span><span class="dashboard-stat-label">Completados</span></div></div>
+        </div>
+        {% if batches.recent %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead><tr><th>Código</th><th>Cerveza</th><th>Estado</th><th></th></tr></thead>
+              <tbody>
+                {% for batch in batches.recent %}
+                  <tr>
+                    <td>{{ batch.codigo_bache }}</td>
+                    <td>{{ batch.nombre_cerveza }}</td>
+                    <td><span class="badge text-bg-light border">{{ batch.estado|replace('_', ' ')|title }}</span></td>
+                    <td class="text-end"><a href="{{ url_for('baches.detalle', bache_id=batch.id) }}">Ver</a></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="dashboard-empty">No hay baches activos actualmente.</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+
+  <div class="col-12 col-xl-6">
+    <section class="card dashboard-panel h-100">
+      <div class="card-header d-flex justify-content-between align-items-center gap-3">
+        <div>
+          <h2 class="h5 mb-1">Barriles</h2>
+          <p class="small text-muted mb-0">Disponibilidad y ubicación operacional.</p>
+        </div>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('barriles.lista') }}">Gestionar</a>
+      </div>
+      <div class="card-body">
+        <div class="row g-2 mb-4">
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ kegs.operational }}</span><span class="dashboard-stat-label">Operativos</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ kegs.clean }}</span><span class="dashboard-stat-label">Limpios</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ kegs.full }}</span><span class="dashboard-stat-label">Llenos</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ kegs.delivered }}</span><span class="dashboard-stat-label">Entregados</span></div></div>
+        </div>
+        <div class="dashboard-summary-list">
+          {% for state, total in kegs.by_state.items() %}
+            <div class="dashboard-summary-row"><span>{{ state|replace('_', ' ')|title }}</span><strong>{{ total }}</strong></div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col-12 col-xl-6">
+    <section class="card dashboard-panel h-100">
+      <div class="card-header d-flex justify-content-between align-items-center gap-3">
+        <div>
+          <h2 class="h5 mb-1">Catas</h2>
+          <p class="small text-muted mb-0">Sesiones y participación registrada.</p>
+        </div>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('catas.lista') }}">Gestionar</a>
+      </div>
+      <div class="card-body">
+        <div class="row g-2 mb-4">
+          <div class="col-4"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ tastings.active }}</span><span class="dashboard-stat-label">Activas</span></div></div>
+          <div class="col-4"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ tastings.total }}</span><span class="dashboard-stat-label">Sesiones</span></div></div>
+          <div class="col-4"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ tastings.responses }}</span><span class="dashboard-stat-label">Respuestas</span></div></div>
+        </div>
+        {% if tastings.recent %}
+          <div class="dashboard-summary-list">
+            {% for session, batch, response_total in tastings.recent %}
+              <div class="dashboard-summary-row">
+                <div>
+                  <a href="{{ url_for('catas.detalle', id_sesion_cata=session.id_sesion_cata) }}">{{ session.titulo or session.codigo_publico }}</a>
+                  <div class="small text-muted">{{ batch.codigo_bache }} · {{ 'Activa' if session.activa else 'Inactiva' }}</div>
+                </div>
+                <span class="badge text-bg-light border">{{ response_total }} respuestas</span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="dashboard-empty">No hay sesiones de cata registradas.</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+
+  <div class="col-12">
+    <section class="card dashboard-panel">
+      <div class="card-header d-flex justify-content-between align-items-center gap-3">
+        <div>
+          <h2 class="h5 mb-1">Temperaturas</h2>
+          <p class="small text-muted mb-0">Estado de controladores y últimas lecturas.</p>
+        </div>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('temperatura.lista') }}">Gestionar</a>
+      </div>
+      <div class="card-body">
+        <div class="row g-2 mb-4">
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value">{{ temperatures.active }}</span><span class="dashboard-stat-label">Controladores activos</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value text-success">{{ temperatures.online }}</span><span class="dashboard-stat-label">En línea</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value {% if temperatures.offline %}text-danger{% endif %}">{{ temperatures.offline }}</span><span class="dashboard-stat-label">Sin comunicación</span></div></div>
+          <div class="col-6 col-md-3"><div class="dashboard-stat"><span class="dashboard-stat-value {% if temperatures.sensor_errors %}text-danger{% endif %}">{{ temperatures.sensor_errors }}</span><span class="dashboard-stat-label">Errores de sensor</span></div></div>
+        </div>
+        {% if temperatures.controllers %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead><tr><th>Controlador</th><th>Estado</th><th>Temperatura</th><th>Setpoint</th><th>Bache</th><th>Última lectura</th></tr></thead>
+              <tbody>
+                {% for row in temperatures.controllers %}
+                  {% set controller = row.controller %}
+                  <tr>
+                    <td><a href="{{ url_for('temperatura.detalle', controller_id=controller.id) }}">{{ controller.nombre }}</a></td>
+                    <td><span class="dashboard-status-dot {{ 'online' if row.online else 'offline' }}"></span>{{ 'En línea' if row.online else 'Sin comunicación' }}</td>
+                    <td>{{ '%.1f °C'|format(controller.temperatura_actual_c|float) if controller.temperatura_actual_c is not none else '—' }}</td>
+                    <td>{{ '%.1f °C'|format(controller.setpoint_actual_c|float) if controller.setpoint_actual_c is not none else '—' }}</td>
+                    <td>{{ controller.bache_actual.codigo_bache if controller.bache_actual else '—' }}</td>
+                    <td>{{ controller.ultima_lectura_en|format_local_datetime if controller.ultima_lectura_en else '—' }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="dashboard-empty">No hay controladores activos registrados.</p>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
