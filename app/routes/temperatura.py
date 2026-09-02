@@ -1,6 +1,5 @@
 import re
 import uuid
-from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
 from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
@@ -15,6 +14,7 @@ from app.models import (
     ControladorTemperatura,
     LecturaTemperatura,
 )
+from app.utils.datetime_utils import format_local_datetime, utc_now
 
 
 temperatura_bp = Blueprint("temperatura", __name__, url_prefix="/temperatura")
@@ -91,7 +91,7 @@ def lista():
     controllers = ControladorTemperatura.query.order_by(
         ControladorTemperatura.nombre.asc()
     ).all()
-    now = datetime.utcnow()
+    now = utc_now()
     ages = {}
     latest_commands = {}
     for item in controllers:
@@ -183,9 +183,13 @@ def detalle(controller_id):
         ComandoControladorTemperatura.query.filter_by(id_controlador=controller.id)
         .order_by(ComandoControladorTemperatura.creado_en.desc()).limit(20).all()
     )
+    chart_labels = [
+        format_local_datetime(reading.observado_en)
+        for reading in reversed(readings)
+    ]
     return render_template(
         "temperatura/detalle.html", controller=controller,
-        readings=readings, commands=commands
+        readings=readings, commands=commands, chart_labels=chart_labels
     )
 
 
@@ -200,7 +204,7 @@ def cambiar_setpoint(controller_id):
     if controller.setpoint_actual_c is None or controller.ultima_lectura_en is None:
         flash("Debe existir una lectura reciente antes de enviar comandos.", "danger")
         return redirect(url_for("temperatura.lista"))
-    age = (datetime.utcnow() - controller.ultima_lectura_en).total_seconds()
+    age = (utc_now() - controller.ultima_lectura_en).total_seconds()
     if age > 180:
         flash("La ultima lectura tiene mas de 3 minutos; no se envio el comando.", "danger")
         return redirect(url_for("temperatura.lista"))

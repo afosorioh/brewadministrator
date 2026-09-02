@@ -1,7 +1,7 @@
 """agregar protocolo a controladores de temperatura
 
 Revision ID: b31d87f49a20
-Revises: 7c91e5a2b640
+Revises: c52a8e1f9d43
 Create Date: 2026-09-02 10:00:00
 """
 from alembic import op
@@ -9,7 +9,7 @@ import sqlalchemy as sa
 
 
 revision = "b31d87f49a20"
-down_revision = "7c91e5a2b640"
+down_revision = "c52a8e1f9d43"
 branch_labels = None
 depends_on = None
 
