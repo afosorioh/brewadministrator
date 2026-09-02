@@ -18,15 +18,27 @@
                value="{{ controller.codigo or '' }}" placeholder="fermentador-5" required>
         <div class="form-text">Minúsculas, números y guiones. No debe cambiarse después de desplegarlo.</div>
       </div>
-      <div class="col-md-8">
+      <div class="col-md-6">
         <label class="form-label" for="gateway_id">Gateway Raspberry</label>
         <input class="form-control" id="gateway_id" name="gateway_id" maxlength="80"
                value="{{ controller.gateway_id or 'brewery-main-rpi' }}" required>
       </div>
-      <div class="col-md-4">
-        <label class="form-label" for="device_id">ID RS-485 (F30)</label>
+      <div class="col-md-3">
+        <label class="form-label" for="protocolo">Protocolo</label>
+        <select class="form-select" id="protocolo" name="protocolo" required>
+          <option value="sitrad" {% if (controller.protocolo or 'sitrad') == 'sitrad' %}selected{% endif %}>
+            Sitrad (v09)
+          </option>
+          <option value="modbus" {% if controller.protocolo == 'modbus' %}selected{% endif %}>
+            Modbus RTU (v10+)
+          </option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="device_id">ID RS-485</label>
         <input class="form-control" id="device_id" name="device_id" type="number"
                min="1" max="247" value="{{ controller.device_id or '' }}" required>
+        <div class="form-text">F30 en Sitrad; Addr del menú 485 en Modbus.</div>
       </div>
       <div class="col-12">
         <label class="form-label" for="id_bache_actual">Bache actualmente asociado</label>

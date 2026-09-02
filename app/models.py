@@ -1,7 +1,7 @@
 from app.extensions import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.utils.datetime_utils import utc_now
+from datetime import datetime
 
 class Rol(db.Model):
     __tablename__ = "rol"
@@ -20,10 +20,8 @@ class Usuario(UserMixin, db.Model):
 
     id_rol = db.Column(db.Integer, db.ForeignKey("rol.id_rol", ondelete="RESTRICT"), nullable=False)
 
-    creado_en = db.Column(db.DateTime, default=utc_now, nullable=False)
-    actualizado_en = db.Column(
-        db.DateTime, default=utc_now, onupdate=utc_now, nullable=False
-    )
+    creado_en = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    actualizado_en = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     rol = db.relationship("Rol", back_populates="usuarios")
 
@@ -536,7 +534,7 @@ class MovimientoBarril(db.Model):
         nullable=False,
     )
 
-    fecha_hora = db.Column(db.DateTime, nullable=False, default=utc_now)
+    fecha_hora = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     tipo_movimiento = db.Column(
         db.Enum(
@@ -588,7 +586,7 @@ class SesionCata(db.Model):
     titulo = db.Column(db.String(200), nullable=True)
     descripcion = db.Column(db.Text, nullable=True)
 
-    fecha_creacion = db.Column(db.DateTime, default=utc_now, nullable=False)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     fecha_inicio = db.Column(db.DateTime, nullable=True)
     fecha_fin = db.Column(db.DateTime, nullable=True)
 
@@ -618,7 +616,7 @@ class RespuestaCata(db.Model):
         nullable=False
     )
 
-    fecha_respuesta = db.Column(db.DateTime, default=utc_now, nullable=False)
+    fecha_respuesta = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     correo = db.Column(db.String(255), nullable=True)
     sexo = db.Column(db.String(20), nullable=True)
@@ -706,6 +704,9 @@ class ControladorTemperatura(db.Model):
     nombre = db.Column(db.String(120), nullable=False)
     gateway_id = db.Column(db.String(80), nullable=False, index=True)
     device_id = db.Column(db.SmallInteger, nullable=False)
+    protocolo = db.Column(
+        db.String(10), nullable=False, default="sitrad", server_default="sitrad"
+    )
     setpoint_min_c = db.Column(db.Numeric(5, 1), nullable=False, default=-10.0)
     setpoint_max_c = db.Column(db.Numeric(5, 1), nullable=False, default=30.0)
     activo = db.Column(db.Boolean, nullable=False, default=True)
@@ -723,13 +724,17 @@ class ControladorTemperatura(db.Model):
     firmware_version = db.Column(db.SmallInteger)
     ultima_lectura_en = db.Column(db.DateTime)
 
-    creado_en = db.Column(db.DateTime, nullable=False, default=utc_now)
+    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     actualizado_en = db.Column(
-        db.DateTime, nullable=False, default=utc_now,
-        onupdate=utc_now
+        db.DateTime, nullable=False, default=datetime.utcnow,
+        onupdate=datetime.utcnow
     )
 
     __table_args__ = (
+        db.CheckConstraint(
+            "protocolo IN ('sitrad', 'modbus')",
+            name="ck_controlador_temperatura_protocolo",
+        ),
         db.UniqueConstraint(
             "gateway_id", "device_id", name="uq_controlador_gateway_device"
         ),
@@ -766,7 +771,7 @@ class LecturaTemperatura(db.Model):
         index=True,
     )
     observado_en = db.Column(db.DateTime, nullable=False, index=True)
-    recibido_en = db.Column(db.DateTime, nullable=False, default=utc_now)
+    recibido_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     temperatura_c = db.Column(db.Numeric(5, 1), nullable=False)
     setpoint_c = db.Column(db.Numeric(5, 1), nullable=False)
     salida_activa = db.Column(db.Boolean, nullable=False)
@@ -798,7 +803,7 @@ class ComandoControladorTemperatura(db.Model):
     setpoint_esperado_c = db.Column(db.Numeric(5, 1), nullable=False)
     estado = db.Column(db.String(20), nullable=False, default="pending", index=True)
     mensaje = db.Column(db.Text)
-    creado_en = db.Column(db.DateTime, nullable=False, default=utc_now)
+    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     entregado_en = db.Column(db.DateTime)
     confirmado_en = db.Column(db.DateTime)
     creado_por = db.Column(

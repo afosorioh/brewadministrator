@@ -24,6 +24,9 @@
           <div>
             <strong>{{ controller.nombre }}</strong>
             <span class="text-muted ms-2">ID {{ controller.device_id }}</span>
+            <span class="badge text-bg-light border text-dark ms-2">
+              {{ "Modbus RTU" if controller.protocolo == "modbus" else "Sitrad" }}
+            </span>
           </div>
           {% if not controller.activo %}
             <span class="badge text-bg-secondary">Inactivo</span>
@@ -83,8 +86,7 @@
 
           <p class="small text-muted">
             {% if controller.ultima_lectura_en %}
-              Última lectura: {{ controller.ultima_lectura_en|format_local_datetime }}
-              ({{ configured_timezone }})
+              Última lectura: {{ (controller.ultima_lectura_en|bogota_datetime).strftime("%Y-%m-%d %H:%M:%S") }} (hora Colombia)
               {% if age is not none %}({{ age }} s){% endif %}
             {% else %}
               Todavía no se han recibido lecturas.

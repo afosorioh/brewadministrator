@@ -1,5 +1,6 @@
 import re
 import uuid
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
 from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
@@ -14,7 +15,6 @@ from app.models import (
     ControladorTemperatura,
     LecturaTemperatura,
 )
-from app.utils.datetime_utils import format_local_datetime, utc_now
 
 
 temperatura_bp = Blueprint("temperatura", __name__, url_prefix="/temperatura")
@@ -48,6 +48,9 @@ def _populate_from_form(controller):
         raise ValueError("El ID RS-485 debe ser numerico.")
     if not 1 <= device_id <= 247:
         raise ValueError("El ID RS-485 debe estar entre 1 y 247.")
+    protocolo = (request.form.get("protocolo") or "sitrad").strip().lower()
+    if protocolo not in ("sitrad", "modbus"):
+        raise ValueError("El protocolo debe ser Sitrad o Modbus.")
     minimum = _decimal_form("setpoint_min_c")
     maximum = _decimal_form("setpoint_max_c")
     if minimum < Decimal("-50.0") or maximum > Decimal("200.0"):
@@ -69,6 +72,7 @@ def _populate_from_form(controller):
     controller.nombre = nombre
     controller.gateway_id = gateway_id
     controller.device_id = device_id
+    controller.protocolo = protocolo
     controller.setpoint_min_c = minimum
     controller.setpoint_max_c = maximum
     controller.activo = request.form.get("activo") == "on"
@@ -87,7 +91,7 @@ def lista():
     controllers = ControladorTemperatura.query.order_by(
         ControladorTemperatura.nombre.asc()
     ).all()
-    now = utc_now()
+    now = datetime.utcnow()
     ages = {}
     latest_commands = {}
     for item in controllers:
@@ -179,13 +183,9 @@ def detalle(controller_id):
         ComandoControladorTemperatura.query.filter_by(id_controlador=controller.id)
         .order_by(ComandoControladorTemperatura.creado_en.desc()).limit(20).all()
     )
-    chart_labels = [
-        format_local_datetime(reading.observado_en)
-        for reading in reversed(readings)
-    ]
     return render_template(
         "temperatura/detalle.html", controller=controller,
-        readings=readings, commands=commands, chart_labels=chart_labels
+        readings=readings, commands=commands
     )
 
 
@@ -200,7 +200,7 @@ def cambiar_setpoint(controller_id):
     if controller.setpoint_actual_c is None or controller.ultima_lectura_en is None:
         flash("Debe existir una lectura reciente antes de enviar comandos.", "danger")
         return redirect(url_for("temperatura.lista"))
-    age = (utc_now() - controller.ultima_lectura_en).total_seconds()
+    age = (datetime.utcnow() - controller.ultima_lectura_en).total_seconds()
     if age > 180:
         flash("La ultima lectura tiene mas de 3 minutos; no se envio el comando.", "danger")
         return redirect(url_for("temperatura.lista"))

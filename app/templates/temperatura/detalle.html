@@ -7,6 +7,7 @@
     <h1 class="h3 mb-1">{{ controller.nombre }}</h1>
     <p class="text-muted mb-0">
       {{ controller.codigo }} · {{ controller.gateway_id }} · ID {{ controller.device_id }}
+      · {{ "Modbus RTU" if controller.protocolo == "modbus" else "Sitrad" }}
       {% if controller.bache_actual %}
         · Bache actual: <strong>{{ controller.bache_actual.codigo_bache }}</strong>
         · Estilo:
@@ -36,11 +37,11 @@
   <div class="card-header"><strong>Lecturas recientes</strong></div>
   <div class="table-responsive">
     <table class="table table-sm table-striped mb-0">
-      <thead><tr><th>Fecha de lectura ({{ configured_timezone }})</th><th>Bache</th><th>Temperatura</th><th>Setpoint</th><th>Refrigeración</th><th>Sensor</th></tr></thead>
+      <thead><tr><th>Fecha de lectura (Colombia)</th><th>Bache</th><th>Temperatura</th><th>Setpoint</th><th>Refrigeración</th><th>Sensor</th></tr></thead>
       <tbody>
       {% for reading in readings %}
         <tr>
-          <td>{{ reading.observado_en|format_local_datetime }}</td>
+          <td>{{ (reading.observado_en|bogota_datetime).strftime("%Y-%m-%d %H:%M:%S") }}</td>
           <td>
             {% if reading.bache %}
               {{ reading.bache.codigo_bache }}
@@ -65,11 +66,11 @@
   <div class="card-header"><strong>Comandos recientes</strong></div>
   <div class="table-responsive">
     <table class="table table-sm mb-0">
-      <thead><tr><th>Creado ({{ configured_timezone }})</th><th>Valor</th><th>Estado</th><th>Resultado</th></tr></thead>
+      <thead><tr><th>Creado (Colombia)</th><th>Valor</th><th>Estado</th><th>Resultado</th></tr></thead>
       <tbody>
       {% for command in commands %}
         <tr>
-          <td>{{ command.creado_en|format_local_datetime }}</td>
+          <td>{{ (command.creado_en|bogota_datetime).strftime("%Y-%m-%d %H:%M:%S") }}</td>
           <td>{{ "%.1f"|format(command.valor|float) }} °C</td>
           <td>{{ command.estado }}</td>
           <td>{{ command.mensaje or "—" }}</td>
@@ -85,7 +86,7 @@
 {% if readings %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-const labels = {{ chart_labels|tojson }};
+const labels = {{ readings|reverse|map(attribute='observado_en')|map('bogota_datetime')|map('string')|list|tojson }};
 const temperatures = {{ readings|reverse|map(attribute='temperatura_c')|map('float')|list|tojson }};
 const setpoints = {{ readings|reverse|map(attribute='setpoint_c')|map('float')|list|tojson }};
 new Chart(document.getElementById('temperatureChart'), {
