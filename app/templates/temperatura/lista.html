@@ -86,7 +86,8 @@
 
           <p class="small text-muted">
             {% if controller.ultima_lectura_en %}
-              Última lectura: {{ (controller.ultima_lectura_en|bogota_datetime).strftime("%Y-%m-%d %H:%M:%S") }} (hora Colombia)
+              Última lectura: {{ controller.ultima_lectura_en|format_local_datetime }}
+              ({{ configured_timezone }})
               {% if age is not none %}({{ age }} s){% endif %}
             {% else %}
               Todavía no se han recibido lecturas.
