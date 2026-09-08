@@ -1,15 +1,12 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_babel import gettext as _
+from flask_login import login_required
+
+from app.authz import role_required
 from app.extensions import db
 from app.models import Receta
 
-from flask_login import login_required
-from app.authz import role_required
-
-recetas_bp = Blueprint(
-    "recetas",
-    __name__,
-    url_prefix="/recetas"
-)
+recetas_bp = Blueprint("recetas", __name__, url_prefix="/recetas")
 
 
 @recetas_bp.route("/")
@@ -30,7 +27,7 @@ def crear():
         volumen = request.form.get("volumen_estandar_litros") or None
 
         if not nombre:
-            flash("El nombre de la receta es obligatorio", "danger")
+            flash(_("El nombre de la receta es obligatorio."), "danger")
             return redirect(url_for("recetas.crear"))
 
         receta = Receta(
@@ -43,7 +40,7 @@ def crear():
         db.session.add(receta)
         db.session.commit()
 
-        flash("Receta creada correctamente", "success")
+        flash(_("Receta creada correctamente."), "success")
         return redirect(url_for("recetas.detalle", receta_id=receta.id))
 
     return render_template("recetas/formulario.html", receta=None, accion="crear")
@@ -70,11 +67,11 @@ def editar(receta_id):
         receta.volumen_estandar_litros = float(volumen) if volumen else None
 
         if not receta.nombre:
-            flash("El nombre es obligatorio", "danger")
+            flash(_("El nombre es obligatorio."), "danger")
             return redirect(url_for("recetas.editar", receta_id=receta.id))
 
         db.session.commit()
-        flash("Receta actualizada correctamente", "success")
+        flash(_("Receta actualizada correctamente."), "success")
         return redirect(url_for("recetas.detalle", receta_id=receta.id))
 
     return render_template("recetas/formulario.html", receta=receta, accion="editar")
@@ -86,12 +83,14 @@ def editar(receta_id):
 def eliminar(receta_id):
     receta = Receta.query.get_or_404(receta_id)
 
-    # Verificar si está en uso por algún bache
     if receta.baches.count() > 0:
-        flash("No se puede eliminar la receta porque está asociada a baches.", "danger")
+        flash(
+            _("No se puede eliminar la receta porque está asociada a baches."),
+            "danger",
+        )
         return redirect(url_for("recetas.detalle", receta_id=receta.id))
 
     db.session.delete(receta)
     db.session.commit()
-    flash("Receta eliminada correctamente", "success")
+    flash(_("Receta eliminada correctamente."), "success")
     return redirect(url_for("recetas.lista"))

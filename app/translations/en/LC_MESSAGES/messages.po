@@ -308,3 +308,195 @@ msgid "respuesta"
 msgid_plural "respuestas"
 msgstr[0] "response"
 msgstr[1] "responses"
+
+msgid "-- Seleccionar --"
+msgstr "-- Select --"
+
+msgid "-- Todos --"
+msgstr "-- All --"
+
+msgid "Acciones"
+msgstr "Actions"
+
+msgid "Activo"
+msgstr "Active"
+
+msgid "Actualizado"
+msgstr "Updated"
+
+msgid "Administrador"
+msgstr "Administrator"
+
+msgid "Bar"
+msgstr "Bar"
+
+msgid "Buscar"
+msgstr "Search"
+
+msgid "Buscar por nombre"
+msgstr "Search by name"
+
+msgid "Cambiar contraseña (opcional)"
+msgstr "Change password (optional)"
+
+msgid "Cancelar"
+msgstr "Cancel"
+
+msgid "Cliente activo"
+msgstr "Active customer"
+
+msgid "Cliente actualizado correctamente."
+msgstr "Customer updated successfully."
+
+msgid "Cliente creado correctamente."
+msgstr "Customer created successfully."
+
+msgid "Cliente eliminado correctamente."
+msgstr "Customer deleted successfully."
+
+msgid "Confirmar nueva contraseña"
+msgstr "Confirm new password"
+
+msgid "Contacto"
+msgstr "Contact"
+
+msgid "Creado"
+msgstr "Created"
+
+msgid "Descripción"
+msgstr "Description"
+
+msgid "Detalle de receta"
+msgstr "Recipe details"
+
+msgid "Dirección"
+msgstr "Address"
+
+msgid "Editar"
+msgstr "Edit"
+
+msgid "Editar cliente"
+msgstr "Edit customer"
+
+msgid "Editar receta"
+msgstr "Edit recipe"
+
+msgid "Editar usuario"
+msgstr "Edit user"
+
+msgid "Ej: Bar Central"
+msgstr "Example: Central Bar"
+
+msgid "El nombre de la receta es obligatorio."
+msgstr "The recipe name is required."
+
+msgid "El nombre es obligatorio."
+msgstr "The name is required."
+
+msgid "Eliminar"
+msgstr "Delete"
+
+msgid "Estilo"
+msgstr "Style"
+
+msgid "Evento"
+msgstr "Event"
+
+msgid "Gestor"
+msgstr "Manager"
+
+msgid "Guardar"
+msgstr "Save"
+
+msgid "Las nuevas contraseñas no coinciden."
+msgstr "The new passwords do not match."
+
+msgid "Limpiar"
+msgstr "Clear"
+
+msgid "No"
+msgstr "No"
+
+msgid "No hay clientes registrados."
+msgstr "No customers are registered."
+
+msgid "No hay recetas registradas."
+msgstr "No recipes are registered."
+
+msgid "No hay usuarios registrados."
+msgstr "No users are registered."
+
+msgid "No se puede eliminar la receta porque está asociada a baches."
+msgstr "The recipe cannot be deleted because it is associated with batches."
+
+msgid "Nombre"
+msgstr "Name"
+
+msgid "Nombre de usuario"
+msgstr "Username"
+
+msgid "Nueva contraseña"
+msgstr "New password"
+
+msgid "Nueva receta"
+msgstr "New recipe"
+
+msgid "Nuevo cliente"
+msgstr "New customer"
+
+msgid "Nuevo usuario"
+msgstr "New user"
+
+msgid "Receta actualizada correctamente."
+msgstr "Recipe updated successfully."
+
+msgid "Receta creada correctamente."
+msgstr "Recipe created successfully."
+
+msgid "Receta eliminada correctamente."
+msgstr "Recipe deleted successfully."
+
+msgid "Restaurante"
+msgstr "Restaurant"
+
+msgid "Rol"
+msgstr "Role"
+
+msgid "Supervisor"
+msgstr "Supervisor"
+
+msgid "Sí"
+msgstr "Yes"
+
+msgid "Taproom interno"
+msgstr "In-house taproom"
+
+msgid "Teléfono"
+msgstr "Phone"
+
+msgid "Tipo"
+msgstr "Type"
+
+msgid "Usuario actualizado."
+msgstr "User updated."
+
+msgid "Usuario creado."
+msgstr "User created."
+
+msgid "Usuario, contraseña y rol son obligatorios."
+msgstr "Username, password and role are required."
+
+msgid "Volumen estándar"
+msgstr "Standard volume"
+
+msgid "Volumen estándar (L)"
+msgstr "Standard volume (L)"
+
+msgid "Volver"
+msgstr "Back"
+
+msgid "¿Eliminar esta receta?"
+msgstr "Delete this recipe?"
+
+msgid "¿Seguro que deseas eliminar este cliente?"
+msgstr "Are you sure you want to delete this customer?"

@@ -1,24 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Usuario{% endblock %}
+{% block title %}{{ _('Nuevo usuario') if accion == 'crear' else _('Editar usuario') }}{% endblock %}
 {% block content %}
+{% set role_labels = {
+  'ADMIN': _('Administrador'),
+  'GESTOR': _('Gestor'),
+  'SUPERVISOR': _('Supervisor')
+} %}
 {% if accion == "crear" %}
-  <h1 class="h3 mb-3">Nuevo usuario</h1>
+  <h1 class="h3 mb-3">{{ _('Nuevo usuario') }}</h1>
 {% else %}
-  <h1 class="h3 mb-3">Editar usuario</h1>
+  <h1 class="h3 mb-3">{{ _('Editar usuario') }}</h1>
 {% endif %}
 
 <form method="post" class="card p-3">
   <div class="mb-3">
-    <label class="form-label">Username</label>
-    <input class="form-control" name="username" required value="{{ usuario.username if usuario else '' }}">
+    <label class="form-label">{{ _('Nombre de usuario') }}</label>
+    <input class="form-control" name="username" autocomplete="username" required
+           value="{{ usuario.username if usuario else '' }}">
   </div>
 
   <div class="mb-3">
-    <label class="form-label">Rol</label>
+    <label class="form-label">{{ _('Rol') }}</label>
     <select class="form-select" name="id_rol" required>
       {% for r in roles %}
         <option value="{{ r.id }}" {% if usuario and usuario.id_rol == r.id %}selected{% endif %}>
-          {{ r.nombre }}
+          {{ role_labels.get(r.nombre, r.nombre) }}
         </option>
       {% endfor %}
     </select>
@@ -27,32 +33,32 @@
   <div class="form-check mb-3">
     <input class="form-check-input" type="checkbox" name="activo" id="activo"
            {% if not usuario or usuario.activo %}checked{% endif %}>
-    <label class="form-check-label" for="activo">Activo</label>
+    <label class="form-check-label" for="activo">{{ _('Activo') }}</label>
   </div>
 
   {% if accion == "crear" %}
     <div class="mb-3">
-      <label class="form-label">Contraseña</label>
-      <input type="password" class="form-control" name="password" required>
+      <label class="form-label">{{ _('Contraseña') }}</label>
+      <input type="password" class="form-control" name="password" autocomplete="new-password" required>
     </div>
     <div class="mb-3">
-      <label class="form-label">Confirmar contraseña</label>
-      <input type="password" class="form-control" name="password2" required>
+      <label class="form-label">{{ _('Confirmar contraseña') }}</label>
+      <input type="password" class="form-control" name="password2" autocomplete="new-password" required>
     </div>
   {% else %}
     <hr>
-    <h6>Cambiar contraseña (opcional)</h6>
+    <h6>{{ _('Cambiar contraseña (opcional)') }}</h6>
     <div class="mb-3">
-      <label class="form-label">Nueva contraseña</label>
-      <input type="password" class="form-control" name="new_password">
+      <label class="form-label">{{ _('Nueva contraseña') }}</label>
+      <input type="password" class="form-control" name="new_password" autocomplete="new-password">
     </div>
     <div class="mb-3">
-      <label class="form-label">Confirmar nueva contraseña</label>
-      <input type="password" class="form-control" name="new_password2">
+      <label class="form-label">{{ _('Confirmar nueva contraseña') }}</label>
+      <input type="password" class="form-control" name="new_password2" autocomplete="new-password">
     </div>
   {% endif %}
 
-  <button class="btn btn-primary">Guardar</button>
-  <a class="btn btn-secondary" href="{{ url_for('usuarios.lista') }}">Cancelar</a>
+  <button class="btn btn-primary">{{ _('Guardar') }}</button>
+  <a class="btn btn-secondary" href="{{ url_for('usuarios.lista') }}">{{ _('Cancelar') }}</a>
 </form>
 {% endblock %}
