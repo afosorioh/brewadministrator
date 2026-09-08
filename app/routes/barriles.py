@@ -8,6 +8,7 @@ from datetime import datetime
 import re
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_babel import gettext as _
 from flask_login import login_required, current_user
 from sqlalchemy import func, and_
 from sqlalchemy.orm import aliased
@@ -21,6 +22,18 @@ barriles_bp = Blueprint(
     __name__,
     url_prefix="/barriles",
 )
+
+
+def _keg_state_label(state):
+    return {
+        "LIMPIO": _("Limpio"),
+        "LLENO": _("Lleno"),
+        "ENTREGADO": _("Entregado"),
+        "SUCIO": _("Sucio"),
+        "MANTENIMIENTO": _("Mantenimiento"),
+        "BAJA": _("Baja"),
+    }.get(state, state)
+
 
 def _parse_date(value):
     if not value:
@@ -271,12 +284,12 @@ def crear():
         notas = request.form.get("notas") or None
 
         if not codigo_barril or not capacidad_litros:
-            flash("Código y capacidad son obligatorios.", "danger")
+            flash(_("Código y capacidad son obligatorios."), "danger")
             return redirect(url_for("barriles.crear"))
 
         existente = Barril.query.filter_by(codigo_barril=codigo_barril).first()
         if existente:
-            flash("Ya existe un barril con ese código.", "danger")
+            flash(_("Ya existe un barril con ese código."), "danger")
             return redirect(url_for("barriles.crear"))
 
         barril = Barril(
@@ -292,7 +305,7 @@ def crear():
         _registrar_movimiento_alta(barril, comentario="Alta individual de barril")
 
         db.session.commit()
-        flash("Barril creado correctamente.", "success")
+        flash(_("Barril creado correctamente."), "success")
         return redirect(url_for("barriles.detalle", barril_id=barril.id))
 
     return render_template("barriles/form_individual.html")
@@ -310,25 +323,25 @@ def crear_lote():
         notas = request.form.get("notas") or None
 
         if not codigo_inicio or not codigo_fin or not capacidad_litros:
-            flash("Código inicio, código fin y capacidad son obligatorios.", "danger")
+            flash(_("Código inicio, código fin y capacidad son obligatorios."), "danger")
             return redirect(url_for("barriles.crear_lote"))
 
         inicio = _parse_codigo_barril(codigo_inicio)
         fin = _parse_codigo_barril(codigo_fin)
 
         if not inicio or not fin:
-            flash("Los códigos deben tener formato tipo A001, B050, etc.", "danger")
+            flash(_("Los códigos deben tener formato tipo A001, B050, etc."), "danger")
             return redirect(url_for("barriles.crear_lote"))
 
         prefijo_i, numero_i, ancho_i = inicio
         prefijo_f, numero_f, ancho_f = fin
 
         if prefijo_i != prefijo_f or ancho_i != ancho_f:
-            flash("El rango debe usar el mismo prefijo y el mismo formato numérico.", "danger")
+            flash(_("El rango debe usar el mismo prefijo y el mismo formato numérico."), "danger")
             return redirect(url_for("barriles.crear_lote"))
 
         if numero_f < numero_i:
-            flash("El código final no puede ser menor que el inicial.", "danger")
+            flash(_("El código final no puede ser menor que el inicial."), "danger")
             return redirect(url_for("barriles.crear_lote"))
 
         codigos = [
@@ -343,7 +356,10 @@ def crear_lote():
 
         if existentes:
             flash(
-                f"Ya existen estos códigos y no se creó el lote: {', '.join(sorted(existentes))}",
+                _(
+                    "Ya existen estos códigos y no se creó el lote: %(codes)s",
+                    codes=", ".join(sorted(existentes)),
+                ),
                 "danger",
             )
             return redirect(url_for("barriles.crear_lote"))
@@ -367,7 +383,10 @@ def crear_lote():
             creados.append(codigo)
 
         db.session.commit()
-        flash(f"Se crearon {len(creados)} barriles correctamente.", "success")
+        flash(
+            _("Se crearon %(count)s barriles correctamente.", count=len(creados)),
+            "success",
+        )
         return redirect(url_for("barriles.lista"))
 
     return render_template("barriles/form_lote.html")
@@ -445,37 +464,41 @@ def llenado():
         comentario = request.form.get("comentario") or None
 
         if not id_barril or not id_bache or not volumen_litros:
-            flash("Barril, bache y volumen son obligatorios.", "danger")
+            flash(_("Barril, bache y volumen son obligatorios."), "danger")
             return redirect(url_for("barriles.llenado"))
 
         barril = Barril.query.get(id_barril)
         bache = Bache.query.get(id_bache)
 
         if not barril:
-            flash("El barril seleccionado no existe.", "danger")
+            flash(_("El barril seleccionado no existe."), "danger")
             return redirect(url_for("barriles.llenado"))
 
         if not bache:
-            flash("El bache seleccionado no existe.", "danger")
+            flash(_("El bache seleccionado no existe."), "danger")
             return redirect(url_for("barriles.llenado"))
 
         if barril.estado_actual != "LIMPIO":
-            flash("Solo se pueden llenar barriles en estado LIMPIO.", "danger")
+            flash(_("Solo se pueden llenar barriles en estado LIMPIO."), "danger")
             return redirect(url_for("barriles.llenado"))
 
         try:
             volumen = float(volumen_litros)
         except ValueError:
-            flash("El volumen debe ser numérico.", "danger")
+            flash(_("El volumen debe ser numérico."), "danger")
             return redirect(url_for("barriles.llenado"))
 
         if volumen <= 0:
-            flash("El volumen debe ser mayor que cero.", "danger")
+            flash(_("El volumen debe ser mayor que cero."), "danger")
             return redirect(url_for("barriles.llenado"))
 
         if float(barril.capacidad_litros) < volumen:
             flash(
-                f"El volumen no puede superar la capacidad del barril ({barril.capacidad_litros} L).",
+                _(
+                    "El volumen no puede superar la capacidad del barril "
+                    "(%(capacity)s L).",
+                    capacity=barril.capacidad_litros,
+                ),
                 "danger",
             )
             return redirect(url_for("barriles.llenado"))
@@ -496,7 +519,7 @@ def llenado():
 
         db.session.commit()
 
-        flash("Llenado de barril registrado correctamente.", "success")
+        flash(_("Llenado de barril registrado correctamente."), "success")
         return redirect(url_for("barriles.detalle", barril_id=barril.id))
 
     return render_template(
@@ -530,17 +553,17 @@ def entrega():
         comentario = request.form.get("comentario") or None
 
         if not id_barril:
-            flash("Debes seleccionar un barril.", "danger")
+            flash(_("Debes seleccionar un barril."), "danger")
             return redirect(url_for("barriles.entrega"))
 
         barril = Barril.query.get(id_barril)
 
         if not barril:
-            flash("El barril seleccionado no existe.", "danger")
+            flash(_("El barril seleccionado no existe."), "danger")
             return redirect(url_for("barriles.entrega"))
 
         if barril.estado_actual != "LLENO":
-            flash("Solo se pueden procesar barriles en estado LLENO.", "danger")
+            flash(_("Solo se pueden procesar barriles en estado LLENO."), "danger")
             return redirect(url_for("barriles.entrega"))
 
         ultimo_llenado = (
@@ -551,17 +574,17 @@ def entrega():
         )
 
         if not ultimo_llenado:
-            flash("No se encontró un movimiento de llenado previo para este barril.", "danger")
+            flash(_("No se encontró un movimiento de llenado previo para este barril."), "danger")
             return redirect(url_for("barriles.entrega"))
 
         if destino == "CLIENTE":
             if not id_cliente:
-                flash("Debes seleccionar un cliente.", "danger")
+                flash(_("Debes seleccionar un cliente."), "danger")
                 return redirect(url_for("barriles.entrega"))
 
             cliente = Cliente.query.get(id_cliente)
             if not cliente:
-                flash("El cliente seleccionado no existe.", "danger")
+                flash(_("El cliente seleccionado no existe."), "danger")
                 return redirect(url_for("barriles.entrega"))
 
             movimiento = MovimientoBarril(
@@ -580,7 +603,7 @@ def entrega():
 
             db.session.commit()
 
-            flash("Entrega de barril registrada correctamente.", "success")
+            flash(_("Entrega de barril registrada correctamente."), "success")
             return redirect(url_for("barriles.detalle", barril_id=barril.id))
 
         elif destino == "LATAS":
@@ -600,11 +623,14 @@ def entrega():
 
             db.session.commit()
 
-            flash("Salida a latas registrada correctamente. El barril quedó en estado SUCIO.", "success")
+            flash(
+                _("Salida a latas registrada correctamente. El barril quedó en estado SUCIO."),
+                "success",
+            )
             return redirect(url_for("barriles.detalle", barril_id=barril.id))
 
         else:
-            flash("Destino no válido.", "danger")
+            flash(_("Destino no válido."), "danger")
             return redirect(url_for("barriles.entrega"))
 
     return render_template(
@@ -629,17 +655,17 @@ def devolucion():
         comentario = request.form.get("comentario") or None
 
         if not id_barril:
-            flash("Debes seleccionar un barril.", "danger")
+            flash(_("Debes seleccionar un barril."), "danger")
             return redirect(url_for("barriles.devolucion"))
 
         barril = Barril.query.get(id_barril)
 
         if not barril:
-            flash("El barril seleccionado no existe.", "danger")
+            flash(_("El barril seleccionado no existe."), "danger")
             return redirect(url_for("barriles.devolucion"))
 
         if barril.estado_actual != "ENTREGADO":
-            flash("Solo se pueden devolver barriles en estado ENTREGADO.", "danger")
+            flash(_("Solo se pueden devolver barriles en estado ENTREGADO."), "danger")
             return redirect(url_for("barriles.devolucion"))
 
         ultima_entrega = (
@@ -650,7 +676,7 @@ def devolucion():
         )
 
         if not ultima_entrega:
-            flash("No se encontró una entrega previa para este barril.", "danger")
+            flash(_("No se encontró una entrega previa para este barril."), "danger")
             return redirect(url_for("barriles.devolucion"))
 
         movimiento = MovimientoBarril(
@@ -669,7 +695,7 @@ def devolucion():
 
         db.session.commit()
 
-        flash("Devolución de barril registrada correctamente.", "success")
+        flash(_("Devolución de barril registrada correctamente."), "success")
         return redirect(url_for("barriles.detalle", barril_id=barril.id))
 
     return render_template(
@@ -693,17 +719,17 @@ def lavado():
         comentario = request.form.get("comentario") or None
 
         if not id_barril:
-            flash("Debes seleccionar un barril.", "danger")
+            flash(_("Debes seleccionar un barril."), "danger")
             return redirect(url_for("barriles.lavado"))
 
         barril = Barril.query.get(id_barril)
 
         if not barril:
-            flash("El barril seleccionado no existe.", "danger")
+            flash(_("El barril seleccionado no existe."), "danger")
             return redirect(url_for("barriles.lavado"))
 
         if barril.estado_actual != "SUCIO":
-            flash("Solo se pueden lavar barriles en estado SUCIO.", "danger")
+            flash(_("Solo se pueden lavar barriles en estado SUCIO."), "danger")
             return redirect(url_for("barriles.lavado"))
 
         ultimo_movimiento = (
@@ -729,7 +755,7 @@ def lavado():
 
         db.session.commit()
 
-        flash("Lavado de barril registrado correctamente.", "success")
+        flash(_("Lavado de barril registrado correctamente."), "success")
         return redirect(url_for("barriles.detalle", barril_id=barril.id))
 
     return render_template(
@@ -785,7 +811,7 @@ def consultas():
         {float(r.capacidad) for r in resumen_estado_tamano if r.capacidad is not None}
     )
 
-    grafica_labels = estados_orden
+    grafica_labels = [_keg_state_label(state) for state in estados_orden]
     grafica_datasets = []
 
     for capacidad in capacidades:
@@ -1121,7 +1147,7 @@ def baja(barril_id):
     barril = Barril.query.get_or_404(barril_id)
 
     if barril.estado_actual == "BAJA":
-        flash("El barril ya se encuentra en estado BAJA.", "warning")
+        flash(_("El barril ya se encuentra en estado BAJA."), "warning")
         return redirect(url_for("barriles.lista"))
 
     # Registrar movimiento (importante para auditoría)
@@ -1139,7 +1165,13 @@ def baja(barril_id):
 
     db.session.commit()
 
-    flash(f"Barril {barril.codigo_barril} dado de baja correctamente.", "success")
+    flash(
+        _(
+            "Barril %(keg_code)s dado de baja correctamente.",
+            keg_code=barril.codigo_barril,
+        ),
+        "success",
+    )
     return redirect(url_for("barriles.lista"))
 
 @barriles_bp.route("/<int:barril_id>/movimientos/<int:movimiento_id>/eliminar", methods=["POST"])
@@ -1151,7 +1183,7 @@ def eliminar_ultimo_movimiento(barril_id, movimiento_id):
 
     # Validar que el movimiento pertenezca al barril
     if movimiento.id_barril != barril.id:
-        flash("El movimiento no pertenece al barril indicado.", "danger")
+        flash(_("El movimiento no pertenece al barril indicado."), "danger")
         return redirect(url_for("barriles.detalle", barril_id=barril.id))
 
     # Obtener movimientos ordenados del más reciente al más antiguo
@@ -1163,14 +1195,14 @@ def eliminar_ultimo_movimiento(barril_id, movimiento_id):
     )
 
     if not movimientos:
-        flash("El barril no tiene movimientos para eliminar.", "warning")
+        flash(_("El barril no tiene movimientos para eliminar."), "warning")
         return redirect(url_for("barriles.detalle", barril_id=barril.id))
 
     ultimo = movimientos[0]
 
     # Solo se permite borrar el último movimiento
     if ultimo.id != movimiento.id:
-        flash("Solo se permite borrar el último movimiento del barril.", "danger")
+        flash(_("Solo se permite borrar el último movimiento del barril."), "danger")
         return redirect(url_for("barriles.detalle", barril_id=barril.id))
 
     try:
@@ -1191,10 +1223,13 @@ def eliminar_ultimo_movimiento(barril_id, movimiento_id):
             barril.estado_actual = "LIMPIO"
 
         db.session.commit()
-        flash("Último movimiento eliminado correctamente.", "success")
+        flash(_("Último movimiento eliminado correctamente."), "success")
 
     except Exception as e:
         db.session.rollback()
-        flash(f"No fue posible eliminar el movimiento: {e}", "danger")
+        flash(
+            _("No fue posible eliminar el movimiento: %(error)s", error=e),
+            "danger",
+        )
 
     return redirect(url_for("barriles.detalle", barril_id=barril.id))

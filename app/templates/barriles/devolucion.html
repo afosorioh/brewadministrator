@@ -1,19 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Devolución de barriles{% endblock %}
+{% block title %}{{ _('Devolución de barriles') }}{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-3">Devolución de barriles del cliente</h1>
+{% set state_labels = {"ENTREGADO": _('Entregado')} %}
+<h1 class="h3 mb-3">{{ _('Devolución de barriles del cliente') }}</h1>
 
 <form method="post" class="card p-3">
   <div class="row g-3">
     <div class="col-md-8">
-    <label class="form-label">Barril</label>
+    <label class="form-label">{{ _('Barril') }}</label>
     <div class="input-group">
         <select name="id_barril" id="id_barril_devolucion" class="form-select" required>
-        <option value="">-- Seleccionar barril --</option>
+        <option value="">-- {{ _('Seleccionar barril') }} --</option>
         {% for b in barriles %}
             <option value="{{ b.id }}" data-codigo="{{ b.codigo_barril }}">
-            {{ b.codigo_barril }} - {{ b.capacidad_litros }} L - {{ b.estado_actual }}
+            {{ b.codigo_barril }} - {{ b.capacidad_litros }} L - {{ state_labels.get(b.estado_actual, b.estado_actual) }}
             </option>
         {% endfor %}
         </select>
@@ -24,24 +25,24 @@
                 targetSelectId: 'id_barril_devolucion',
                 targetDisplayId: 'qr_result_devolucion'
                 })">
-        Escanear QR
+        {{ _('Escanear QR') }}
         </button>
     </div>
     <div id="qr_result_devolucion" class="small mt-2 d-none"></div>
     <div class="form-text">
-        Solo aparecen barriles en estado ENTREGADO. El sistema tomará automáticamente cliente, bache y volumen de la última entrega.
+        {{ _('Solo aparecen barriles en estado ENTREGADO. El sistema tomará automáticamente cliente, bache y volumen de la última entrega.') }}
     </div>
     </div>
 
     <div class="col-12">
-      <label class="form-label">Comentario</label>
+      <label class="form-label">{{ _('Comentario') }}</label>
       <textarea name="comentario" class="form-control" rows="2"></textarea>
     </div>
   </div>
 
   <div class="mt-3">
-    <button class="btn btn-primary">Registrar devolución</button>
-    <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Cancelar</a>
+    <button class="btn btn-primary">{{ _('Registrar devolución') }}</button>
+    <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">{{ _('Cancelar') }}</a>
   </div>
 </form>
 {% endblock %}

@@ -1,65 +1,86 @@
 {% extends "base.html" %}
-{% block title %}Detalle barril{% endblock %}
+{% block title %}{{ _('Detalle de barril') }}{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-3">Barril {{ barril.codigo_barril }}</h1>
+{% set state_labels = {
+  "LIMPIO": _('Limpio'), "LLENO": _('Lleno'), "ENTREGADO": _('Entregado'),
+  "SUCIO": _('Sucio'), "MANTENIMIENTO": _('Mantenimiento'), "BAJA": _('Baja')
+} %}
+{% set movement_labels = {
+  "ALTA": _('Alta'), "LAVADO": _('Lavado'), "LLENO": _('Llenado'),
+  "ENTREGADO": _('Entrega'), "DEVUELTO": _('Devolución'),
+  "LATAS": _('Salida a latas'), "BAJA": _('Baja')
+} %}
+<h1 class="h3 mb-3">{{ _('Barril') }} {{ barril.codigo_barril }}</h1>
 
 <div class="card mb-4">
   <div class="card-body">
-    <div><strong>Código:</strong> {{ barril.codigo_barril }}</div>
-    <div><strong>Capacidad:</strong> {{ barril.capacidad_litros }} L</div>
-    <div><strong>Fecha ingreso:</strong> {{ barril.fecha_ingreso or "-" }}</div>
+    <div><strong>{{ _('Código') }}:</strong> {{ barril.codigo_barril }}</div>
+    <div><strong>{{ _('Capacidad') }}:</strong> {{ barril.capacidad_litros }} L</div>
+    <div><strong>{{ _('Fecha ingreso') }}:</strong> {{ barril.fecha_ingreso or "-" }}</div>
     <div>
-      <strong>Estado actual:</strong>
-      {{ barril.estado_actual }}
+      <strong>{{ _('Estado actual') }}:</strong>
+      {{ state_labels.get(barril.estado_actual, barril.estado_actual) }}
 
       {% if barril.estado_actual == "ENTREGADO" %}
         <br>
         <small class="text-muted">
-          Cliente: {{ cliente_actual or "-" }}
+          {{ _('Cliente') }}: {{ cliente_actual or "-" }}
           {% if cerveza_actual %}
-            | Cerveza: {{ cerveza_actual }}
+            | {{ _('Cerveza') }}: {{ cerveza_actual }}
           {% endif %}
         </small>
 
       {% elif barril.estado_actual == "LLENO" %}
         <br>
         <small class="text-muted">
-          Cerveza: {{ cerveza_actual or "-" }}
+          {{ _('Cerveza') }}: {{ cerveza_actual or "-" }}
         </small>
       {% endif %}
 
     </div>
-    <div><strong>Notas:</strong> {{ barril.notas or "-" }}</div>
+    <div><strong>{{ _('Notas') }}:</strong> {{ barril.notas or "-" }}</div>
   </div>
 </div>
 
-<h2 class="h5">Historial de movimientos</h2>
+<h2 class="h5">{{ _('Historial de movimientos') }}</h2>
 
 {% if movimientos %}
   <table class="table table-sm table-striped">
     <thead>
       <tr>
-        <th>Fecha ({{ configured_timezone }})</th>
-        <th>Tipo movimiento</th>
-        <th>Bache</th>
-        <th>Cliente</th>
-        <th>Usuario</th>
-        <th>Volumen</th>
-        <th>Comentario</th>
-        <th>Acciones</th>
+        <th>{{ _('Fecha') }} ({{ configured_timezone }})</th>
+        <th>{{ _('Tipo de movimiento') }}</th>
+        <th>{{ _('Bache') }}</th>
+        <th>{{ _('Cliente') }}</th>
+        <th>{{ _('Usuario') }}</th>
+        <th>{{ _('Volumen') }}</th>
+        <th>{{ _('Comentario') }}</th>
+        <th>{{ _('Acciones') }}</th>
       </tr>
     </thead>
     <tbody>
       {% for m in movimientos %}
       <tr>
         <td>{{ m.fecha_hora|format_local_datetime }}</td>
-        <td>{{ m.tipo_movimiento }}</td>
+        <td>{{ movement_labels.get(m.tipo_movimiento, m.tipo_movimiento) }}</td>
         <td>{{ m.bache.codigo_bache if m.bache else "-" }}</td>
         <td>{{ m.cliente.nombre if m.cliente else "-" }}</td>
         <td>{{ m.usuario.username if m.usuario else "-" }}</td>
         <td>{{ m.volumen_litros or "-" }}</td>
-        <td>{{ m.comentario or "-" }}</td>
+        <td>
+          {% if m.comentario == "Alta inicial" %}
+            {{ _('Alta inicial') }}
+          {% elif m.comentario == "Alta individual de barril" %}
+            {{ _('Alta individual de barril') }}
+          {% elif m.comentario and m.comentario.startswith("Alta por lote:") %}
+            {{ _('Alta por lote:') }}{{ m.comentario[14:] }}
+          {% elif m.comentario == "Baja manual del barril (dañado o perdido)" %}
+            {{ _('Baja manual del barril (dañado o perdido)') }}
+          {% else %}
+            {{ m.comentario or "-" }}
+          {% endif %}
+        </td>
         <td>
           {% if current_user.is_authenticated
                 and current_user.rol
@@ -67,10 +88,10 @@
                 and loop.first %}
             <form method="post"
                   action="{{ url_for('barriles.eliminar_ultimo_movimiento', barril_id=barril.id, movimiento_id=m.id) }}"
-                  onsubmit="return confirm('¿Seguro que deseas borrar el último movimiento de este barril?');"
+                  onsubmit='return confirm({{ _("¿Seguro que deseas borrar el último movimiento de este barril?")|tojson }});'
                   style="display:inline;">
               <button type="submit" class="btn btn-sm btn-outline-danger">
-                Borrar
+                {{ _('Borrar') }}
               </button>
             </form>
           {% else %}
@@ -82,8 +103,8 @@
     </tbody>
   </table>
 {% else %}
-  <p>No hay movimientos registrados.</p>
+  <p>{{ _('No hay movimientos registrados.') }}</p>
 {% endif %}
 
-<a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Volver</a>
+<a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">{{ _('Volver') }}</a>
 {% endblock %}

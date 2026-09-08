@@ -1,18 +1,22 @@
 {% extends "base.html" %}
-{% block title %}Barriles{% endblock %}
+{% block title %}{{ _('Barriles') }}{% endblock %}
 
 {% block content %}
+{% set state_labels = {
+  "LIMPIO": _('Limpio'), "LLENO": _('Lleno'), "ENTREGADO": _('Entregado'),
+  "SUCIO": _('Sucio'), "MANTENIMIENTO": _('Mantenimiento'), "BAJA": _('Baja')
+} %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3">Barriles</h1>
+  <h1 class="h3">{{ _('Barriles') }}</h1>
   {% if current_user.rol.nombre in ["ADMIN", "GESTOR"] %}
     <div class="d-flex gap-2">
-      <a href="{{ url_for('barriles.crear') }}" class="btn btn-primary">Alta individual</a>
-      <a href="{{ url_for('barriles.crear_lote') }}" class="btn btn-outline-primary">Alta por lote</a>
-      <a href="{{ url_for('barriles.llenado') }}" class="btn btn-outline-primary">Llenado</a>
-      <a href="{{ url_for('barriles.entrega') }}" class="btn btn-outline-primary">Salida</a>
-      <a href="{{ url_for('barriles.devolucion') }}" class="btn btn-outline-primary">Devolución</a>
-      <a href="{{ url_for('barriles.lavado') }}" class="btn btn-outline-primary">Lavado</a>
-      <a href="{{ url_for('barriles.consultas') }}" class="btn btn-outline-dark">Consultas</a>
+      <a href="{{ url_for('barriles.crear') }}" class="btn btn-primary">{{ _('Alta individual') }}</a>
+      <a href="{{ url_for('barriles.crear_lote') }}" class="btn btn-outline-primary">{{ _('Alta por lote') }}</a>
+      <a href="{{ url_for('barriles.llenado') }}" class="btn btn-outline-primary">{{ _('Llenado') }}</a>
+      <a href="{{ url_for('barriles.entrega') }}" class="btn btn-outline-primary">{{ _('Salida') }}</a>
+      <a href="{{ url_for('barriles.devolucion') }}" class="btn btn-outline-primary">{{ _('Devolución') }}</a>
+      <a href="{{ url_for('barriles.lavado') }}" class="btn btn-outline-primary">{{ _('Lavado') }}</a>
+      <a href="{{ url_for('barriles.consultas') }}" class="btn btn-outline-dark">{{ _('Consultas') }}</a>
     </div>
   {% endif %}
 </div>
@@ -20,19 +24,19 @@
 <form method="get" class="card p-3 mb-3">
   <div class="row g-2 align-items-end">
     <div class="col-md-5">
-      <label class="form-label">Buscar por código</label>
-      <input type="text" name="q" class="form-control" value="{{ q or '' }}" placeholder="Ej: A001">
+      <label class="form-label">{{ _('Buscar por código') }}</label>
+      <input type="text" name="q" class="form-control" value="{{ q or '' }}" placeholder="{{ _('Ej: A001') }}">
     </div>
     <div class="col-md-3">
-      <label class="form-label">Código bache</label>
+      <label class="form-label">{{ _('Código bache') }}</label>
       <input type="text"
             name="codigo_bache"
             class="form-control"
             value="{{ codigo_bache or '' }}"
-            placeholder="Ej: 26001">
+            placeholder="{{ _('Ej: 26001') }}">
     </div>
     <div class="col-md-2">
-      <label class="form-label">Fecha inicio ({{ configured_timezone }})</label>
+      <label class="form-label">{{ _('Fecha inicio') }} ({{ configured_timezone }})</label>
       <input type="date"
             name="fecha_inicio"
             class="form-control"
@@ -40,24 +44,24 @@
     </div>
 
     <div class="col-md-2">
-      <label class="form-label">Fecha fin ({{ configured_timezone }})</label>
+      <label class="form-label">{{ _('Fecha fin') }} ({{ configured_timezone }})</label>
       <input type="date"
             name="fecha_fin"
             class="form-control"
             value="{{ fecha_fin or '' }}">
     </div>        
     <div class="col-md-4">
-      <label class="form-label">Buscar por estado</label>
+      <label class="form-label">{{ _('Buscar por estado') }}</label>
       <select name="estado" class="form-select">
-        <option value="">-- Todos --</option>
+        <option value="">-- {{ _('Todos') }} --</option>
         {% for e in estados %}
-          <option value="{{ e }}" {% if estado == e %}selected{% endif %}>{{ e }}</option>
+          <option value="{{ e }}" {% if estado == e %}selected{% endif %}>{{ state_labels.get(e, e) }}</option>
         {% endfor %}
       </select>
     </div>
     <div class="col-md-3">
-      <button class="btn btn-primary">Buscar</button>
-      <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Limpiar</a>
+      <button class="btn btn-primary">{{ _('Buscar') }}</button>
+      <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">{{ _('Limpiar') }}</a>
     </div>
   </div>
 </form>
@@ -97,15 +101,15 @@
   <table class="table table-striped table-hover align-middle">
     <thead>
       <tr>
-      <th>{{ sort_link("Código", "codigo") }}</th>
-      <th>Capacidad (L)</th>
-      <th>Litros llenado</th>
-      <th>Estilo</th>
-      <th>{{ sort_link("Bache", "bache") }}</th>
-      <th>Ubicación</th>
-      <th>{{ sort_link("Fecha último estado (" ~ configured_timezone ~ ")", "fecha_ultimo_estado") }}</th>
-      <th>{{ sort_link("Estado", "estado") }}</th>
-      <th>Acciones</th>
+      <th>{{ sort_link(_('Código'), "codigo") }}</th>
+      <th>{{ _('Capacidad (L)') }}</th>
+      <th>{{ _('Litros llenado') }}</th>
+      <th>{{ _('Estilo') }}</th>
+      <th>{{ sort_link(_('Bache'), "bache") }}</th>
+      <th>{{ _('Ubicación') }}</th>
+      <th>{{ sort_link(_('Fecha último estado') ~ " (" ~ configured_timezone ~ ")", "fecha_ultimo_estado") }}</th>
+      <th>{{ sort_link(_('Estado'), "estado") }}</th>
+      <th>{{ _('Acciones') }}</th>
       </tr>
     </thead>
     <tbody>
@@ -134,22 +138,22 @@
             "BAJA": "dark"
           } %}
           <span class="badge bg-{{ badge_map.get(b.estado_actual, 'secondary') }}">
-            {{ b.estado_actual }}
+            {{ state_labels.get(b.estado_actual, b.estado_actual) }}
           </span>
         </td>
         <td>
           <div class="d-flex gap-1">
             <a href="{{ url_for('barriles.detalle', barril_id=b.id) }}"
               class="btn btn-sm btn-secondary">
-              Ver
+              {{ _('Ver') }}
             </a>
 
             {% if b.estado_actual != "BAJA" %}
             <form method="post"
                   action="{{ url_for('barriles.baja', barril_id=b.id) }}"
-                  onsubmit="return confirm('¿Seguro que deseas dar de baja este barril?');">
+                  onsubmit='return confirm({{ _("¿Seguro que deseas dar de baja este barril?")|tojson }});'>
               <button class="btn btn-sm btn-outline-danger">
-                Baja
+                {{ _('Baja') }}
               </button>
             </form>
             {% endif %}
@@ -161,12 +165,12 @@
   </table>
 
   {% if pagination and pagination.pages > 1 %}
-    <nav aria-label="Paginación barriles">
+    <nav aria-label="{{ _('Paginación de barriles') }}">
       <ul class="pagination">
         <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
           <a class="page-link"
              href="{{ url_for('barriles.lista', page=pagination.prev_num, q=q, estado=estado, codigo_bache=codigo_bache, fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, sort=sort, direction=direction) if pagination.has_prev else '#' }}">
-            Anterior
+            {{ _('Anterior') }}
           </a>
         </li>
 
@@ -185,13 +189,13 @@
         <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
           <a class="page-link"
              href="{{ url_for('barriles.lista', page=pagination.next_num, q=q, estado=estado, codigo_bache=codigo_bache, fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, sort=sort, direction=direction) if pagination.has_next else '#' }}">
-            Siguiente
+            {{ _('Siguiente') }}
           </a>
         </li>
       </ul>
     </nav>
   {% endif %}
 {% else %}
-  <p>No hay barriles registrados.</p>
+  <p>{{ _('No hay barriles registrados.') }}</p>
 {% endif %}
 {% endblock %}

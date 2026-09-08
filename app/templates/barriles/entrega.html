@@ -1,19 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Salida de barriles{% endblock %}
+{% block title %}{{ _('Salida de barriles') }}{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-3">Salida de barriles</h1>
+{% set state_labels = {"LLENO": _('Lleno')} %}
+<h1 class="h3 mb-3">{{ _('Salida de barriles') }}</h1>
 
 <form method="post" class="card p-3">
   <div class="row g-3">
     <div class="col-md-4">
-      <label class="form-label">Barril</label>
+      <label class="form-label">{{ _('Barril') }}</label>
       <div class="input-group">
         <select name="id_barril" id="id_barril_entrega" class="form-select" required>
-          <option value="">-- Seleccionar barril --</option>
+          <option value="">-- {{ _('Seleccionar barril') }} --</option>
           {% for b in barriles %}
             <option value="{{ b.id }}" data-codigo="{{ b.codigo_barril }}">
-              {{ b.codigo_barril }} - {{ b.capacidad_litros }} L - {{ b.estado_actual }}
+              {{ b.codigo_barril }} - {{ b.capacidad_litros }} L - {{ state_labels.get(b.estado_actual, b.estado_actual) }}
             </option>
           {% endfor %}
         </select>
@@ -24,44 +25,44 @@
                   targetSelectId: 'id_barril_entrega',
                   targetDisplayId: 'qr_result_entrega'
                 })">
-          Escanear QR
+          {{ _('Escanear QR') }}
         </button>
       </div>
       <div id="qr_result_entrega" class="small mt-2 d-none"></div>
-      <div class="form-text">Solo aparecen barriles en estado LLENO.</div>
+      <div class="form-text">{{ _('Solo aparecen barriles en estado LLENO.') }}</div>
     </div>
 
     <div class="col-md-4">
-      <label class="form-label">Destino</label>
+      <label class="form-label">{{ _('Destino') }}</label>
       <select name="destino" id="destino" class="form-select" required onchange="toggleDestino()">
-        <option value="CLIENTE">Cliente</option>
-        <option value="LATAS">Latas</option>
+        <option value="CLIENTE">{{ _('Cliente') }}</option>
+        <option value="LATAS">{{ _('Latas') }}</option>
       </select>
     </div>
 
     <div class="col-md-4" id="bloque_cliente">
-      <label class="form-label">Cliente</label>
+      <label class="form-label">{{ _('Cliente') }}</label>
       <select name="id_cliente" id="id_cliente" class="form-select">
-        <option value="">-- Seleccionar cliente --</option>
+        <option value="">-- {{ _('Seleccionar cliente') }} --</option>
         {% for c in clientes %}
           <option value="{{ c.id }}">
             {{ c.nombre }}
           </option>
         {% endfor %}
       </select>
-      <div class="form-text">Obligatorio cuando el destino es Cliente.</div>
+      <div class="form-text">{{ _('Obligatorio cuando el destino es Cliente.') }}</div>
     </div>
 
     <div class="col-12">
-      <label class="form-label">Comentario</label>
+      <label class="form-label">{{ _('Comentario') }}</label>
       <textarea name="comentario" class="form-control" rows="2"
-                placeholder="Ej: salida a cliente, envío a enlatado, observaciones"></textarea>
+                placeholder="{{ _('Ej: salida a cliente, envío a enlatado, observaciones') }}"></textarea>
     </div>
   </div>
 
   <div class="mt-3">
-    <button class="btn btn-primary">Registrar salida</button>
-    <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Cancelar</a>
+    <button class="btn btn-primary">{{ _('Registrar salida') }}</button>
+    <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">{{ _('Cancelar') }}</a>
   </div>
 </form>
 

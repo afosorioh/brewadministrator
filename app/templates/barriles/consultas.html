@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Consultas de barriles{% endblock %}
+{% block title %}{{ _('Consultas de barriles') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 mb-0">Consultas de barriles</h1>
-  <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">Volver a lista</a>
+  <h1 class="h3 mb-0">{{ _('Consultas de barriles') }}</h1>
+  <a href="{{ url_for('barriles.lista') }}" class="btn btn-secondary">{{ _('Volver a lista') }}</a>
 </div>
 
 <div class="row g-3 mb-4">
   <div class="col-md-3">
     <div class="card border-0 shadow-sm h-100">
       <div class="card-body">
-        <div class="text-muted small">Total barriles</div>
+        <div class="text-muted small">{{ _('Total barriles') }}</div>
         <div class="fs-3 fw-bold">{{ total_barriles }}</div>
       </div>
     </div>
@@ -19,7 +19,7 @@
   <div class="col-md-3">
     <div class="card border-0 shadow-sm h-100">
       <div class="card-body">
-        <div class="text-muted small">Limpios</div>
+        <div class="text-muted small">{{ _('Limpios') }}</div>
         <div class="fs-3 fw-bold text-success">{{ total_limpios }}</div>
       </div>
     </div>
@@ -27,7 +27,7 @@
   <div class="col-md-2">
     <div class="card border-0 shadow-sm h-100">
       <div class="card-body">
-        <div class="text-muted small">Llenos</div>
+        <div class="text-muted small">{{ _('Llenos') }}</div>
         <div class="fs-3 fw-bold text-primary">{{ total_llenos }}</div>
       </div>
     </div>
@@ -35,7 +35,7 @@
   <div class="col-md-2">
     <div class="card border-0 shadow-sm h-100">
       <div class="card-body">
-        <div class="text-muted small">Entregados</div>
+        <div class="text-muted small">{{ _('Entregados') }}</div>
         <div class="fs-3 fw-bold text-warning">{{ total_entregados }}</div>
       </div>
     </div>
@@ -43,7 +43,7 @@
   <div class="col-md-2">
     <div class="card border-0 shadow-sm h-100">
       <div class="card-body">
-        <div class="text-muted small">Sucios</div>
+        <div class="text-muted small">{{ _('Sucios') }}</div>
         <div class="fs-3 fw-bold text-danger">{{ total_sucios }}</div>
       </div>
     </div>
@@ -52,7 +52,7 @@
 
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-white">
-    <strong>Cantidad de barriles por estado y tamaño</strong>
+    <strong>{{ _('Cantidad de barriles por estado y tamaño') }}</strong>
   </div>
   <div class="card-body">
     <canvas id="graficaBarrilesEstadoTamano" height="95"></canvas>
@@ -63,17 +63,17 @@
   <div class="card-body">
     <div class="row g-3 align-items-end">
       <div class="col-md-3">
-        <label class="form-label">Fecha desde ({{ configured_timezone }})</label>
+        <label class="form-label">{{ _('Fecha desde') }} ({{ configured_timezone }})</label>
         <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
       </div>
       <div class="col-md-3">
-        <label class="form-label">Fecha hasta ({{ configured_timezone }})</label>
+        <label class="form-label">{{ _('Fecha hasta') }} ({{ configured_timezone }})</label>
         <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
       </div>
       <div class="col-md-3">
-        <label class="form-label">Cliente</label>
+        <label class="form-label">{{ _('Cliente') }}</label>
         <select name="cliente_id" class="form-select">
-          <option value="">-- Todos --</option>
+          <option value="">-- {{ _('Todos') }} --</option>
           {% for c in clientes %}
             <option value="{{ c.id }}" {% if cliente_id == c.id %}selected{% endif %}>
               {{ c.nombre }}
@@ -82,9 +82,9 @@
         </select>
       </div>
       <div class="col-md-3">
-        <label class="form-label">Estilo</label>
+        <label class="form-label">{{ _('Estilo') }}</label>
         <select name="estilo" class="form-select">
-          <option value="">-- Todos --</option>
+          <option value="">-- {{ _('Todos') }} --</option>
           {% for e in estilos_disponibles %}
             <option value="{{ e }}" {% if estilo == e %}selected{% endif %}>{{ e }}</option>
           {% endfor %}
@@ -92,8 +92,8 @@
       </div>
 
       <div class="col-12">
-        <button class="btn btn-primary">Aplicar filtros</button>
-        <a href="{{ url_for('barriles.consultas') }}" class="btn btn-outline-secondary">Limpiar</a>
+        <button class="btn btn-primary">{{ _('Aplicar filtros') }}</button>
+        <a href="{{ url_for('barriles.consultas') }}" class="btn btn-outline-secondary">{{ _('Limpiar') }}</a>
       </div>
     </div>
   </div>
@@ -101,8 +101,8 @@
 
 <div class="card border-0 shadow-sm mb-4">
 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-  <strong>Barriles llenos por capacidad, volumen y estilo</strong>
-  <span class="badge bg-dark">{{ llenos_por_estilo|length }} filas</span>
+  <strong>{{ _('Barriles llenos por capacidad, volumen y estilo') }}</strong>
+  <span class="badge bg-dark">{{ ngettext('%(count)s fila', '%(count)s filas', llenos_por_estilo|length, count=llenos_por_estilo|length) }}</span>
 </div>
 
 <div class="card-body">
@@ -111,10 +111,10 @@
       <table class="table table-striped table-hover align-middle">
         <thead>
           <tr>
-            <th>Capacidad barril</th>
-            <th>Volumen llenado (L)</th>
-            <th>Estilo cerveza</th>
-            <th>Cantidad</th>
+            <th>{{ _('Capacidad barril') }}</th>
+            <th>{{ _('Volumen llenado (L)') }}</th>
+            <th>{{ _('Estilo cerveza') }}</th>
+            <th>{{ _('Cantidad') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -135,7 +135,7 @@
                 {% endif %}
               </td>
 
-              <td>{{ row.estilo or "SIN ESTILO" }}</td>
+              <td>{{ row.estilo or _('Sin estilo') }}</td>
 
               <td>
                 <span class="badge bg-success">
@@ -149,15 +149,15 @@
       </table>
     </div>
   {% else %}
-    <p class="mb-0 text-muted">No hay barriles actualmente en estado LLENO con esos filtros.</p>
+    <p class="mb-0 text-muted">{{ _('No hay barriles actualmente en estado LLENO con esos filtros.') }}</p>
   {% endif %}
 </div>
 </div>
 
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-white d-flex justify-content-between align-items-center">
-    <strong>Barriles entregados por cliente y estilo</strong>
-    <span class="badge bg-dark">{{ entregados_por_cliente_estilo|length }} filas</span>
+    <strong>{{ _('Barriles entregados por cliente y estilo') }}</strong>
+    <span class="badge bg-dark">{{ ngettext('%(count)s fila', '%(count)s filas', entregados_por_cliente_estilo|length, count=entregados_por_cliente_estilo|length) }}</span>
   </div>
   <div class="card-body">
     {% if entregados_por_cliente_estilo %}
@@ -165,16 +165,16 @@
         <table class="table table-striped table-hover align-middle">
         <thead>
           <tr>
-            <th>Cliente</th>
-            <th>Capacidad barril</th>
-            <th>Estilo</th>
-            <th>Cantidad</th>
+            <th>{{ _('Cliente') }}</th>
+            <th>{{ _('Capacidad barril') }}</th>
+            <th>{{ _('Estilo') }}</th>
+            <th>{{ _('Cantidad') }}</th>
           </tr>
         </thead>
         <tbody>
           {% for row in entregados_por_cliente_estilo %}
           <tr>
-            <td>{{ row.cliente or "SIN CLIENTE" }}</td>
+            <td>{{ row.cliente or _('Sin cliente') }}</td>
             <td>
               {% if row.capacidad is not none %}
                 {{ row.capacidad }} L
@@ -182,7 +182,7 @@
                 -
               {% endif %}
             </td>
-            <td>{{ row.estilo or "SIN ESTILO" }}</td>
+            <td>{{ row.estilo or _('Sin estilo') }}</td>
             <td>{{ row.cantidad }}</td>
           </tr>
           {% endfor %}
@@ -190,15 +190,15 @@
         </table>
       </div>
     {% else %}
-      <p class="mb-0 text-muted">No hay resultados para los filtros seleccionados.</p>
+      <p class="mb-0 text-muted">{{ _('No hay resultados para los filtros seleccionados.') }}</p>
     {% endif %}
   </div>
 </div>
 
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-header bg-white d-flex justify-content-between align-items-center">
-    <strong>Barriles entregados pendientes de devolución</strong>
-    <span class="badge bg-danger">{{ pendientes_devolucion|length }} pendientes</span>
+    <strong>{{ _('Barriles entregados pendientes de devolución') }}</strong>
+    <span class="badge bg-danger">{{ ngettext('%(count)s pendiente', '%(count)s pendientes', pendientes_devolucion|length, count=pendientes_devolucion|length) }}</span>
   </div>
   <div class="card-body">
     {% if pendientes_devolucion %}
@@ -206,15 +206,15 @@
         <table class="table table-striped table-hover align-middle">
           <thead>
             <tr>
-              <th>Código</th>
-              <th>Capacidad</th>
-              <th>Cliente</th>
-              <th>Estilo</th>
-              <th>Bache</th>
-              <th>Fecha entrega ({{ configured_timezone }})</th>
-              <th>Días fuera</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th>{{ _('Código') }}</th>
+              <th>{{ _('Capacidad') }}</th>
+              <th>{{ _('Cliente') }}</th>
+              <th>{{ _('Estilo') }}</th>
+              <th>{{ _('Bache') }}</th>
+              <th>{{ _('Fecha entrega') }} ({{ configured_timezone }})</th>
+              <th>{{ _('Días fuera') }}</th>
+              <th>{{ _('Estado') }}</th>
+              <th>{{ _('Acciones') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -222,24 +222,24 @@
             <tr>
               <td>{{ row.codigo_barril }}</td>
               <td>{{ row.capacidad_litros }}</td>
-              <td>{{ row.cliente or "SIN CLIENTE" }}</td>
-              <td>{{ row.estilo or "SIN ESTILO" }}</td>
+              <td>{{ row.cliente or _('Sin cliente') }}</td>
+              <td>{{ row.estilo or _('Sin estilo') }}</td>
               <td>{{ row.codigo_bache or "-" }}</td>
               <td>{{ row.fecha_entrega|format_local_datetime('%Y-%m-%d %H:%M') if row.fecha_entrega else '-' }}</td>
               <td>
                 {% if row.dias_fuera is not none %}
                   <span class="badge {% if row.dias_fuera >= 30 %}bg-danger{% elif row.dias_fuera >= 15 %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
-                    {{ row.dias_fuera }} días
+                    {{ ngettext('%(count)s día', '%(count)s días', row.dias_fuera, count=row.dias_fuera) }}
                   </span>
                 {% else %}
                   -
                 {% endif %}
               </td>
               <td>
-                <span class="badge bg-warning text-dark">ENTREGADO</span>
+                <span class="badge bg-warning text-dark">{{ _('Entregado') }}</span>
               </td>
               <td>
-                <a href="{{ url_for('barriles.detalle', barril_id=row.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+                <a href="{{ url_for('barriles.detalle', barril_id=row.id) }}" class="btn btn-sm btn-outline-secondary">{{ _('Ver') }}</a>
               </td>
             </tr>
             {% endfor %}
@@ -247,7 +247,7 @@
         </table>
       </div>
     {% else %}
-      <p class="mb-0 text-muted">No hay barriles pendientes de devolución con esos filtros.</p>
+      <p class="mb-0 text-muted">{{ _('No hay barriles pendientes de devolución con esos filtros.') }}</p>
     {% endif %}
   </div>
 </div>
