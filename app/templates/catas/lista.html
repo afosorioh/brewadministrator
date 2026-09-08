@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Sesiones de cata{% endblock %}
+{% block title %}{{ _('Sesiones de cata') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 mb-0">Sesiones de cata</h1>
-  <a href="{{ url_for('catas.nueva') }}" class="btn btn-primary">Nueva sesión</a>
+  <h1 class="h3 mb-0">{{ _('Sesiones de cata') }}</h1>
+  <a href="{{ url_for('catas.nueva') }}" class="btn btn-primary">{{ _('Nueva sesión') }}</a>
 </div>
 
 <div class="card p-3">
@@ -14,12 +14,12 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Bache</th>
-            <th>Cerveza</th>
-            <th>Título</th>
-            <th>Código público</th>
-            <th>Estado</th>
-            <th>Fecha creación ({{ configured_timezone }})</th>
+            <th>{{ _('Bache') }}</th>
+            <th>{{ _('Cerveza') }}</th>
+            <th>{{ _('Título') }}</th>
+            <th>{{ _('Código público') }}</th>
+            <th>{{ _('Estado') }}</th>
+            <th>{{ _('Fecha creación') }} ({{ configured_timezone }})</th>
             <th></th>
           </tr>
         </thead>
@@ -29,24 +29,30 @@
               <td>{{ s.id_sesion_cata }}</td>
               <td>{{ s.bache.codigo_bache }}</td>
               <td>{{ s.bache.nombre_cerveza }}</td>
-              <td>{{ s.titulo or "-" }}</td>
+              <td>
+                {% if s.titulo == "Cata " ~ s.bache.codigo_bache %}
+                  {{ _('Cata %(batch_code)s', batch_code=s.bache.codigo_bache) }}
+                {% else %}
+                  {{ s.titulo or "-" }}
+                {% endif %}
+              </td>
               <td><code>{{ s.codigo_publico }}</code></td>
               <td>
                 {% if s.activa %}
-                  <span class="badge bg-success">Activa</span>
+                  <span class="badge bg-success">{{ _('Activa') }}</span>
                 {% else %}
-                  <span class="badge bg-secondary">Inactiva</span>
+                  <span class="badge bg-secondary">{{ _('Inactiva') }}</span>
                 {% endif %}
               </td>
               <td>{{ s.fecha_creacion|format_local_datetime('%Y-%m-%d %H:%M') }}</td>
               <td>
                 <a href="{{ url_for('catas.detalle', id_sesion_cata=s.id_sesion_cata) }}"
                    class="btn btn-sm btn-outline-primary">
-                  Ver
+                  {{ _('Ver') }}
                 </a>
                 <a href="{{ url_for('catas.estadisticas', id_sesion_cata=s.id_sesion_cata) }}"
                   class="btn btn-sm btn-outline-success">
-                  Estadísticas
+                  {{ _('Estadísticas') }}
                 </a>                
               </td>
             </tr>
@@ -55,7 +61,7 @@
       </table>
     </div>
   {% else %}
-    <p class="text-muted mb-0">No hay sesiones de cata registradas.</p>
+    <p class="text-muted mb-0">{{ _('No hay sesiones de cata registradas.') }}</p>
   {% endif %}
 </div>
 {% endblock %}

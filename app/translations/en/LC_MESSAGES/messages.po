@@ -1631,3 +1631,432 @@ msgid "%(count)s día"
 msgid_plural "%(count)s días"
 msgstr[0] "%(count)s day"
 msgstr[1] "%(count)s days"
+
+msgid "18 a 25"
+msgstr "18 to 25"
+
+msgid "26 a 35"
+msgstr "26 to 35"
+
+msgid "36 a 45"
+msgstr "36 to 45"
+
+msgid "46 a 55"
+msgstr "46 to 55"
+
+msgid "56 a 65"
+msgstr "56 to 65"
+
+msgid "66 o más"
+msgstr "66 or older"
+
+msgid "Ácido"
+msgstr "Sour"
+
+msgid "Activar sesión"
+msgstr "Activate session"
+
+msgid "Alto"
+msgstr "High"
+
+msgid "Amarillo"
+msgstr "Yellow"
+
+msgid "Aromas"
+msgstr "Aromas"
+
+msgid "Atributos sensoriales más frecuentes"
+msgstr "Most frequent sensory attributes"
+
+msgid "Bajo"
+msgstr "Low"
+
+msgid "Barra de color"
+msgstr "Color scale"
+
+msgid "Café"
+msgstr "Coffee"
+
+msgid "Calificación de aroma (1 a 5)"
+msgstr "Aroma rating (1 to 5)"
+
+msgid "Calificación de carbonatación y espuma (1 a 5)"
+msgstr "Carbonation and foam rating (1 to 5)"
+
+msgid "Calificación de color (1 a 5)"
+msgstr "Color rating (1 to 5)"
+
+msgid "Calificación de sabor (1 a 5)"
+msgstr "Flavor rating (1 to 5)"
+
+msgid "Calificación general (1 a 5)"
+msgstr "Overall rating (1 to 5)"
+
+msgid "Características de aroma"
+msgstr "Aroma characteristics"
+
+msgid "Características de sabor"
+msgstr "Flavor characteristics"
+
+msgid "Carbonatación"
+msgstr "Carbonation"
+
+msgid "Carbonatación y espuma"
+msgstr "Carbonation and foam"
+
+msgid "Casi blanco"
+msgstr "Almost white"
+
+msgid "Cata %(batch_code)s"
+msgstr "Tasting %(batch_code)s"
+
+msgid "Cata de cerveza"
+msgstr "Beer tasting"
+
+msgid "Cata pública"
+msgstr "Public tasting"
+
+msgid "Cebolla"
+msgstr "Onion"
+
+msgid "Cereal"
+msgstr "Grain"
+
+msgid "Chocolate"
+msgstr "Chocolate"
+
+msgid "Cítrico"
+msgstr "Citrus"
+
+msgid "Código público"
+msgstr "Public code"
+
+msgid "Colombiana"
+msgstr "Colombian"
+
+msgid "Color"
+msgstr "Color"
+
+msgid "Color percibido"
+msgstr "Perceived color"
+
+msgid "Comentario abierto"
+msgstr "Open comment"
+
+msgid "Comparte este enlace con clientes o empleados."
+msgstr "Share this link with customers or employees."
+
+msgid "Copiar"
+msgstr "Copy"
+
+msgid "Correo"
+msgstr "Email"
+
+msgid "Creada"
+msgstr "Created"
+
+msgid "Crear sesión"
+msgstr "Create session"
+
+msgid "Crear sesión activa"
+msgstr "Create as an active session"
+
+msgid "Cuerpo"
+msgstr "Body"
+
+msgid "Datos del catador"
+msgstr "Taster information"
+
+msgid "Debes seleccionar el cuerpo."
+msgstr "You must select the body level."
+
+msgid "Debes seleccionar el nivel de carbonatación."
+msgstr "You must select the carbonation level."
+
+msgid "Debes seleccionar el nivel de espuma."
+msgstr "You must select the foam level."
+
+msgid "Debes seleccionar el rango de edad."
+msgstr "You must select an age range."
+
+msgid "Debes seleccionar el sexo."
+msgstr "You must select a sex."
+
+msgid "Debes seleccionar la nacionalidad."
+msgstr "You must select a nationality."
+
+msgid "Debes seleccionar un bache."
+msgstr "You must select a batch."
+
+msgid "Desactivar sesión"
+msgstr "Deactivate session"
+
+msgid "Describe tu impresión general de la cerveza"
+msgstr "Describe your overall impression of the beer"
+
+msgid "Detalle de sesión de cata"
+msgstr "Tasting session details"
+
+msgid "Dulce"
+msgstr "Sweet"
+
+msgid "Edad"
+msgstr "Age"
+
+msgid "Ej: Cata clientes Brown Ale marzo"
+msgstr "E.g. March Brown Ale customer tasting"
+
+msgid "El aroma está siendo evaluado por debajo de 3. Puede valer la pena revisar frescura, lúpulo y perfil fermentativo."
+msgstr "The aroma is rated below 3. Consider reviewing freshness, hops, and fermentation profile."
+
+msgid "El correo es obligatorio."
+msgstr "Email is required."
+
+msgid "El puntaje de %(dimension)s debe estar entre 1 y 5."
+msgstr "The %(dimension)s rating must be between 1 and 5."
+
+msgid "El puntaje promedio de sabor es bajo. Conviene revisar balance de receta, fermentación y maduración."
+msgstr "The average flavor rating is low. Consider reviewing recipe balance, fermentation, and conditioning."
+
+msgid "El valor de color debe estar entre 0 y 100."
+msgstr "The color value must be between 0 and 100."
+
+msgid "Enlace copiado al portapapeles"
+msgstr "Link copied to clipboard"
+
+msgid "Enlace público"
+msgstr "Public link"
+
+msgid "Enviar cata"
+msgstr "Submit tasting"
+
+msgid "Escala 1 a 5"
+msgstr "Scale from 1 to 5"
+
+msgid "Escanea este QR para abrir la cata pública."
+msgstr "Scan this QR code to open the public tasting."
+
+msgid "Espuma"
+msgstr "Foam"
+
+msgid "Esta sesión todavía no tiene respuestas registradas."
+msgstr "This session does not have any responses yet."
+
+msgid "Estadísticas de cata"
+msgstr "Tasting statistics"
+
+msgid "Estadísticas de la cata"
+msgstr "Tasting statistics"
+
+msgid "Extranjera"
+msgstr "Foreign"
+
+msgid "Fecha creación"
+msgstr "Creation date"
+
+msgid "Femenino"
+msgstr "Female"
+
+msgid "Fin"
+msgstr "End"
+
+msgid "Floral"
+msgstr "Floral"
+
+msgid "Frutal"
+msgstr "Fruity"
+
+msgid "Galleta"
+msgstr "Biscuit"
+
+msgid "Gracias por participar"
+msgstr "Thank you for participating"
+
+msgid "Gracias por tu participación"
+msgstr "Thank you for participating"
+
+msgid "Hallazgos para mejora del bache"
+msgstr "Findings for batch improvement"
+
+msgid "Hay percepción ácida en sabor. Verifica si corresponde al estilo o si puede indicar desviación del lote."
+msgstr "Sourness was perceived in the flavor. Check whether it matches the style or may indicate a batch deviation."
+
+msgid "Herbal"
+msgstr "Herbal"
+
+msgid "Húmedo"
+msgstr "Musty"
+
+msgid "Impresión general"
+msgstr "Overall impression"
+
+msgid "Información general"
+msgstr "General information"
+
+msgid "La carbonatación/espuma tiene una percepción débil. Revisa gasificación, nivel de CO2 y retención de espuma."
+msgstr "Carbonation and foam are perceived as weak. Review carbonation, CO2 level, and foam retention."
+
+msgid "Mantequilla"
+msgstr "Butter"
+
+msgid "Marrón"
+msgstr "Brown"
+
+msgid "Masculino"
+msgstr "Male"
+
+msgid "Medicinal"
+msgstr "Medicinal"
+
+msgid "Medio"
+msgstr "Medium"
+
+msgid "Nacionalidad"
+msgstr "Nationality"
+
+msgid "Negro"
+msgstr "Black"
+
+msgid "No fue posible copiar el enlace"
+msgstr "The link could not be copied"
+
+msgid "Nueces"
+msgstr "Nuts"
+
+msgid "Nueva sesión"
+msgstr "New session"
+
+msgid "Nueva sesión de cata"
+msgstr "New tasting session"
+
+msgid "Observaciones"
+msgstr "Notes"
+
+msgid "Pan"
+msgstr "Bread"
+
+msgid "Percepción del producto"
+msgstr "Product perception"
+
+msgid "Perfil demográfico"
+msgstr "Demographic profile"
+
+msgid "Poca"
+msgstr "Low"
+
+msgid "Prefiero no indicar"
+msgstr "Prefer not to say"
+
+msgid "Promedio global"
+msgstr "Overall average"
+
+msgid "Promedios por dimensión"
+msgstr "Averages by dimension"
+
+msgid "QR de acceso"
+msgstr "Access QR code"
+
+msgid "QR de sesión de cata"
+msgstr "Tasting session QR code"
+
+msgid "Rango de edad"
+msgstr "Age range"
+
+msgid "Resinoso"
+msgstr "Resinous"
+
+msgid "Rojo"
+msgstr "Red"
+
+msgid "Sabores"
+msgstr "Flavors"
+
+msgid "Se detectó cebolla. Revisa calidad/manejo del lúpulo y estabilidad del producto."
+msgstr "Onion was detected. Review hop quality and handling, and product stability."
+
+msgid "Se detectó descriptor medicinal. Revisa sanitización, fermentación y posibles desviaciones sensoriales."
+msgstr "A medicinal descriptor was detected. Review sanitation, fermentation, and possible sensory deviations."
+
+msgid "Se detectó mantequilla. Puede ser señal de diacetilo y conviene revisar fermentación y acondicionamiento."
+msgstr "Butter was detected. This may indicate diacetyl; review fermentation and conditioning."
+
+msgid "Selección actual"
+msgstr "Current selection"
+
+msgid "Seleccione"
+msgstr "Select"
+
+msgid "Seleccione un bache"
+msgstr "Select a batch"
+
+msgid "Sesión"
+msgstr "Session"
+
+msgid "Sesión activada correctamente."
+msgstr "Tasting session activated successfully."
+
+msgid "Sesión de cata #%(session_id)s"
+msgstr "Tasting session #%(session_id)s"
+
+msgid "Sesión de cata creada correctamente."
+msgstr "Tasting session created successfully."
+
+msgid "Sesión desactivada correctamente."
+msgstr "Tasting session deactivated successfully."
+
+msgid "Sesiones de cata"
+msgstr "Tasting sessions"
+
+msgid "Sexo"
+msgstr "Sex"
+
+msgid "Terroso"
+msgstr "Earthy"
+
+msgid "Título"
+msgstr "Title"
+
+msgid "Título de la sesión"
+msgstr "Session title"
+
+msgid "Total catadores"
+msgstr "Total tasters"
+
+msgid "Tu evaluación fue registrada correctamente."
+msgstr "Your evaluation was recorded successfully."
+
+msgid "Volver al detalle"
+msgstr "Back to details"
+
+msgid "%(count)s mención"
+msgid_plural "%(count)s menciones"
+msgstr[0] "%(count)s mention"
+msgstr[1] "%(count)s mentions"
+
+msgctxt "sensory level"
+msgid "Baja"
+msgstr "Low"
+
+msgctxt "sensory level"
+msgid "Media"
+msgstr "Medium"
+
+msgctxt "sensory level"
+msgid "Alta"
+msgstr "High"
+
+msgctxt "sensory level"
+msgid "Bajo"
+msgstr "Low"
+
+msgctxt "sensory level"
+msgid "Medio"
+msgstr "Medium"
+
+msgctxt "sensory level"
+msgid "Alto"
+msgstr "High"
+
+msgctxt "foam level"
+msgid "Poca"
+msgstr "Low"
