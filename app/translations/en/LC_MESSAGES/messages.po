@@ -827,3 +827,417 @@ msgstr "Are you sure you want to delete this raw material?"
 
 msgid "¿Seguro que deseas eliminar este lote?"
 msgstr "Are you sure you want to delete this lot?"
+
+msgid "-- Seleccionar lote --"
+msgstr "-- Select lot --"
+
+msgid "-- Sin receta asociada --"
+msgstr "-- No associated recipe --"
+
+msgid "¿Seguro que deseas eliminar este bache?"
+msgstr "Are you sure you want to delete this batch?"
+
+msgid "ABV aprox.:"
+msgstr "Approx. ABV:"
+
+msgid "Agregar fila"
+msgstr "Add row"
+
+msgid "Alcohol (ABV aprox.):"
+msgstr "Alcohol (approx. ABV):"
+
+msgid "Anterior"
+msgstr "Previous"
+
+msgid "Añadir medición"
+msgstr "Add measurement"
+
+msgid "Atenuación aparente:"
+msgstr "Apparent attenuation:"
+
+msgid "Bache actualizado correctamente"
+msgstr "Batch updated successfully"
+
+msgid "Bache creado correctamente"
+msgstr "Batch created successfully"
+
+msgid "Bache eliminado correctamente"
+msgstr "Batch deleted successfully"
+
+msgid "Buscar por código"
+msgstr "Search by code"
+
+msgid "Células muertas"
+msgstr "Dead cells"
+
+msgid "Células vivas"
+msgstr "Live cells"
+
+msgid "Código de bache"
+msgstr "Batch code"
+
+msgid "Código, nombre de cerveza y fecha de cocción son obligatorios"
+msgstr "Batch code, beer name and brew date are required"
+
+msgid "Comentario"
+msgstr "Comment"
+
+msgid "Comentario última densidad:"
+msgstr "Latest gravity comment:"
+
+msgid "Comentarios"
+msgstr "Comments"
+
+msgid "Completa datos válidos para calcular la viabilidad."
+msgstr "Enter valid data to calculate viability."
+
+msgid "Completa los datos para calcular la viabilidad."
+msgstr "Complete the data to calculate viability."
+
+msgid "Cuadrantes"
+msgstr "Squares"
+
+msgid "Densidad"
+msgstr "Gravity"
+
+msgid "Densidad inicial"
+msgstr "Original gravity"
+
+msgid "Densidad inicial:"
+msgstr "Original gravity:"
+
+msgid "Densidad inicial: %(density)s"
+msgstr "Original gravity: %(density)s"
+
+msgid "Densidad:"
+msgstr "Gravity:"
+
+msgid "Detalle bache"
+msgstr "Batch details"
+
+msgid "Días ferm."
+msgstr "Ferm. days"
+
+msgid "Días fermentación"
+msgstr "Fermentation days"
+
+msgid "Dilución"
+msgstr "Dilution"
+
+msgid "Disponible:"
+msgstr "Available:"
+
+msgid "Dry hop"
+msgstr "Dry hop"
+
+msgid "Editar bache"
+msgstr "Edit batch"
+
+msgid "Ej: 1.062"
+msgstr "E.g. 1.062"
+
+msgid "Ej: 1.062 / 5.60 / 18.50"
+msgstr "E.g. 1.062 / 5.60 / 18.50"
+
+msgid "Ej: 134"
+msgstr "E.g. 134"
+
+msgid "Ej: 14"
+msgstr "E.g. 14"
+
+msgid "Ej: 5.15"
+msgstr "E.g. 5.15"
+
+msgid "Ej: 5.60"
+msgstr "E.g. 5.60"
+
+msgid "Ej: BATCH-001"
+msgstr "E.g. BATCH-001"
+
+msgid "El lote %(lot_code)s no tiene suficiente cantidad disponible. Disponible: %(available)s, solicitada: %(requested)s."
+msgstr "Lot %(lot_code)s does not have enough quantity available. Available: %(available)s, requested: %(requested)s."
+
+msgid "El lote %(lot_code)s no tiene unidad base definida."
+msgstr "Lot %(lot_code)s does not have a base unit defined."
+
+msgid "El pH fin de hervido debe ingresarse en formato decimal, por ejemplo 5.15"
+msgstr "End-of-boil pH must be entered in decimal format, for example 5.15"
+
+msgid "El pH macerado debe ingresarse en formato decimal, por ejemplo 5.60"
+msgstr "Mash pH must be entered in decimal format, for example 5.60"
+
+msgid "El valor de la medición #%(row)s no es numérico válido."
+msgstr "The value for measurement #%(row)s is not a valid number."
+
+msgid "Esta receta no tiene descripción."
+msgstr "This recipe has no description."
+
+msgid "Estado:"
+msgstr "Status:"
+
+msgid "Etapa"
+msgstr "Stage"
+
+msgid "Etapa proceso"
+msgstr "Process stage"
+
+msgid "Etapa:"
+msgstr "Stage:"
+
+msgid "Exportar PDF"
+msgstr "Export PDF"
+
+msgid "Fecha"
+msgstr "Date"
+
+msgid "Fecha cocción"
+msgstr "Brew date"
+
+msgid "Fecha cocción:"
+msgstr "Brew date:"
+
+msgid "Fecha cocción: %(date)s | Estado: %(status)s"
+msgstr "Brew date: %(date)s | Status: %(status)s"
+
+msgid "Fermentación"
+msgstr "Fermentation"
+
+msgid "FG (última densidad):"
+msgstr "FG (latest gravity):"
+
+msgid "Generación"
+msgstr "Generation"
+
+msgid "General"
+msgstr "General"
+
+msgid "Guía de receta"
+msgstr "Recipe guide"
+
+msgid "Hay materias primas con lote o cantidad inválida."
+msgstr "Some raw materials have an invalid lot or quantity."
+
+msgid "Hervor"
+msgstr "Boil"
+
+msgid "Histórico"
+msgstr "History"
+
+msgid "Histórico de mediciones"
+msgstr "Measurement history"
+
+msgid "Indicadores (calculados)"
+msgstr "Calculated indicators"
+
+msgid "La cantidad usada de cada lote debe ser mayor que cero."
+msgstr "The quantity used from each lot must be greater than zero."
+
+msgid "La densidad inicial debe ingresarse en formato decimal, por ejemplo 1.062"
+msgstr "Original gravity must be entered in decimal format, for example 1.062"
+
+msgid "La fecha de la medición #%(row)s no es válida."
+msgstr "The date for measurement #%(row)s is invalid."
+
+msgid "lote"
+msgstr "lot"
+
+msgid "Lote"
+msgstr "Lot"
+
+msgid "Lote / Materia prima"
+msgstr "Lot / Raw material"
+
+msgid "Lote:"
+msgstr "Lot:"
+
+msgid "Maceración"
+msgstr "Mash"
+
+msgid "Maduración"
+msgstr "Conditioning"
+
+msgid "Materia prima"
+msgstr "Raw material"
+
+msgid "Materia prima fila __ROW__: la cantidad usada supera la disponible del lote."
+msgstr "Raw material row __ROW__: the quantity used exceeds the available lot quantity."
+
+msgid "Materias primas usadas"
+msgstr "Raw materials used"
+
+msgid "Medición __ROW__: completa correctamente los datos de VIABILIDAD."
+msgstr "Measurement __ROW__: complete the VIABILITY data correctly."
+
+msgid "Medición __ROW__: el pH debe estar en formato decimal, por ejemplo 5.60"
+msgstr "Measurement __ROW__: pH must be in decimal format, for example 5.60"
+
+msgid "Medición __ROW__: el valor ingresado no es numérico válido."
+msgstr "Measurement __ROW__: the entered value is not a valid number."
+
+msgid "Medición __ROW__: la densidad debe estar en formato decimal, por ejemplo 1.062"
+msgstr "Measurement __ROW__: gravity must be in decimal format, for example 1.062"
+
+msgid "Medición __ROW__: la temperatura debe estar en formato decimal, por ejemplo 18.50"
+msgstr "Measurement __ROW__: temperature must be in decimal format, for example 18.50"
+
+msgid "Mediciones del bache"
+msgstr "Batch measurements"
+
+msgid "Mostrando %(shown)s de %(total)s resultados"
+msgstr "Showing %(shown)s of %(total)s results"
+
+msgid "Muertas"
+msgstr "Dead"
+
+msgid "No existe el lote con ID %(lot_id)s."
+msgstr "Lot with ID %(lot_id)s does not exist."
+
+msgid "No existe el selector de receta."
+msgstr "The recipe selector does not exist."
+
+msgid "No hay baches registrados todavía."
+msgstr "No batches have been registered yet."
+
+msgid "No se han registrado materias primas para este bache."
+msgstr "No raw materials have been registered for this batch."
+
+msgid "Nombre cerveza"
+msgstr "Beer name"
+
+msgid "Nueva"
+msgstr "New"
+
+msgid "Nuevo bache"
+msgstr "New batch"
+
+msgid "Nutriente"
+msgstr "Nutrient"
+
+msgid "OG (densidad inicial):"
+msgstr "OG (original gravity):"
+
+msgid "Opcional"
+msgstr "Optional"
+
+msgid "Paginación de baches"
+msgstr "Batch pagination"
+
+msgid "pH fin de hervido"
+msgstr "End-of-boil pH"
+
+msgid "pH fin de hervido:"
+msgstr "End-of-boil pH:"
+
+msgid "pH macerado"
+msgstr "Mash pH"
+
+msgid "pH macerado:"
+msgstr "Mash pH:"
+
+msgid "pH macerado: %(mash_ph)s | pH fin hervido: %(boil_ph)s"
+msgstr "Mash pH: %(mash_ph)s | End-of-boil pH: %(boil_ph)s"
+
+msgid "Promedio muertas/cuadrante"
+msgstr "Average dead cells/square"
+
+msgid "Promedio vivas/cuadrante"
+msgstr "Average live cells/square"
+
+msgid "Receta (opcional)"
+msgstr "Recipe (optional)"
+
+msgid "Receta:"
+msgstr "Recipe:"
+
+msgid "Receta: -"
+msgstr "Recipe: -"
+
+msgid "Receta: %(recipe)s (%(style)s)"
+msgstr "Recipe: %(recipe)s (%(style)s)"
+
+msgid "Reporte de bache: %(code)s - %(beer)s"
+msgstr "Batch report: %(code)s - %(beer)s"
+
+msgid "Resultado:"
+msgstr "Result:"
+
+msgid "Reutilizada"
+msgstr "Reused"
+
+msgid "Sabor"
+msgstr "Flavor"
+
+msgid "Se asumen 5 cuadrantes fijos en cámara de Neubauer."
+msgstr "Five fixed squares in the Neubauer chamber are assumed."
+
+msgid "Selecciona lotes y define cantidades, etapas y tipo de aplicación (por ejemplo, lúpulo amargor 60 min, dry hop día 3, etc.)."
+msgstr "Select lots and define quantities, stages and application type (for example, 60-minute bittering hops, dry hop on day 3, etc.)."
+
+msgid "Siguiente"
+msgstr "Next"
+
+msgid "Temp. maceración (°C)"
+msgstr "Mash temperature (°C)"
+
+msgid "Temp. maceración:"
+msgstr "Mash temperature:"
+
+msgid "Temp. maceración: %(mash)s °C | Temp. mash-off: %(mashoff)s °C"
+msgstr "Mash temperature: %(mash)s °C | Mash-out temperature: %(mashoff)s °C"
+
+msgid "Temp. mash-off (°C)"
+msgstr "Mash-out temperature (°C)"
+
+msgid "Temp. mash-off:"
+msgstr "Mash-out temperature:"
+
+msgid "Temperatura:"
+msgstr "Temperature:"
+
+msgid "Tiempo hervor (min)"
+msgstr "Boil time (min)"
+
+msgid "Tipo aplicación"
+msgstr "Application type"
+
+msgid "Últimas mediciones"
+msgstr "Latest measurements"
+
+msgid "Unidad inválida para el lote %(lot_code)s. Debe usarse %(unit)s."
+msgstr "Invalid unit for lot %(lot_code)s. %(unit)s must be used."
+
+msgid "Uso levadura"
+msgstr "Yeast usage"
+
+msgid "Uso levadura:"
+msgstr "Yeast usage:"
+
+msgid "Valor"
+msgstr "Value"
+
+msgid "Ver guía de receta"
+msgstr "View recipe guide"
+
+msgid "Viabilidad"
+msgstr "Viability"
+
+msgid "Vivas"
+msgstr "Live"
+
+msgid "Volumen final (L)"
+msgstr "Final volume (L)"
+
+msgid "Volumen final (L):"
+msgstr "Final volume (L):"
+
+msgid "Volumen objetivo (L)"
+msgstr "Target volume (L)"
+
+msgid "Volumen objetivo (L):"
+msgstr "Target volume (L):"
+
+msgid "Volumen objetivo (L): %(target)s | Volumen final (L): %(final)s"
+msgstr "Target volume (L): %(target)s | Final volume (L): %(final)s"
+
+msgid "Whirlpool"
+msgstr "Whirlpool"

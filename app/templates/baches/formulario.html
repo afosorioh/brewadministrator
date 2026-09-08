@@ -1,10 +1,32 @@
 {% extends "base.html" %}
 
-{% if accion == "crear" %}
-  {% set titulo = "Nuevo bache" %}
-{% else %}
-  {% set titulo = "Editar bache" %}
-{% endif %}
+{% set estado_labels = {
+  "PLANIFICADO": _("Planificado"), "EN_CURSO": _("En curso"),
+  "FERMENTANDO": _("Fermentando"), "MADURANDO": _("Madurando"),
+  "LISTO": _("Listo"), "COMPLETADO": _("Completado"),
+  "DESCARTADO": _("Descartado")
+} %}
+{% set etapa_labels = {
+  "MACERACION": _("Maceración"), "HERVOR": _("Hervor"),
+  "WHIRLPOOL": _("Whirlpool"), "FERMENTACION": _("Fermentación"),
+  "MADURACION": _("Maduración"), "OTRA": _("Otra")
+} %}
+{% set aplicacion_labels = {
+  "GENERAL": _("General"), "AMARGOR": _("Amargor"),
+  "SABOR": _("Sabor"), "AROMA": _("Aroma"),
+  "DRY_HOP": _("Dry hop"), "NUTRIENTE": _("Nutriente"),
+  "OTRA": _("Otra")
+} %}
+{% set uso_levadura_labels = {
+  "NUEVA": _("Nueva"), "REUTILIZADA": _("Reutilizada")
+} %}
+{% set medicion_labels = {
+  "PH": "pH", "TEMPERATURA": _("Temperatura"),
+  "DENSIDAD": _("Densidad"), "VIABILIDAD": _("Viabilidad"),
+  "OTRO": _("Otro")
+} %}
+{% set unidad_labels = {"UNIDAD": _("Unidad")} %}
+{% set titulo = _("Nuevo bache") if accion == "crear" else _("Editar bache") %}
 
 {% block title %}{{ titulo }}{% endblock %}
 
@@ -14,19 +36,19 @@
 <form method="post" id="form-bache">
   <div class="row mb-3">
     <div class="col-md-4">
-      <label class="form-label">Código de bache</label>
+      <label class="form-label">{{ _("Código de bache") }}</label>
       <input type="text" class="form-control" name="codigo_bache"
              value="{{ bache.codigo_bache if bache else '' }}" required>
     </div>
     <div class="col-md-4">
-      <label class="form-label">Nombre cerveza</label>
+      <label class="form-label">{{ _("Nombre cerveza") }}</label>
       <input type="text" class="form-control" name="nombre_cerveza"
              value="{{ bache.nombre_cerveza if bache else '' }}" required>
     </div>
     <div class="col-md-4">
-      <label class="form-label">Receta (opcional)</label>
+      <label class="form-label">{{ _("Receta (opcional)") }}</label>
       <select class="form-select" name="id_receta" id="id_receta">
-        <option value="">-- Sin receta asociada --</option>
+        <option value="">{{ _("-- Sin receta asociada --") }}</option>
           {% for r in recetas %}
             <option value="{{ r.id }}"
                     data-descripcion="{{ (r.descripcion or '')|e }}"
@@ -38,7 +60,7 @@
       <div class="mt-2">
         <button type="button" class="btn btn-outline-info btn-sm"
                 onclick="mostrarReceta()">
-          Ver guía de receta
+          {{ _("Ver guía de receta") }}
         </button>
       </div>
     </div>
@@ -46,27 +68,27 @@
 
   <div class="row mb-3">
     <div class="col-md-3">
-      <label class="form-label">Fecha cocción</label>
+      <label class="form-label">{{ _("Fecha cocción") }}</label>
       <input type="date" class="form-control" name="fecha_coccion"
              value="{{ bache.fecha_coccion if bache else '' }}" required>
     </div>
     <div class="col-md-3">
-      <label class="form-label">Volumen objetivo (L)</label>
+      <label class="form-label">{{ _("Volumen objetivo (L)") }}</label>
       <input type="number" step="0.1" class="form-control" name="volumen_objetivo_litros"
              value="{{ bache.volumen_objetivo_litros if bache and bache.volumen_objetivo_litros is not none else '' }}">
     </div>
     <div class="col-md-3">
-      <label class="form-label">Volumen final (L)</label>
+      <label class="form-label">{{ _("Volumen final (L)") }}</label>
       <input type="number" step="0.1" class="form-control" name="volumen_final_litros"
              value="{{ bache.volumen_final_litros if bache and bache.volumen_final_litros is not none else '' }}">
     </div>
     <div class="col-md-3">
-      <label class="form-label">Estado</label>
+      <label class="form-label">{{ _("Estado") }}</label>
       <select class="form-select" name="estado">
         {% for e in estados %}
           <option value="{{ e }}"
             {% if bache and bache.estado == e %}selected{% endif %}>
-            {{ e }}
+            {{ estado_labels.get(e, e) }}
           </option>
         {% endfor %}
       </select>
@@ -75,59 +97,58 @@
 
   <div class="row mb-3">
     <div class="col-md-3">
-      <label class="form-label">Densidad inicial</label>
+      <label class="form-label">{{ _("Densidad inicial") }}</label>
       <input type="text" class="form-control" id="densidad_inicial" name="densidad_inicial"
-       inputmode="decimal" placeholder="Ej: 1.062"
+       inputmode="decimal" placeholder="{{ _('Ej: 1.062') }}"
        value="{{ bache.densidad_inicial if bache and bache.densidad_inicial is not none else '' }}">
     </div>
     <div class="col-md-3">
-      <label class="form-label">pH macerado</label>
+      <label class="form-label">{{ _("pH macerado") }}</label>
       <input type="text" class="form-control" id="ph_macerado" name="ph_macerado"
-       inputmode="decimal" placeholder="Ej: 5.60"
+       inputmode="decimal" placeholder="{{ _('Ej: 5.60') }}"
        value="{{ bache.ph_macerado if bache and bache.ph_macerado is not none else '' }}">
     </div>
     <div class="col-md-3">
-      <label class="form-label">pH fin de hervido</label>
+      <label class="form-label">{{ _("pH fin de hervido") }}</label>
       <input type="text" class="form-control" id="ph_fin_hervido" name="ph_fin_hervido"
-       inputmode="decimal" placeholder="Ej: 5.15"
+       inputmode="decimal" placeholder="{{ _('Ej: 5.15') }}"
        value="{{ bache.ph_fin_hervido if bache and bache.ph_fin_hervido is not none else '' }}">
     </div>
     <div class="col-md-3">
-      <label class="form-label">Temp. maceración (°C)</label>
+      <label class="form-label">{{ _("Temp. maceración (°C)") }}</label>
       <input type="number" step="0.1" class="form-control"
             name="temp_maceracion"
             value="{{ bache.temp_maceracion if bache and bache.temp_maceracion is not none else '' }}">
     </div>
     <div class="col-md-3">
-      <label class="form-label">Temp. mash-off (°C)</label>
+      <label class="form-label">{{ _("Temp. mash-off (°C)") }}</label>
       <input type="number" step="0.1" class="form-control"
             name="temp_mashoff"
             value="{{ bache.temp_mashoff if bache and bache.temp_mashoff is not none else '' }}">
     </div>
     <div class="col-md-6">
-      <label class="form-label">Notas</label>
+      <label class="form-label">{{ _("Notas") }}</label>
       <textarea class="form-control" name="notas" rows="2">{{ bache.notas if bache and bache.notas else '' }}</textarea>
     </div>
   </div>
 
   <hr>
 
-  <h5>Materias primas usadas</h5>
+  <h5>{{ _("Materias primas usadas") }}</h5>
   <p class="text-muted">
-    Selecciona lotes y define cantidades, etapas y tipo de aplicación
-    (por ejemplo, lúpulo amargor 60 min, dry hop día 3, etc.).
+    {{ _("Selecciona lotes y define cantidades, etapas y tipo de aplicación (por ejemplo, lúpulo amargor 60 min, dry hop día 3, etc.).") }}
   </p>
 
   <table class="table table-sm align-middle" id="tabla-mp">
     <thead>
       <tr>
-        <th style="width: 25%;">Lote / Materia prima</th>
-        <th style="width: 10%;">Cantidad</th>
-        <th style="width: 10%;">Unidad</th>
-        <th style="width: 15%;">Etapa proceso</th>
-        <th style="width: 15%;">Tipo aplicación</th>
-        <th style="width: 10%;">Tiempo hervor (min)</th>
-        <th style="width: 10%;">Días fermentación</th>
+        <th style="width: 25%;">{{ _("Lote / Materia prima") }}</th>
+        <th style="width: 10%;">{{ _("Cantidad") }}</th>
+        <th style="width: 10%;">{{ _("Unidad") }}</th>
+        <th style="width: 15%;">{{ _("Etapa proceso") }}</th>
+        <th style="width: 15%;">{{ _("Tipo aplicación") }}</th>
+        <th style="width: 10%;">{{ _("Tiempo hervor (min)") }}</th>
+        <th style="width: 10%;">{{ _("Días fermentación") }}</th>
         <th style="width: 5%;"></th>
       </tr>
     </thead>
@@ -144,15 +165,15 @@
     data-original-cantidad="{{ m.cantidad_usada|float if m.cantidad_usada is not none else 0 }}">
           <td>
             <select class="form-select form-select-sm" name="lote_id">
-              <option value="">-- Seleccionar lote --</option>
+              <option value="">{{ _("-- Seleccionar lote --") }}</option>
               {% for l in lotes %}
               <option value="{{ l.id }}"
                       data-mp-tipo="{{ l.materia_prima.tipo }}"
                       data-unidad="{{ l.materia_prima.unidad_base }}"
                       data-disponible="{{ l.cantidad_disponible }}"
                       {% if lote is defined and l.id == lote.id %}selected{% endif %}>
-                {{ l.materia_prima.nombre }} - lote {{ l.codigo_lote }}
-                ({{ l.cantidad_disponible }} {{ l.materia_prima.unidad_base }})
+                {{ l.materia_prima.nombre }} - {{ _("lote") }} {{ l.codigo_lote }}
+                ({{ l.cantidad_disponible }} {{ unidad_labels.get(l.materia_prima.unidad_base, l.materia_prima.unidad_base) }})
               </option>
               {% endfor %}
             </select>
@@ -165,15 +186,15 @@
             <div class="levadura-extra mt-2 {% if mp is not defined or mp.tipo != 'LEVADURA' %}d-none{% endif %}">
               <div class="row g-2">
                 <div class="col-md-4">
-                  <label class="form-label mb-0 small">Uso levadura</label>
+                  <label class="form-label mb-0 small">{{ _("Uso levadura") }}</label>
                   <select class="form-select form-select-sm" name="lev_tipo_uso">
-                    <option value="NUEVA" {% if uso and uso.tipo_uso == "NUEVA" %}selected{% endif %}>NUEVA</option>
-                    <option value="REUTILIZADA" {% if uso and uso.tipo_uso == "REUTILIZADA" %}selected{% endif %}>REUTILIZADA</option>
+                    <option value="NUEVA" {% if uso and uso.tipo_uso == "NUEVA" %}selected{% endif %}>{{ uso_levadura_labels["NUEVA"] }}</option>
+                    <option value="REUTILIZADA" {% if uso and uso.tipo_uso == "REUTILIZADA" %}selected{% endif %}>{{ uso_levadura_labels["REUTILIZADA"] }}</option>
                   </select>
                 </div>
 
                 <div class="col-md-4 lev-gen {% if not uso or uso.tipo_uso != 'REUTILIZADA' %}d-none{% endif %}">
-                  <label class="form-label mb-0 small">Generación</label>
+                  <label class="form-label mb-0 small">{{ _("Generación") }}</label>
                   <select class="form-select form-select-sm" name="lev_generacion">
                     {% for g in range(1,9) %}
                       <option value="{{ g }}" {% if uso and uso.generacion == g %}selected{% endif %}>{{ g }}GEN</option>
@@ -182,9 +203,9 @@
                 </div>
 
                 <div class="col-md-4">
-                  <label class="form-label mb-0 small">Comentarios</label>
+                  <label class="form-label mb-0 small">{{ _("Comentarios") }}</label>
                   <input type="text" class="form-control form-control-sm" name="lev_comentarios"
-                        value="{{ uso.comentarios if uso else '' }}" placeholder="Opcional">
+                        value="{{ uso.comentarios if uso else '' }}" placeholder="{{ _('Opcional') }}">
                 </div>
               </div>
             </div>
@@ -214,7 +235,7 @@
             {% for val in ["MACERACION","HERVOR","WHIRLPOOL","FERMENTACION","MADURACION","OTRA"] %}
               <option value="{{ val }}"
                       {% if m.etapa_proceso == val %}selected{% endif %}>
-                {{ val }}
+                {{ etapa_labels.get(val, val) }}
               </option>
             {% endfor %}
           </select>
@@ -225,7 +246,7 @@
             {% for val in ["GENERAL","AMARGOR","SABOR","AROMA","DRY_HOP","NUTRIENTE","OTRA"] %}
               <option value="{{ val }}"
                       {% if m.tipo_aplicacion == val %}selected{% endif %}>
-                {{ val }}
+                {{ aplicacion_labels.get(val, val) }}
               </option>
             {% endfor %}
           </select>
@@ -255,15 +276,15 @@
         <tr class="fila-mp mp-row">
           <td>
             <select class="form-select form-select-sm" name="lote_id">
-              <option value="">-- Seleccionar lote --</option>
+              <option value="">{{ _("-- Seleccionar lote --") }}</option>
               {% for l in lotes %}
               <option value="{{ l.id }}"
                       data-mp-tipo="{{ l.materia_prima.tipo }}"
                       data-unidad="{{ l.materia_prima.unidad_base }}"
                       data-disponible="{{ l.cantidad_disponible }}"
                       {% if lote is defined and l.id == lote.id %}selected{% endif %}>
-                {{ l.materia_prima.nombre }} - lote {{ l.codigo_lote }}
-                ({{ l.cantidad_disponible }} {{ l.materia_prima.unidad_base }})
+                {{ l.materia_prima.nombre }} - {{ _("lote") }} {{ l.codigo_lote }}
+                ({{ l.cantidad_disponible }} {{ unidad_labels.get(l.materia_prima.unidad_base, l.materia_prima.unidad_base) }})
               </option>
               {% endfor %}
             </select>
@@ -277,15 +298,15 @@
           <div class="levadura-extra mt-2 {% if mp is not defined or mp.tipo != 'LEVADURA' %}d-none{% endif %}">
             <div class="row g-2">
               <div class="col-md-4">
-                <label class="form-label mb-0 small">Uso levadura</label>
+                <label class="form-label mb-0 small">{{ _("Uso levadura") }}</label>
                 <select class="form-select form-select-sm" name="lev_tipo_uso">
-                  <option value="NUEVA" {% if uso and uso.tipo_uso == "NUEVA" %}selected{% endif %}>NUEVA</option>
-                  <option value="REUTILIZADA" {% if uso and uso.tipo_uso == "REUTILIZADA" %}selected{% endif %}>REUTILIZADA</option>
+                  <option value="NUEVA" {% if uso and uso.tipo_uso == "NUEVA" %}selected{% endif %}>{{ uso_levadura_labels["NUEVA"] }}</option>
+                  <option value="REUTILIZADA" {% if uso and uso.tipo_uso == "REUTILIZADA" %}selected{% endif %}>{{ uso_levadura_labels["REUTILIZADA"] }}</option>
                 </select>
               </div>
 
               <div class="col-md-4 lev-gen {% if not uso or uso.tipo_uso != 'REUTILIZADA' %}d-none{% endif %}">
-                <label class="form-label mb-0 small">Generación</label>
+                <label class="form-label mb-0 small">{{ _("Generación") }}</label>
                 <select class="form-select form-select-sm" name="lev_generacion">
                   {% for g in range(1,9) %}
                     <option value="{{ g }}" {% if uso and uso.generacion == g %}selected{% endif %}>{{ g }}GEN</option>
@@ -294,9 +315,9 @@
               </div>
 
               <div class="col-md-4">
-                <label class="form-label mb-0 small">Comentarios</label>
+                <label class="form-label mb-0 small">{{ _("Comentarios") }}</label>
                 <input type="text" class="form-control form-control-sm" name="lev_comentarios"
-                      value="{{ uso.comentarios if uso else '' }}" placeholder="Opcional">
+                      value="{{ uso.comentarios if uso else '' }}" placeholder="{{ _('Opcional') }}">
               </div>
             </div>
           </div>
@@ -319,7 +340,7 @@
           <td>
             <select class="form-select form-select-sm" name="etapa_proceso">
               {% for val in ["MACERACION","HERVOR","WHIRLPOOL","FERMENTACION","MADURACION","OTRA"] %}
-                <option value="{{ val }}">{{ val }}</option>
+                <option value="{{ val }}">{{ etapa_labels.get(val, val) }}</option>
               {% endfor %}
             </select>
           </td>
@@ -327,7 +348,7 @@
           <td>
             <select class="form-select form-select-sm" name="tipo_aplicacion">
               {% for val in ["GENERAL","AMARGOR","SABOR","AROMA","DRY_HOP","NUTRIENTE","OTRA"] %}
-                <option value="{{ val }}">{{ val }}</option>
+                <option value="{{ val }}">{{ aplicacion_labels.get(val, val) }}</option>
               {% endfor %}
             </select>
           </td>
@@ -346,27 +367,27 @@
   </table>
 
   <button type="button" class="btn btn-sm btn-outline-primary mb-3" id="btn-agregar-fila">
-    + Agregar fila
+    + {{ _("Agregar fila") }}
   </button>
 
   <hr>
-  <h5 class="mt-4">Mediciones del bache</h5>
+  <h5 class="mt-4">{{ _("Mediciones del bache") }}</h5>
   {% if mediciones %}
-  <h6 class="mt-3">Histórico</h6>
+  <h6 class="mt-3">{{ _("Histórico") }}</h6>
   <table class="table table-sm table-striped">
     <thead>
       <tr>
-        <th>Fecha ({{ configured_timezone }})</th>
-        <th>Tipo</th>
-        <th>Valor</th>
-        <th>Comentario</th>
+        <th>{{ _("Fecha") }} ({{ configured_timezone }})</th>
+        <th>{{ _("Tipo") }}</th>
+        <th>{{ _("Valor") }}</th>
+        <th>{{ _("Comentario") }}</th>
       </tr>
     </thead>
     <tbody>
       {% for m in mediciones %}
       <tr>
         <td>{{ m.fecha|format_local_datetime }}</td>
-        <td>{{ m.tipo }}</td>
+        <td>{{ medicion_labels.get(m.tipo, m.tipo) }}</td>
         <td>{{ m.valor }}</td>
         <td>{{ m.comentario or "-" }}</td>
       </tr>
@@ -377,10 +398,10 @@
   <table class="table table-sm" id="tabla-mediciones">
     <thead>
       <tr>
-        <th>Fecha ({{ configured_timezone }})</th>
-        <th>Tipo</th>
-        <th>Valor</th>
-        <th>Comentario</th>
+        <th>{{ _("Fecha") }} ({{ configured_timezone }})</th>
+        <th>{{ _("Tipo") }}</th>
+        <th>{{ _("Valor") }}</th>
+        <th>{{ _("Comentario") }}</th>
         <th></th>
       </tr>
     </thead>
@@ -390,16 +411,55 @@
   </table>
 
   <button type="button" class="btn btn-sm btn-primary" onclick="agregarMedicion()">
-    Añadir medición
+    {{ _("Añadir medición") }}
   </button>
 
   <div class="mt-3">
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a href="{{ url_for('baches.lista') }}" class="btn btn-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-primary">{{ _("Guardar") }}</button>
+    <a href="{{ url_for('baches.lista') }}" class="btn btn-secondary">{{ _("Cancelar") }}</a>
   </div>
 </form>
 
 <script>
+  const batchI18n = {{ {
+    "available": _("Disponible:"),
+    "temperature": _("Temperatura"),
+    "density": _("Densidad"),
+    "viability": _("Viabilidad"),
+    "other": _("Otro"),
+    "dilution": _("Dilución"),
+    "liveCells": _("Células vivas"),
+    "deadCells": _("Células muertas"),
+    "result": _("Resultado:"),
+    "completeViability": _("Completa los datos para calcular la viabilidad."),
+    "completeValidViability": _("Completa datos válidos para calcular la viabilidad."),
+    "neubauerHelp": _("Se asumen 5 cuadrantes fijos en cámara de Neubauer."),
+    "measurementExample": _("Ej: 1.062 / 5.60 / 18.50"),
+    "liveCellsExample": _("Ej: 134"),
+    "deadCellsExample": _("Ej: 14"),
+    "recipeSelectMissing": _("No existe el selector de receta."),
+    "recipeNoDescription": _("Esta receta no tiene descripción."),
+    "rawMaterialStock": _("Materia prima fila __ROW__: la cantidad usada supera la disponible del lote."),
+    "initialDensityInvalid": _("La densidad inicial debe ingresarse en formato decimal, por ejemplo 1.062"),
+    "mashPhInvalid": _("El pH macerado debe ingresarse en formato decimal, por ejemplo 5.60"),
+    "boilPhInvalid": _("El pH fin de hervido debe ingresarse en formato decimal, por ejemplo 5.15"),
+    "viabilityInvalid": _("Medición __ROW__: completa correctamente los datos de VIABILIDAD."),
+    "densityInvalid": _("Medición __ROW__: la densidad debe estar en formato decimal, por ejemplo 1.062"),
+    "phInvalid": _("Medición __ROW__: el pH debe estar en formato decimal, por ejemplo 5.60"),
+    "temperatureInvalid": _("Medición __ROW__: la temperatura debe estar en formato decimal, por ejemplo 18.50"),
+    "numberInvalid": _("Medición __ROW__: el valor ingresado no es numérico válido."),
+    "quadrants": _("Cuadrantes"),
+    "live": _("Vivas"),
+    "dead": _("Muertas"),
+    "averageLive": _("Promedio vivas/cuadrante"),
+    "averageDead": _("Promedio muertas/cuadrante")
+  }|tojson }};
+  const batchUnitLabels = {{ {"UNIDAD": _("Unidad")}|tojson }};
+
+  function batchRowMessage(message, rowIndex) {
+    return message.replace("__ROW__", String(rowIndex + 1));
+  }
+
   function refreshLevaduraRow(row) {
     const sel = row.querySelector("select[name='lote_id']");
     const opt = sel && sel.selectedOptions && sel.selectedOptions[0];
@@ -412,12 +472,13 @@
     const unidadHidden = row.querySelector(".unidad-hidden");
     const disponibleText = row.querySelector(".disponible-text");
 
-    if (unidadVisible) unidadVisible.value = unidad;
+    const unidadVisibleLabel = batchUnitLabels[unidad] || unidad;
+    if (unidadVisible) unidadVisible.value = unidadVisibleLabel;
     if (unidadHidden) unidadHidden.value = unidad;
 
     if (disponibleText) {
       disponibleText.textContent = (disponible && unidad)
-        ? `Disponible: ${disponible} ${unidad}`
+        ? `${batchI18n.available} ${disponible} ${unidadVisibleLabel}`
         : "";
     }
 
@@ -581,10 +642,10 @@ function agregarMedicion() {
     <td>
       <select name="med_tipo[]" class="form-select form-select-sm med-tipo">
         <option value="PH">PH</option>
-        <option value="TEMPERATURA">Temperatura</option>
-        <option value="DENSIDAD">Densidad</option>
-        <option value="VIABILIDAD">Viabilidad</option>
-        <option value="OTRO">Otro</option>
+        <option value="TEMPERATURA">${batchI18n.temperature}</option>
+        <option value="DENSIDAD">${batchI18n.density}</option>
+        <option value="VIABILIDAD">${batchI18n.viability}</option>
+        <option value="OTRO">${batchI18n.other}</option>
       </select>
     </td>
     <td>
@@ -593,13 +654,13 @@ function agregarMedicion() {
                name="med_valor[]"
                class="form-control form-control-sm med-valor"
                inputmode="decimal"
-               placeholder="Ej: 1.062 / 5.60 / 18.50">
+               placeholder="${batchI18n.measurementExample}">
       </div>
 
       <div class="viabilidad-wrap d-none border rounded p-2 bg-light mt-1">
         <div class="row g-2">
           <div class="col-md-4">
-            <label class="form-label mb-0 small">Dilución</label>
+            <label class="form-label mb-0 small">${batchI18n.dilution}</label>
             <select class="form-select form-select-sm vib-dilucion">
               <option value="100">1/100</option>
               <option value="1000">1/1000</option>
@@ -607,22 +668,22 @@ function agregarMedicion() {
           </div>
 
           <div class="col-md-4">
-            <label class="form-label mb-0 small">Células vivas</label>
-            <input type="number" min="0" step="1" class="form-control form-control-sm vib-vivas" placeholder="Ej: 134">
+            <label class="form-label mb-0 small">${batchI18n.liveCells}</label>
+            <input type="number" min="0" step="1" class="form-control form-control-sm vib-vivas" placeholder="${batchI18n.liveCellsExample}">
           </div>
 
           <div class="col-md-4">
-            <label class="form-label mb-0 small">Células muertas</label>
-            <input type="number" min="0" step="1" class="form-control form-control-sm vib-muertas" placeholder="Ej: 14">
+            <label class="form-label mb-0 small">${batchI18n.deadCells}</label>
+            <input type="number" min="0" step="1" class="form-control form-control-sm vib-muertas" placeholder="${batchI18n.deadCellsExample}">
           </div>
 
           <div class="col-12">
             <div class="small">
-              <strong>Resultado:</strong>
-              <span class="vib-resultado text-muted">Completa los datos para calcular la viabilidad.</span>
+              <strong>${batchI18n.result}</strong>
+              <span class="vib-resultado text-muted">${batchI18n.completeViability}</span>
             </div>
             <div class="form-text">
-              Se asumen 5 cuadrantes fijos en cámara de Neubauer.
+              ${batchI18n.neubauerHelp}
             </div>
           </div>
         </div>
@@ -646,8 +707,8 @@ function agregarMedicion() {
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Guía de receta</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <h5 class="modal-title">{{ _("Guía de receta") }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Cerrar') }}"></button>
       </div>
       <div class="modal-body">
         <pre id="contenidoReceta" style="white-space: pre-wrap; margin:0;"></pre>
@@ -660,7 +721,7 @@ function agregarMedicion() {
 function mostrarReceta() {
   const select = document.getElementById("id_receta");
   if (!select) {
-    console.error("No existe el select #id_receta");
+    console.error(batchI18n.recipeSelectMissing);
     return;
   }
 
@@ -668,7 +729,7 @@ function mostrarReceta() {
   const descripcion = option ? option.getAttribute("data-descripcion") : "";
 
   if (!descripcion || descripcion.trim() === "") {
-    alert("Esta receta no tiene descripción.");
+    alert(batchI18n.recipeNoDescription);
     return;
   }
 
@@ -785,7 +846,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const filasMp = document.querySelectorAll("#tabla-mp-body tr.fila-mp");
     filasMp.forEach((fila, idx) => {
       if (!validarCantidadVsDisponible(fila)) {
-        errores.push(`Materia prima fila ${idx + 1}: la cantidad usada supera la disponible del lote.`);
+        errores.push(batchRowMessage(batchI18n.rawMaterialStock, idx));
       }
     });
 
@@ -793,7 +854,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (densidadInput) {
       const resDensidad = validarDecimal(densidadInput.value, 0.900, 2.000);
       if (!resDensidad.ok) {
-        errores.push("La densidad inicial debe ingresarse en formato decimal, por ejemplo 1.062");
+        errores.push(batchI18n.initialDensityInvalid);
       } else if (resDensidad.value !== "") {
         densidadInput.value = resDensidad.value;
       }
@@ -803,7 +864,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (phMaceradoInput) {
       const resPhM = validarDecimal(phMaceradoInput.value, 0.00, 14.00);
       if (!resPhM.ok) {
-        errores.push("El pH macerado debe ingresarse en formato decimal, por ejemplo 5.60");
+        errores.push(batchI18n.mashPhInvalid);
       } else if (resPhM.value !== "") {
         phMaceradoInput.value = resPhM.value;
       }
@@ -813,7 +874,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (phFinInput) {
       const resPhF = validarDecimal(phFinInput.value, 0.00, 14.00);
       if (!resPhF.ok) {
-        errores.push("El pH fin de hervido debe ingresarse en formato decimal, por ejemplo 5.15");
+        errores.push(batchI18n.boilPhInvalid);
       } else if (resPhF.value !== "") {
         phFinInput.value = resPhF.value;
       }
@@ -839,7 +900,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const calc = calcularViabilidadDesdeFila(fila);
 
         if (!calc) {
-          errores.push(`Medición ${idx + 1}: completa correctamente los datos de VIABILIDAD.`);
+          errores.push(batchRowMessage(batchI18n.viabilityInvalid, idx));
           return;
         }
 
@@ -848,13 +909,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const comentarioInput = fila.querySelector("input[name='med_comentario[]']");
         if (comentarioInput) {
           comentarioInput.value =
-            `Viabilidad ${calc.viabilidadPct.toFixed(2)}% | ` +
-            `Dilución 1/${calc.dilucion} | ` +
-            `Cuadrantes 5 | ` +
-            `Vivas ${calc.vivas} | ` +
-            `Muertas ${calc.muertas} | ` +
-            `Promedio vivas/cuadrante ${calc.vivasPromedio.toFixed(2)} | ` +
-            `Promedio muertas/cuadrante ${calc.muertasPromedio.toFixed(2)}`;
+            `${batchI18n.viability} ${calc.viabilidadPct.toFixed(2)}% | ` +
+            `${batchI18n.dilution} 1/${calc.dilucion} | ` +
+            `${batchI18n.quadrants} 5 | ` +
+            `${batchI18n.live} ${calc.vivas} | ` +
+            `${batchI18n.dead} ${calc.muertas} | ` +
+            `${batchI18n.averageLive} ${calc.vivasPromedio.toFixed(2)} | ` +
+            `${batchI18n.averageDead} ${calc.muertasPromedio.toFixed(2)}`;
         }
 
         return;
@@ -865,21 +926,21 @@ document.addEventListener("DOMContentLoaded", function () {
       if (tipo === "DENSIDAD") {
         res = validarDecimalEstricto(valorOriginal, 0.900, 2.000);
         if (!res.ok) {
-          errores.push(`Medición ${idx + 1}: la densidad debe estar en formato decimal, por ejemplo 1.062`);
+          errores.push(batchRowMessage(batchI18n.densityInvalid, idx));
         } else {
           valorInput.value = res.value;
         }
       } else if (tipo === "PH") {
         res = validarDecimalEstricto(valorOriginal, 0.00, 14.00);
         if (!res.ok) {
-          errores.push(`Medición ${idx + 1}: el pH debe estar en formato decimal, por ejemplo 5.60`);
+          errores.push(batchRowMessage(batchI18n.phInvalid, idx));
         } else {
           valorInput.value = res.value;
         }
       } else if (tipo === "TEMPERATURA") {
         res = validarDecimalEstricto(valorOriginal, -20.00, 150.00);
         if (!res.ok) {
-          errores.push(`Medición ${idx + 1}: la temperatura debe estar en formato decimal, por ejemplo 18.50`);
+          errores.push(batchRowMessage(batchI18n.temperatureInvalid, idx));
         } else {
           valorInput.value = res.value;
         }
@@ -887,7 +948,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // OTRO
         res = validarNumeroFlexible(valorOriginal);
         if (!res.ok) {
-          errores.push(`Medición ${idx + 1}: el valor ingresado no es numérico válido.`);
+          errores.push(batchRowMessage(batchI18n.numberInvalid, idx));
         } else {
           valorInput.value = res.value;
         }
@@ -948,7 +1009,7 @@ function actualizarVistaViabilidad(row) {
 
     if (!calc) {
       if (resultado) {
-        resultado.textContent = "Completa datos válidos para calcular la viabilidad.";
+        resultado.textContent = batchI18n.completeValidViability;
         resultado.classList.remove("text-success");
         resultado.classList.add("text-muted");
       }
@@ -962,20 +1023,20 @@ function actualizarVistaViabilidad(row) {
 
     if (comentarioInput) {
       comentarioInput.value =
-        `Viabilidad ${calc.viabilidadPct.toFixed(2)}% | ` +
-        `Dilución 1/${calc.dilucion} | ` +
-        `Cuadrantes 5 | ` +
-        `Vivas ${calc.vivas} | ` +
-        `Muertas ${calc.muertas} | ` +
-        `Promedio vivas/cuadrante ${calc.vivasPromedio.toFixed(2)} | ` +
-        `Promedio muertas/cuadrante ${calc.muertasPromedio.toFixed(2)}`;
+        `${batchI18n.viability} ${calc.viabilidadPct.toFixed(2)}% | ` +
+        `${batchI18n.dilution} 1/${calc.dilucion} | ` +
+        `${batchI18n.quadrants} 5 | ` +
+        `${batchI18n.live} ${calc.vivas} | ` +
+        `${batchI18n.dead} ${calc.muertas} | ` +
+        `${batchI18n.averageLive} ${calc.vivasPromedio.toFixed(2)} | ` +
+        `${batchI18n.averageDead} ${calc.muertasPromedio.toFixed(2)}`;
     }
 
     if (resultado) {
       resultado.textContent =
-        `Viabilidad: ${calc.viabilidadPct.toFixed(2)}% | ` +
-        `Vivas: ${calc.vivas} | Muertas: ${calc.muertas} | ` +
-        `Dilución: 1/${calc.dilucion}`;
+        `${batchI18n.viability}: ${calc.viabilidadPct.toFixed(2)}% | ` +
+        `${batchI18n.live}: ${calc.vivas} | ${batchI18n.dead}: ${calc.muertas} | ` +
+        `${batchI18n.dilution}: 1/${calc.dilucion}`;
       resultado.classList.remove("text-muted");
       resultado.classList.add("text-success");
     }
