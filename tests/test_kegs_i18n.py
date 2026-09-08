@@ -71,7 +71,7 @@ class KegsInternationalizationTestCase(unittest.TestCase):
             "cameraStartError",
             "cameraAccessError",
         ):
-            self.assertIn(f"{key}:", base)
+            self.assertIn(f'"{key}":', base)
             self.assertIn(f'textoInterfaz("{key}"', qr_script)
 
         self.assertIn("}|tojson", base)

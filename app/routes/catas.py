@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, abort
 from flask_login import login_required, current_user
+from flask_babel import gettext as _
 from sqlalchemy import desc, func
 from app.extensions import db
 from app.models import Bache, SesionCata
@@ -85,12 +86,12 @@ def nueva():
         activa = True if request.form.get("activa") == "on" else False
 
         if not id_bache:
-            flash("Debes seleccionar un bache.", "warning")
+            flash(_("Debes seleccionar un bache."), "warning")
             return render_template("catas/form.html", baches=baches)
 
         bache = Bache.query.get(id_bache)
         if not bache:
-            flash("El bache seleccionado no existe.", "danger")
+            flash(_("El bache seleccionado no existe."), "danger")
             return render_template("catas/form.html", baches=baches)
 
         codigo_publico = generar_codigo_unico()
@@ -108,7 +109,7 @@ def nueva():
         db.session.add(sesion)
         db.session.commit()
 
-        flash("Sesión de cata creada correctamente.", "success")
+        flash(_("Sesión de cata creada correctamente."), "success")
         return redirect(url_for("catas.detalle", id_sesion_cata=sesion.id_sesion_cata))
 
     return render_template("catas/form.html", baches=baches)
@@ -138,8 +139,10 @@ def toggle_activa(id_sesion_cata):
     db.session.commit()
 
     flash(
-        "Sesión activada correctamente." if sesion.activa else "Sesión desactivada correctamente.",
-        "success"
+        _("Sesión activada correctamente.")
+        if sesion.activa
+        else _("Sesión desactivada correctamente."),
+        "success",
     )
     return redirect(url_for("catas.detalle", id_sesion_cata=sesion.id_sesion_cata))
 
@@ -247,25 +250,25 @@ def estadisticas(id_sesion_cata):
     alertas = []
 
     if promedios.get("sabor") is not None and promedios["sabor"] < 3:
-        alertas.append("El puntaje promedio de sabor es bajo. Conviene revisar balance de receta, fermentación y maduración.")
+        alertas.append(_("El puntaje promedio de sabor es bajo. Conviene revisar balance de receta, fermentación y maduración."))
 
     if promedios.get("aroma") is not None and promedios["aroma"] < 3:
-        alertas.append("El aroma está siendo evaluado por debajo de 3. Puede valer la pena revisar frescura, lúpulo y perfil fermentativo.")
+        alertas.append(_("El aroma está siendo evaluado por debajo de 3. Puede valer la pena revisar frescura, lúpulo y perfil fermentativo."))
 
     if promedios.get("carbonatacion_espuma") is not None and promedios["carbonatacion_espuma"] < 3:
-        alertas.append("La carbonatación/espuma tiene una percepción débil. Revisa gasificación, nivel de CO2 y retención de espuma.")
+        alertas.append(_("La carbonatación/espuma tiene una percepción débil. Revisa gasificación, nivel de CO2 y retención de espuma."))
 
     sabores_labels = {x["label"] for x in top_sabores}
     aromas_labels = {x["label"] for x in top_aromas}
 
     if "medicinal" in aromas_labels:
-        alertas.append("Se detectó descriptor medicinal. Revisa sanitización, fermentación y posibles desviaciones sensoriales.")
+        alertas.append(_("Se detectó descriptor medicinal. Revisa sanitización, fermentación y posibles desviaciones sensoriales."))
     if "mantequilla" in aromas_labels:
-        alertas.append("Se detectó mantequilla. Puede ser señal de diacetilo y conviene revisar fermentación y acondicionamiento.")
+        alertas.append(_("Se detectó mantequilla. Puede ser señal de diacetilo y conviene revisar fermentación y acondicionamiento."))
     if "cebolla" in aromas_labels:
-        alertas.append("Se detectó cebolla. Revisa calidad/manejo del lúpulo y estabilidad del producto.")
+        alertas.append(_("Se detectó cebolla. Revisa calidad/manejo del lúpulo y estabilidad del producto."))
     if "acido" in sabores_labels:
-        alertas.append("Hay percepción ácida en sabor. Verifica si corresponde al estilo o si puede indicar desviación del lote.")
+        alertas.append(_("Hay percepción ácida en sabor. Verifica si corresponde al estilo o si puede indicar desviación del lote."))
 
     return render_template(
         "catas/estadisticas.html",

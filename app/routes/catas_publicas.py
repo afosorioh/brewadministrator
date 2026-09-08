@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, abort, flash
+from flask_babel import gettext as _
 from app.extensions import db
 from app.models import SesionCata, RespuestaCata, RespuestaCataSabor, RespuestaCataAroma
 
@@ -64,36 +65,41 @@ def enviar_respuesta(codigo_publico):
 
     # requeridos base
     if not correo:
-        errores.append("El correo es obligatorio.")
+        errores.append(_("El correo es obligatorio."))
     if sexo not in ["masculino", "femenino", "otro", "prefiero_no_indicar"]:
-        errores.append("Debes seleccionar el sexo.")
+        errores.append(_("Debes seleccionar el sexo."))
     if rango_edad not in ["18_25", "26_35", "36_45", "46_55", "56_65", "66_mas"]:
-        errores.append("Debes seleccionar el rango de edad.")
+        errores.append(_("Debes seleccionar el rango de edad."))
     if nacionalidad not in ["colombiana", "extranjera"]:
-        errores.append("Debes seleccionar la nacionalidad.")
+        errores.append(_("Debes seleccionar la nacionalidad."))
 
     # puntajes 1-5
     for nombre, valor in [
-        ("Color", puntaje_color),
-        ("Carbonatación y espuma", puntaje_carbonatacion_espuma),
-        ("Sabor", puntaje_sabor),
-        ("Aroma", puntaje_aroma),
-        ("Impresión general", puntaje_impresion_general),
+        (_("Color"), puntaje_color),
+        (_("Carbonatación y espuma"), puntaje_carbonatacion_espuma),
+        (_("Sabor"), puntaje_sabor),
+        (_("Aroma"), puntaje_aroma),
+        (_("Impresión general"), puntaje_impresion_general),
     ]:
         if valor is None or valor < 1 or valor > 5:
-            errores.append(f"El puntaje de {nombre} debe estar entre 1 y 5.")
+            errores.append(
+                _(
+                    "El puntaje de %(dimension)s debe estar entre 1 y 5.",
+                    dimension=nombre,
+                )
+            )
 
     if color_valor is None or color_valor < 0 or color_valor > 100:
-        errores.append("El valor de color debe estar entre 0 y 100.")
+        errores.append(_("El valor de color debe estar entre 0 y 100."))
 
     if carbonatacion_nivel not in ["baja", "media", "alta"]:
-        errores.append("Debes seleccionar el nivel de carbonatación.")
+        errores.append(_("Debes seleccionar el nivel de carbonatación."))
 
     if espuma_nivel not in ["baja", "media", "alta"]:
-        errores.append("Debes seleccionar el nivel de espuma.")
+        errores.append(_("Debes seleccionar el nivel de espuma."))
 
     if cuerpo_nivel not in ["bajo", "medio", "alto"]:
-        errores.append("Debes seleccionar el cuerpo.")
+        errores.append(_("Debes seleccionar el cuerpo."))
 
     if errores:
         for e in errores:

@@ -1,53 +1,87 @@
 {% extends "base.html" %}
-{% block title %}Estadísticas de cata{% endblock %}
+{% block title %}{{ _('Estadísticas de cata') }}{% endblock %}
 
 {% block content %}
+{% set sexo_labels = {
+  "masculino": _('Masculino'), "femenino": _('Femenino'), "otro": _('Otro'),
+  "prefiero_no_indicar": _('Prefiero no indicar')
+} %}
+{% set edad_labels = {
+  "18_25": _('18 a 25'), "26_35": _('26 a 35'), "36_45": _('36 a 45'),
+  "46_55": _('46 a 55'), "56_65": _('56 a 65'), "66_mas": _('66 o más')
+} %}
+{% set nacionalidad_labels = {"colombiana": _('Colombiana'), "extranjera": _('Extranjera')} %}
+{% set color_labels = {
+  "casi_blanco": _('Casi blanco'), "amarillo": _('Amarillo'), "rojo": _('Rojo'),
+  "brown": _('Marrón'), "negro": _('Negro')
+} %}
+{% set nivel_labels = {
+  "baja": pgettext('sensory level', 'Baja'),
+  "media": pgettext('sensory level', 'Media'),
+  "alta": pgettext('sensory level', 'Alta'),
+  "bajo": pgettext('sensory level', 'Bajo'),
+  "medio": pgettext('sensory level', 'Medio'),
+  "alto": pgettext('sensory level', 'Alto')
+} %}
+{% set descriptor_labels = {
+  "citrico": _('Cítrico'), "floral": _('Floral'), "frutal": _('Frutal'),
+  "terral": _('Terroso'), "resinoso": _('Resinoso'), "cereal": _('Cereal'),
+  "galleta": _('Galleta'), "nueces": _('Nueces'), "mantequilla": _('Mantequilla'),
+  "medicinal": _('Medicinal'), "cebolla": _('Cebolla'), "humedo": _('Húmedo'),
+  "dulce": _('Dulce'), "acido": _('Ácido'), "caramelo": _('Caramelo'),
+  "chocolate": _('Chocolate'), "cafe": _('Café'), "pan": _('Pan'), "herbal": _('Herbal')
+} %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
-    <h1 class="h3 mb-0">Estadísticas de la cata</h1>
+    <h1 class="h3 mb-0">{{ _('Estadísticas de la cata') }}</h1>
     <div class="text-muted">
-      Bache {{ sesion.bache.codigo_bache }} · {{ sesion.bache.nombre_cerveza }} · {{ sesion.titulo or sesion.codigo_publico }}
+      {{ _('Bache') }} {{ sesion.bache.codigo_bache }} · {{ sesion.bache.nombre_cerveza }} ·
+      {% if sesion.titulo == "Cata " ~ sesion.bache.codigo_bache %}
+        {{ _('Cata %(batch_code)s', batch_code=sesion.bache.codigo_bache) }}
+      {% else %}
+        {{ sesion.titulo or sesion.codigo_publico }}
+      {% endif %}
     </div>
     <div class="small text-muted">
-      Creada: {{ sesion.fecha_creacion|format_local_datetime }}
+      {{ _('Creada') }}: {{ sesion.fecha_creacion|format_local_datetime }}
       ({{ configured_timezone }})
     </div>
   </div>
   <div>
     <a href="{{ url_for('catas.detalle', id_sesion_cata=sesion.id_sesion_cata) }}" class="btn btn-secondary">
-      Volver al detalle
+      {{ _('Volver al detalle') }}
     </a>
   </div>
 </div>
 
 {% if total_respuestas == 0 %}
   <div class="alert alert-info">
-    Esta sesión todavía no tiene respuestas registradas.
+    {{ _('Esta sesión todavía no tiene respuestas registradas.') }}
   </div>
 {% else %}
   <div class="row g-3 mb-3">
     <div class="col-md-3">
       <div class="card p-3 h-100">
-        <div class="text-muted small">Total catadores</div>
+        <div class="text-muted small">{{ _('Total catadores') }}</div>
         <div class="fs-3 fw-bold">{{ total_respuestas }}</div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card p-3 h-100">
-        <div class="text-muted small">Promedio global</div>
+        <div class="text-muted small">{{ _('Promedio global') }}</div>
         <div class="fs-3 fw-bold">{{ promedio_global or "-" }}</div>
-        <div class="small text-muted">Escala 1 a 5</div>
+        <div class="small text-muted">{{ _('Escala 1 a 5') }}</div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card p-3 h-100">
-        <div class="text-muted small">Sesión</div>
-        <div class="fw-semibold">{{ "Activa" if sesion.activa else "Inactiva" }}</div>
+        <div class="text-muted small">{{ _('Sesión') }}</div>
+        <div class="fw-semibold">{{ _('Activa') if sesion.activa else _('Inactiva') }}</div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card p-3 h-100">
-        <div class="text-muted small">Código público</div>
+        <div class="text-muted small">{{ _('Código público') }}</div>
         <div><code>{{ sesion.codigo_publico }}</code></div>
       </div>
     </div>
@@ -56,14 +90,14 @@
   <div class="row g-3 mb-3">
     <div class="col-lg-6">
       <div class="card p-3 h-100">
-        <h2 class="h5">Promedios por dimensión</h2>
+        <h2 class="h5">{{ _('Promedios por dimensión') }}</h2>
         <table class="table table-sm align-middle mb-0">
           <tbody>
-            <tr><th>Color</th><td>{{ promedios.color }}</td></tr>
-            <tr><th>Carbonatación y espuma</th><td>{{ promedios.carbonatacion_espuma }}</td></tr>
-            <tr><th>Sabor</th><td>{{ promedios.sabor }}</td></tr>
-            <tr><th>Aroma</th><td>{{ promedios.aroma }}</td></tr>
-            <tr><th>Impresión general</th><td>{{ promedios.impresion_general }}</td></tr>
+            <tr><th>{{ _('Color') }}</th><td>{{ promedios.color }}</td></tr>
+            <tr><th>{{ _('Carbonatación y espuma') }}</th><td>{{ promedios.carbonatacion_espuma }}</td></tr>
+            <tr><th>{{ _('Sabor') }}</th><td>{{ promedios.sabor }}</td></tr>
+            <tr><th>{{ _('Aroma') }}</th><td>{{ promedios.aroma }}</td></tr>
+            <tr><th>{{ _('Impresión general') }}</th><td>{{ promedios.impresion_general }}</td></tr>
           </tbody>
         </table>
       </div>
@@ -71,26 +105,26 @@
 
     <div class="col-lg-6">
       <div class="card p-3 h-100">
-        <h2 class="h5">Perfil demográfico</h2>
+        <h2 class="h5">{{ _('Perfil demográfico') }}</h2>
 
-        <h3 class="h6 mt-2">Sexo</h3>
+        <h3 class="h6 mt-2">{{ _('Sexo') }}</h3>
         <ul class="mb-2">
           {% for item in porcentajes_sexo %}
-            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+            <li>{{ sexo_labels.get(item.label, item.label) }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
           {% endfor %}
         </ul>
 
-        <h3 class="h6">Edad</h3>
+        <h3 class="h6">{{ _('Edad') }}</h3>
         <ul class="mb-2">
           {% for item in porcentajes_edad %}
-            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+            <li>{{ edad_labels.get(item.label, item.label) }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
           {% endfor %}
         </ul>
 
-        <h3 class="h6">Nacionalidad</h3>
+        <h3 class="h6">{{ _('Nacionalidad') }}</h3>
         <ul class="mb-0">
           {% for item in porcentajes_nacionalidad %}
-            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+            <li>{{ nacionalidad_labels.get(item.label, item.label) }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
           {% endfor %}
         </ul>
       </div>
@@ -100,33 +134,33 @@
   <div class="row g-3 mb-3">
     <div class="col-lg-6">
       <div class="card p-3 h-100">
-        <h2 class="h5">Percepción del producto</h2>
+        <h2 class="h5">{{ _('Percepción del producto') }}</h2>
 
-        <h3 class="h6 mt-2">Color percibido</h3>
+        <h3 class="h6 mt-2">{{ _('Color percibido') }}</h3>
         <ul>
           {% for item in distribucion_color %}
-            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+            <li>{{ color_labels.get(item.label, item.label) }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
           {% endfor %}
         </ul>
 
-        <h3 class="h6">Carbonatación</h3>
+        <h3 class="h6">{{ _('Carbonatación') }}</h3>
         <ul>
           {% for item in distribucion_carbonatacion %}
-            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+            <li>{{ nivel_labels.get(item.label, item.label) }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
           {% endfor %}
         </ul>
 
-        <h3 class="h6">Espuma</h3>
+        <h3 class="h6">{{ _('Espuma') }}</h3>
         <ul>
           {% for item in distribucion_espuma %}
-            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+            <li>{{ nivel_labels.get(item.label, item.label) }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
           {% endfor %}
         </ul>
 
-        <h3 class="h6">Cuerpo</h3>
+        <h3 class="h6">{{ _('Cuerpo') }}</h3>
         <ul class="mb-0">
           {% for item in distribucion_cuerpo %}
-            <li>{{ item.label }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
+            <li>{{ nivel_labels.get(item.label, item.label) }}: {{ item.cantidad }} ({{ item.porcentaje }}%)</li>
           {% endfor %}
         </ul>
       </div>
@@ -134,19 +168,27 @@
 
     <div class="col-lg-6">
       <div class="card p-3 h-100">
-        <h2 class="h5">Atributos sensoriales más frecuentes</h2>
+        <h2 class="h5">{{ _('Atributos sensoriales más frecuentes') }}</h2>
 
-        <h3 class="h6 mt-2">Sabores</h3>
+        <h3 class="h6 mt-2">{{ _('Sabores') }}</h3>
         <ul>
           {% for item in top_sabores[:10] %}
-            <li>{{ item.label }}: {{ item.cantidad }} menciones ({{ item.porcentaje }}%)</li>
+            <li>
+              {{ descriptor_labels.get(item.label, item.label) }}:
+              {{ ngettext('%(count)s mención', '%(count)s menciones', item.cantidad, count=item.cantidad) }}
+              ({{ item.porcentaje }}%)
+            </li>
           {% endfor %}
         </ul>
 
-        <h3 class="h6">Aromas</h3>
+        <h3 class="h6">{{ _('Aromas') }}</h3>
         <ul class="mb-0">
           {% for item in top_aromas[:10] %}
-            <li>{{ item.label }}: {{ item.cantidad }} menciones ({{ item.porcentaje }}%)</li>
+            <li>
+              {{ descriptor_labels.get(item.label, item.label) }}:
+              {{ ngettext('%(count)s mención', '%(count)s menciones', item.cantidad, count=item.cantidad) }}
+              ({{ item.porcentaje }}%)
+            </li>
           {% endfor %}
         </ul>
       </div>
@@ -155,7 +197,7 @@
 
   {% if alertas %}
     <div class="card p-3 border-warning">
-      <h2 class="h5">Hallazgos para mejora del bache</h2>
+      <h2 class="h5">{{ _('Hallazgos para mejora del bache') }}</h2>
       <ul class="mb-0">
         {% for alerta in alertas %}
           <li>{{ alerta }}</li>

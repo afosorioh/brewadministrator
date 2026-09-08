@@ -1,13 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Gracias por participar{% endblock %}
+{% block title %}{{ _('Gracias por participar') }}{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width: 700px;">
   <div class="card p-4 mt-5 text-center">
-    <h1 class="h3 mb-3">Gracias por tu participación</h1>
-    <p class="mb-2">Tu evaluación fue registrada correctamente.</p>
+    <h1 class="h3 mb-3">{{ _('Gracias por tu participación') }}</h1>
+    <p class="mb-2">{{ _('Tu evaluación fue registrada correctamente.') }}</p>
     <p class="text-muted mb-0">
-      Sesión: {{ sesion.titulo or sesion.codigo_publico }}
+      {{ _('Sesión') }}:
+      {% if sesion.titulo == "Cata " ~ sesion.bache.codigo_bache %}
+        {{ _('Cata %(batch_code)s', batch_code=sesion.bache.codigo_bache) }}
+      {% else %}
+        {{ sesion.titulo or sesion.codigo_publico }}
+      {% endif %}
     </p>
   </div>
 </div>
