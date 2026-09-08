@@ -2,7 +2,7 @@ import ast
 import unittest
 from pathlib import Path
 
-from flask import Flask
+from flask import Flask, render_template_string
 from flask_babel import Babel, gettext
 
 
@@ -34,6 +34,28 @@ class RawMaterialsInternationalizationTestCase(unittest.TestCase):
         self.assertIn('<option value="{{ val }}"', form)
         self.assertIn('|tojson', listing)
         self.assertIn('|tojson', detail)
+
+    def test_percent_labels_render_in_english(self):
+        labels = {
+            "Atenuación mínima (%%)": "Minimum attenuation (%)",
+            "Atenuación máxima (%%)": "Maximum attenuation (%)",
+            "Alfa ácidos (%%)": "Alpha acids (%)",
+            "Beta ácidos (%%)": "Beta acids (%)",
+            "Cohumulona (%%)": "Cohumulone (%)",
+            "Proteínas (%%)": "Protein (%)",
+            "Uso máximo recomendado en molienda (%%)": (
+                "Maximum recommended use in the grain bill (%)"
+            ),
+        }
+
+        with self.app.test_request_context():
+            for message, expected in labels.items():
+                with self.subTest(message=message):
+                    rendered = render_template_string(
+                        '{{ _(message) }}',
+                        message=message,
+                    )
+                    self.assertEqual(rendered, expected)
 
     def test_every_flash_message_uses_gettext(self):
         route = self.project_root / "app" / "routes" / "materias_primas.py"
