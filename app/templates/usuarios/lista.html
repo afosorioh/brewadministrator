@@ -1,35 +1,44 @@
 {% extends "base.html" %}
-{% block title %}Usuarios{% endblock %}
+{% block title %}{{ _('Usuarios') }}{% endblock %}
 {% block content %}
+{% set role_labels = {
+  'ADMIN': _('Administrador'),
+  'GESTOR': _('Gestor'),
+  'SUPERVISOR': _('Supervisor')
+} %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3">Usuarios</h1>
-  <a class="btn btn-primary" href="{{ url_for('usuarios.crear') }}">Nuevo usuario</a>
+  <h1 class="h3">{{ _('Usuarios') }}</h1>
+  <a class="btn btn-primary" href="{{ url_for('usuarios.crear') }}">{{ _('Nuevo usuario') }}</a>
 </div>
 
+{% if usuarios %}
 <table class="table table-striped">
   <thead>
     <tr>
-      <th>Usuario</th>
-      <th>Rol</th>
-      <th>Activo</th>
-      <th>Creado ({{ configured_timezone }})</th>
-      <th>Actualizado ({{ configured_timezone }})</th>
-      <th style="width:120px;">Acciones</th>
+      <th>{{ _('Usuario') }}</th>
+      <th>{{ _('Rol') }}</th>
+      <th>{{ _('Activo') }}</th>
+      <th>{{ _('Creado') }} ({{ configured_timezone }})</th>
+      <th>{{ _('Actualizado') }} ({{ configured_timezone }})</th>
+      <th style="width:120px;">{{ _('Acciones') }}</th>
     </tr>
   </thead>
   <tbody>
     {% for u in usuarios %}
     <tr>
       <td>{{ u.username }}</td>
-      <td>{{ u.rol.nombre }}</td>
-      <td>{{ "Sí" if u.activo else "No" }}</td>
+      <td>{{ role_labels.get(u.rol.nombre, u.rol.nombre) }}</td>
+      <td>{{ _('Sí') if u.activo else _('No') }}</td>
       <td>{{ u.creado_en|format_local_datetime('%Y-%m-%d %H:%M') }}</td>
       <td>{{ u.actualizado_en|format_local_datetime('%Y-%m-%d %H:%M') }}</td>
       <td>
-        <a class="btn btn-sm btn-warning" href="{{ url_for('usuarios.editar', user_id=u.id) }}">Editar</a>
+        <a class="btn btn-sm btn-warning" href="{{ url_for('usuarios.editar', user_id=u.id) }}">{{ _('Editar') }}</a>
       </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+{% else %}
+  <p>{{ _('No hay usuarios registrados.') }}</p>
+{% endif %}
 {% endblock %}

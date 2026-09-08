@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_babel import gettext as _
 from flask_login import login_required
 
 from app.authz import role_required
@@ -6,17 +7,11 @@ from app.extensions import db
 from app.models import Cliente
 
 
-clientes_bp = Blueprint(
-    "clientes",
-    __name__,
-    url_prefix="/clientes",
-)
+clientes_bp = Blueprint("clientes", __name__, url_prefix="/clientes")
 
 
 def _tipos_cliente():
-    """
-    Obtiene los valores del Enum tipo_cliente desde el modelo.
-    """
+    """Obtiene los valores del Enum tipo_cliente desde el modelo."""
     try:
         return Cliente.__table__.c.tipo.type.enums
     except Exception:
@@ -64,7 +59,7 @@ def crear():
         activo = request.form.get("activo") == "on"
 
         if not nombre:
-            flash("El nombre es obligatorio.", "danger")
+            flash(_("El nombre es obligatorio."), "danger")
             return redirect(url_for("clientes.crear"))
 
         cliente = Cliente(
@@ -78,7 +73,7 @@ def crear():
         db.session.add(cliente)
         db.session.commit()
 
-        flash("Cliente creado correctamente.", "success")
+        flash(_("Cliente creado correctamente."), "success")
         return redirect(url_for("clientes.lista"))
 
     return render_template(
@@ -105,7 +100,7 @@ def editar(cliente_id):
         activo = request.form.get("activo") == "on"
 
         if not nombre:
-            flash("El nombre es obligatorio.", "danger")
+            flash(_("El nombre es obligatorio."), "danger")
             return redirect(url_for("clientes.editar", cliente_id=cliente.id))
 
         cliente.nombre = nombre
@@ -117,7 +112,7 @@ def editar(cliente_id):
 
         db.session.commit()
 
-        flash("Cliente actualizado correctamente.", "success")
+        flash(_("Cliente actualizado correctamente."), "success")
         return redirect(url_for("clientes.lista"))
 
     return render_template(
@@ -137,5 +132,5 @@ def eliminar(cliente_id):
     db.session.delete(cliente)
     db.session.commit()
 
-    flash("Cliente eliminado correctamente.", "success")
+    flash(_("Cliente eliminado correctamente."), "success")
     return redirect(url_for("clientes.lista"))

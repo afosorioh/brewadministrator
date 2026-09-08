@@ -1,37 +1,36 @@
 {% extends "base.html" %}
 
-{% block title %}Recetas{% endblock %}
+{% block title %}{{ _('Recetas') }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between mb-3">
-  <h1 class="h3">Recetas</h1>
-  <a href="{{ url_for('recetas.crear') }}" class="btn btn-primary">Nueva receta</a>
+  <h1 class="h3">{{ _('Recetas') }}</h1>
+  <a href="{{ url_for('recetas.crear') }}" class="btn btn-primary">{{ _('Nueva receta') }}</a>
 </div>
 
 {% if recetas %}
 <table class="table table-striped">
   <thead>
     <tr>
-      <th>Nombre</th>
-      <th>Estilo</th>
-      <th>Volumen estándar (L)</th>
-      <th style="width:180px;">Acciones</th>
+      <th>{{ _('Nombre') }}</th>
+      <th>{{ _('Estilo') }}</th>
+      <th>{{ _('Volumen estándar (L)') }}</th>
+      <th style="width:180px;">{{ _('Acciones') }}</th>
     </tr>
   </thead>
   <tbody>
     {% for r in recetas %}
     <tr>
       <td>{{ r.nombre }}</td>
-      <td>{{ r.estilo or "-" }}</td>
-      <td>{{ r.volumen_estandar_litros or "-" }}</td>
+      <td>{{ r.estilo or '-' }}</td>
+      <td>{{ r.volumen_estandar_litros if r.volumen_estandar_litros is not none else '-' }}</td>
       <td>
-        <a href="{{ url_for('recetas.detalle', receta_id=r.id) }}" class="btn btn-sm btn-secondary">Ver</a>
-        <a href="{{ url_for('recetas.editar', receta_id=r.id) }}" class="btn btn-sm btn-warning">Editar</a>
-        <form method="post"
-              action="{{ url_for('recetas.eliminar', receta_id=r.id) }}"
-              style="display:inline;"
-              onsubmit="return confirm('¿Eliminar esta receta?');">
-          <button class="btn btn-sm btn-danger">Eliminar</button>
+        <a href="{{ url_for('recetas.detalle', receta_id=r.id) }}" class="btn btn-sm btn-secondary">{{ _('Ver') }}</a>
+        <a href="{{ url_for('recetas.editar', receta_id=r.id) }}" class="btn btn-sm btn-warning">{{ _('Editar') }}</a>
+        <form method="post" action="{{ url_for('recetas.eliminar', receta_id=r.id) }}"
+              style="display:inline;" data-confirm="{{ _('¿Eliminar esta receta?') }}"
+              onsubmit="return confirm(this.dataset.confirm);">
+          <button class="btn btn-sm btn-danger">{{ _('Eliminar') }}</button>
         </form>
       </td>
     </tr>
@@ -39,6 +38,6 @@
   </tbody>
 </table>
 {% else %}
-<p>No hay recetas registradas.</p>
+<p>{{ _('No hay recetas registradas.') }}</p>
 {% endif %}
 {% endblock %}
