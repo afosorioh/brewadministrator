@@ -500,3 +500,330 @@ msgstr "Delete this recipe?"
 
 msgid "¿Seguro que deseas eliminar este cliente?"
 msgstr "Are you sure you want to delete this customer?"
+
+msgid "-- Selecciona tipo --"
+msgstr "-- Select type --"
+
+msgid "-- Selecciona unidad --"
+msgstr "-- Select unit --"
+
+msgid "-- Seleccionar tipo --"
+msgstr "-- Select type --"
+
+msgid "Aceites totales (ml / 100g)"
+msgstr "Total oils (ml / 100g)"
+
+msgid "Activo:"
+msgstr "Active:"
+
+msgid "Adjuntos"
+msgstr "Adjuncts"
+
+msgid "Agregar cantidad"
+msgstr "Add quantity"
+
+msgid "Ale"
+msgstr "Ale"
+
+msgid "Alfa ácidos (%)"
+msgstr "Alpha acids (%)"
+
+msgid "Alta"
+msgstr "High"
+
+msgid "Amargor"
+msgstr "Bitterness"
+
+msgid "Aroma"
+msgstr "Aroma"
+
+msgid "Atenuación máxima (%)"
+msgstr "Maximum attenuation (%)"
+
+msgid "Atenuación mínima (%)"
+msgstr "Minimum attenuation (%)"
+
+msgid "Año de cosecha"
+msgstr "Harvest year"
+
+msgid "Base"
+msgstr "Base"
+
+msgid "Beta ácidos (%)"
+msgstr "Beta acids (%)"
+
+msgid "Cant. disponible"
+msgstr "Available qty."
+
+msgid "Cant. inicial"
+msgstr "Initial qty."
+
+msgid "Cantidad"
+msgstr "Quantity"
+
+msgid "Cantidad disponible actual"
+msgstr "Current available quantity"
+
+msgid "Cantidad inicial con la que se crea el lote."
+msgstr "Initial quantity used to create the lot."
+
+msgid "Caramelo"
+msgstr "Caramel"
+
+msgid "Cohumulona (%)"
+msgstr "Cohumulone (%)"
+
+msgid "Color (EBC)"
+msgstr "Color (EBC)"
+
+msgid "Color (Lovibond)"
+msgstr "Color (Lovibond)"
+
+msgid "Costo unitario"
+msgstr "Unit cost"
+
+msgid "Código de lote y cantidad son obligatorios."
+msgstr "Lot code and quantity are required."
+
+msgid "Código lote"
+msgstr "Lot code"
+
+msgid "Detalle materia prima"
+msgstr "Raw material details"
+
+msgid "Detalles de levadura"
+msgstr "Yeast details"
+
+msgid "Detalles de lúpulo"
+msgstr "Hop details"
+
+msgid "Detalles de malta"
+msgstr "Malt details"
+
+msgid "Detalles de otros insumos"
+msgstr "Other ingredient details"
+
+msgid "Disponible actual:"
+msgstr "Currently available:"
+
+msgid "Dual"
+msgstr "Dual"
+
+msgid "Editar lote"
+msgstr "Edit lot"
+
+msgid "Editar materia prima"
+msgstr "Edit raw material"
+
+msgid "Ej. Extracto de avellana, lactosa, avena..."
+msgstr "E.g. hazelnut extract, lactose, oats..."
+
+msgid "El código de lote es obligatorio."
+msgstr "The lot code is required."
+
+msgid "El lote no pertenece a esta materia prima"
+msgstr "The lot does not belong to this raw material"
+
+msgid "El lote no pertenece a esta materia prima."
+msgstr "The lot does not belong to this raw material."
+
+msgid "Especial"
+msgstr "Special"
+
+msgid "Este valor se descuenta automáticamente cuando el lote se usa en un bache."
+msgstr "This value is automatically deducted when the lot is used in a batch."
+
+msgid "Extracto"
+msgstr "Extract"
+
+msgid "Extractos"
+msgstr "Extracts"
+
+msgid "Fabricante"
+msgstr "Manufacturer"
+
+msgid "Fabricante:"
+msgstr "Manufacturer:"
+
+msgid "Fecha compra"
+msgstr "Purchase date"
+
+msgid "Fecha vencimiento"
+msgstr "Expiration date"
+
+msgid "Floculación"
+msgstr "Flocculation"
+
+msgid "Floculación baja"
+msgstr "Low"
+
+msgid "Flor"
+msgstr "Whole cone"
+
+msgid "Forma"
+msgstr "Form"
+
+msgid "Frutas"
+msgstr "Fruit"
+
+msgid "Híbrida"
+msgstr "Hybrid"
+
+msgid "Kveik"
+msgstr "Kveik"
+
+msgid "La cantidad a agregar no puede ser negativa."
+msgstr "The quantity to add cannot be negative."
+
+msgid "La cantidad debe ser mayor que cero."
+msgstr "The quantity must be greater than zero."
+
+msgid "La cantidad ingresada aquí se suma al total del lote y a la cantidad disponible."
+msgstr "The quantity entered here is added to the lot total and the available quantity."
+
+msgid "Lager"
+msgstr "Lager"
+
+msgid "Lote actualizado correctamente."
+msgstr "Lot updated successfully."
+
+msgid "Lote creado correctamente."
+msgstr "Lot created successfully."
+
+msgid "Lote eliminado correctamente"
+msgstr "Lot deleted successfully"
+
+msgid "Lotes de esta materia prima"
+msgstr "Lots for this raw material"
+
+msgid "Líquida"
+msgstr "Liquid"
+
+msgid "Materia prima actualizada correctamente"
+msgstr "Raw material updated successfully"
+
+msgid "Materia prima creada correctamente"
+msgstr "Raw material created successfully"
+
+msgid "Materia prima eliminada correctamente"
+msgstr "Raw material deleted successfully"
+
+msgid "Media"
+msgstr "Medium"
+
+msgid "No hay lotes registrados para esta materia prima."
+msgstr "No lots are registered for this raw material."
+
+msgid "No hay materias primas registradas todavía."
+msgstr "No raw materials have been registered yet."
+
+msgid "No se puede eliminar la materia prima porque tiene lotes asociados. Elimina o ajusta primero los lotes."
+msgstr "The raw material cannot be deleted because it has associated lots. Delete or adjust the lots first."
+
+msgid "Nombre específico"
+msgstr "Specific name"
+
+msgid "Nombre específico:"
+msgstr "Specific name:"
+
+msgid "Nombre, tipo y unidad son obligatorios"
+msgstr "Name, type and unit are required"
+
+msgid "Notas"
+msgstr "Notes"
+
+msgid "Notas:"
+msgstr "Notes:"
+
+msgid "Nueva materia prima"
+msgstr "New raw material"
+
+msgid "Nuevo lote"
+msgstr "New lot"
+
+msgid "Origen"
+msgstr "Origin"
+
+msgid "Origen:"
+msgstr "Origin:"
+
+msgid "Otra"
+msgstr "Other"
+
+msgid "Pellet"
+msgstr "Pellet"
+
+msgid "Perfil de aroma"
+msgstr "Aroma profile"
+
+msgid "Pitch rate (mill. células / ml / °P)"
+msgstr "Pitch rate (million cells / ml / °P)"
+
+msgid "Potencial de gravedad (ej. 1.036)"
+msgstr "Gravity potential (e.g. 1.036)"
+
+msgid "Proteínas (%)"
+msgstr "Protein (%)"
+
+msgid "Proveedor"
+msgstr "Supplier"
+
+msgid "Sales"
+msgstr "Salts"
+
+msgid "Seca"
+msgstr "Dry"
+
+msgid "Temperatura máxima (°C)"
+msgstr "Maximum temperature (°C)"
+
+msgid "Temperatura mínima (°C)"
+msgstr "Minimum temperature (°C)"
+
+msgid "Tipo de insumo"
+msgstr "Ingredient type"
+
+msgid "Tipo de insumo:"
+msgstr "Ingredient type:"
+
+msgid "Tipo de levadura"
+msgstr "Yeast type"
+
+msgid "Tipo de malta"
+msgstr "Malt type"
+
+msgid "Tipo:"
+msgstr "Type:"
+
+msgid "Tostada"
+msgstr "Roasted"
+
+msgid "Total histórico del lote:"
+msgstr "Historical lot total:"
+
+msgid "Unidad"
+msgstr "Unit"
+
+msgid "Unidad base"
+msgstr "Base unit"
+
+msgid "Unidad base:"
+msgstr "Base unit:"
+
+msgid "Uso"
+msgstr "Use"
+
+msgid "Uso máximo recomendado en molienda (%)"
+msgstr "Maximum recommended use in the grain bill (%)"
+
+msgid "Volver a la lista"
+msgstr "Back to list"
+
+msgid "pH mosto color"
+msgstr "Wort color pH"
+
+msgid "¿Seguro que deseas eliminar esta materia prima?"
+msgstr "Are you sure you want to delete this raw material?"
+
+msgid "¿Seguro que deseas eliminar este lote?"
+msgstr "Are you sure you want to delete this lot?"

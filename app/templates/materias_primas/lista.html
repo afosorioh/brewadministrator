@@ -1,12 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}Materias primas{% endblock %}
+{% set tipo_labels = {
+  "MALTA": _("Malta"),
+  "LUPULO": _("Lúpulo"),
+  "LEVADURA": _("Levadura"),
+  "OTRO": _("Otro")
+} %}
+{% set unidad_labels = {"UNIDAD": _("Unidad")} %}
+
+{% block title %}{{ _("Materias primas") }}{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3">Materias primas</h1>
+  <h1 class="h3">{{ _("Materias primas") }}</h1>
   <a href="{{ url_for('materias_primas.crear') }}" class="btn btn-primary">
-    Nueva materia prima
+    {{ _("Nueva materia prima") }}
   </a>
 </div>
 
@@ -15,11 +23,11 @@
     <thead>
       <tr>
         <th>ID</th>
-        <th>Nombre</th>
-        <th>Tipo</th>
-        <th>Unidad</th>
-        <th>Activo</th>
-        <th style="width: 180px;">Acciones</th>
+        <th>{{ _("Nombre") }}</th>
+        <th>{{ _("Tipo") }}</th>
+        <th>{{ _("Unidad") }}</th>
+        <th>{{ _("Activo") }}</th>
+        <th style="width: 180px;">{{ _("Acciones") }}</th>
       </tr>
     </thead>
     <tbody>
@@ -27,22 +35,22 @@
       <tr>
         <td>{{ mp.id }}</td>
         <td>{{ mp.nombre }}</td>
-        <td>{{ mp.tipo }}</td>
-        <td>{{ mp.unidad_base }}</td>
-        <td>{{ 'Sí' if mp.activo else 'No' }}</td>
+        <td>{{ tipo_labels.get(mp.tipo, mp.tipo) }}</td>
+        <td>{{ unidad_labels.get(mp.unidad_base, mp.unidad_base) }}</td>
+        <td>{{ _("Sí") if mp.activo else _("No") }}</td>
         <td>
           <a href="{{ url_for('materias_primas.detalle', mp_id=mp.id) }}" class="btn btn-sm btn-secondary">
-            Ver
+            {{ _("Ver") }}
           </a>
           <a href="{{ url_for('materias_primas.editar', mp_id=mp.id) }}" class="btn btn-sm btn-warning">
-            Editar
+            {{ _("Editar") }}
           </a>
           <form action="{{ url_for('materias_primas.eliminar', mp_id=mp.id) }}"
                 method="post"
                 style="display:inline;"
-                onsubmit="return confirm('¿Seguro que deseas eliminar esta materia prima?');">
+                onsubmit='return confirm({{ _("¿Seguro que deseas eliminar esta materia prima?")|tojson }});'>
             <button type="submit" class="btn btn-sm btn-danger">
-              Eliminar
+              {{ _("Eliminar") }}
             </button>
           </form>
         </td>
@@ -51,6 +59,6 @@
     </tbody>
   </table>
 {% else %}
-  <p>No hay materias primas registradas todavía.</p>
+  <p>{{ _("No hay materias primas registradas todavía.") }}</p>
 {% endif %}
 {% endblock %}

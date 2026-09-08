@@ -19,6 +19,7 @@ from app.models import (
 )
 
 from flask_login import login_required
+from flask_babel import gettext as _
 from app.authz import role_required
 
 materias_primas_bp = Blueprint(
@@ -50,7 +51,7 @@ def crear():
         notas = request.form.get("notas") or None
 
         if not nombre or not tipo or not unidad_base:
-            flash("Nombre, tipo y unidad son obligatorios", "danger")
+            flash(_("Nombre, tipo y unidad son obligatorios"), "danger")
             return redirect(url_for("materias_primas.crear"))
 
         mp = MateriaPrima(
@@ -148,7 +149,7 @@ def crear():
                 db.session.add(otro)
 
         db.session.commit()
-        flash("Materia prima creada correctamente", "success")
+        flash(_("Materia prima creada correctamente"), "success")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
     # GET
@@ -188,7 +189,7 @@ def editar(mp_id):
         mp.notas = request.form.get("notas") or None
 
         if not mp.nombre or not nuevo_tipo or not mp.unidad_base:
-            flash("Nombre, tipo y unidad son obligatorios", "danger")
+            flash(_("Nombre, tipo y unidad son obligatorios"), "danger")
             return redirect(url_for("materias_primas.editar", mp_id=mp.id))
 
         # Si cambia de tipo, eliminar detalles anteriores que ya no apliquen
@@ -294,7 +295,7 @@ def editar(mp_id):
                 mp.otros_detalle.nombre = otro_nombre
 
         db.session.commit()
-        flash("Materia prima actualizada correctamente", "success")
+        flash(_("Materia prima actualizada correctamente"), "success")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
     return render_template(
@@ -314,8 +315,8 @@ def eliminar(mp_id):
     # Si tiene lotes asociados, no permitimos borrar
     if mp.lotes.count() > 0:
         flash(
-            "No se puede eliminar la materia prima porque tiene lotes asociados. "
-            "Elimina o ajusta primero los lotes.",
+            _("No se puede eliminar la materia prima porque tiene lotes asociados. "
+              "Elimina o ajusta primero los lotes."),
             "danger",
         )
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
@@ -336,7 +337,7 @@ def eliminar(mp_id):
 
     db.session.delete(mp)
     db.session.commit()
-    flash("Materia prima eliminada correctamente", "success")
+    flash(_("Materia prima eliminada correctamente"), "success")
     return redirect(url_for("materias_primas.lista"))
 
 @materias_primas_bp.route("/<int:mp_id>/lotes/nuevo", methods=["GET", "POST"])
@@ -355,11 +356,11 @@ def crear_lote(mp_id):
         notas = request.form.get("notas") or None
 
         if not codigo_lote or cantidad is None:
-            flash("Código de lote y cantidad son obligatorios.", "danger")
+            flash(_("Código de lote y cantidad son obligatorios."), "danger")
             return redirect(url_for("materias_primas.crear_lote", mp_id=mp.id))
 
         if cantidad <= 0:
-            flash("La cantidad debe ser mayor que cero.", "danger")
+            flash(_("La cantidad debe ser mayor que cero."), "danger")
             return redirect(url_for("materias_primas.crear_lote", mp_id=mp.id))
 
         lote = LoteMateriaPrima(
@@ -376,7 +377,7 @@ def crear_lote(mp_id):
         db.session.add(lote)
         db.session.commit()
 
-        flash("Lote creado correctamente.", "success")
+        flash(_("Lote creado correctamente."), "success")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
     return render_template(
@@ -394,7 +395,7 @@ def editar_lote(mp_id, lote_id):
     lote = LoteMateriaPrima.query.get_or_404(lote_id)
 
     if lote.id_materia_prima != mp.id:
-        flash("El lote no pertenece a esta materia prima.", "danger")
+        flash(_("El lote no pertenece a esta materia prima."), "danger")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
     if request.method == "POST":
@@ -407,11 +408,11 @@ def editar_lote(mp_id, lote_id):
         notas = request.form.get("notas") or None
 
         if not codigo_lote:
-            flash("El código de lote es obligatorio.", "danger")
+            flash(_("El código de lote es obligatorio."), "danger")
             return redirect(url_for("materias_primas.editar_lote", mp_id=mp.id, lote_id=lote.id))
 
         if cantidad_adicional < 0:
-            flash("La cantidad a agregar no puede ser negativa.", "danger")
+            flash(_("La cantidad a agregar no puede ser negativa."), "danger")
             return redirect(url_for("materias_primas.editar_lote", mp_id=mp.id, lote_id=lote.id))
 
         lote.codigo_lote = codigo_lote
@@ -426,7 +427,7 @@ def editar_lote(mp_id, lote_id):
             lote.cantidad_disponible = float(lote.cantidad_disponible) + cantidad_adicional
 
         db.session.commit()
-        flash("Lote actualizado correctamente.", "success")
+        flash(_("Lote actualizado correctamente."), "success")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
     return render_template(
@@ -442,12 +443,12 @@ def eliminar_lote(mp_id, lote_id):
     lote = LoteMateriaPrima.query.get_or_404(lote_id)
 
     if lote.id_materia_prima != mp.id:
-        flash("El lote no pertenece a esta materia prima", "danger")
+        flash(_("El lote no pertenece a esta materia prima"), "danger")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
     db.session.delete(lote)
     db.session.commit()
-    flash("Lote eliminado correctamente", "success")
+    flash(_("Lote eliminado correctamente"), "success")
     return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
 def _to_float(value, default=None):
