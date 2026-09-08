@@ -34,8 +34,8 @@ msgstr "Close"
 msgid "Clientes"
 msgstr "Customers"
 
-msgid "Código leído: %(code)s"
-msgstr "Scanned code: %(code)s"
+msgid "Código leído: __CODE__"
+msgstr "Scanned code: __CODE__"
 
 msgid "Configurar administrador"
 msgstr "Set up administrator"
@@ -97,8 +97,8 @@ msgstr "No camera was detected."
 msgid "No se encontró el modal del escáner QR."
 msgstr "The QR scanner dialog was not found."
 
-msgid "No se encontró un barril con código: %(code)s"
-msgstr "No keg was found with code: %(code)s"
+msgid "No se encontró un barril con código: __CODE__"
+msgstr "No keg was found with code: __CODE__"
 
 msgid "Recetas"
 msgstr "Recipes"
