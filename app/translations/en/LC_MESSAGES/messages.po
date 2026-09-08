@@ -1241,3 +1241,393 @@ msgstr "Target volume (L): %(target)s | Final volume (L): %(final)s"
 
 msgid "Whirlpool"
 msgstr "Whirlpool"
+
+msgid "¿Seguro que deseas borrar el último movimiento de este barril?"
+msgstr "Are you sure you want to delete this keg's latest movement?"
+
+msgid "¿Seguro que deseas dar de baja este barril?"
+msgstr "Are you sure you want to decommission this keg?"
+
+msgid "Alta individual"
+msgstr "Individual registration"
+
+msgid "Alta individual de barril"
+msgstr "Individual keg registration"
+
+msgid "Alta inicial"
+msgstr "Initial registration"
+
+msgid "Alta por lote"
+msgstr "Batch registration"
+
+msgid "Alta por lote de barriles"
+msgstr "Batch keg registration"
+
+msgid "Alta por lote:"
+msgstr "Batch registration:"
+
+msgid "Aplicar filtros"
+msgstr "Apply filters"
+
+msgid "Baja manual del barril (dañado o perdido)"
+msgstr "Manual keg decommission (damaged or lost)"
+
+msgid "Barril"
+msgstr "Keg"
+
+msgid "Barril %(keg_code)s dado de baja correctamente."
+msgstr "Keg %(keg_code)s decommissioned successfully."
+
+msgid "Barril creado correctamente."
+msgstr "Keg created successfully."
+
+msgid "Barril, bache y volumen son obligatorios."
+msgstr "Keg, batch, and volume are required."
+
+msgid "Barriles entregados pendientes de devolución"
+msgstr "Delivered kegs pending return"
+
+msgid "Barriles entregados por cliente y estilo"
+msgstr "Delivered kegs by customer and style"
+
+msgid "Barriles llenos por capacidad, volumen y estilo"
+msgstr "Full kegs by capacity, volume, and style"
+
+msgid "Borrar"
+msgstr "Delete"
+
+msgid "Buscar por estado"
+msgstr "Search by status"
+
+msgid "Cantidad de barriles por estado y tamaño"
+msgstr "Number of kegs by status and size"
+
+msgid "Capacidad"
+msgstr "Capacity"
+
+msgid "Capacidad (L)"
+msgstr "Capacity (L)"
+
+msgid "Capacidad barril"
+msgstr "Keg capacity"
+
+msgid "Cliente"
+msgstr "Customer"
+
+msgid "Código bache"
+msgstr "Batch code"
+
+msgid "Código barril"
+msgstr "Keg code"
+
+msgid "Código fin"
+msgstr "End code"
+
+msgid "Código inicio"
+msgstr "Start code"
+
+msgid "Código inicio, código fin y capacidad son obligatorios."
+msgstr "Start code, end code, and capacity are required."
+
+msgid "Código y capacidad son obligatorios."
+msgstr "Code and capacity are required."
+
+msgid "Consultas"
+msgstr "Reports"
+
+msgid "Consultas de barriles"
+msgstr "Keg reports"
+
+msgid "Crear lote"
+msgstr "Create batch"
+
+msgid "Debes seleccionar un barril."
+msgstr "You must select a keg."
+
+msgid "Debes seleccionar un cliente."
+msgstr "You must select a customer."
+
+msgid "Destino"
+msgstr "Destination"
+
+msgid "Destino no válido."
+msgstr "Invalid destination."
+
+msgid "Detalle de barril"
+msgstr "Keg details"
+
+msgid "Devolución"
+msgstr "Return"
+
+msgid "Devolución de barril registrada correctamente."
+msgstr "Keg return recorded successfully."
+
+msgid "Devolución de barriles"
+msgstr "Keg returns"
+
+msgid "Devolución de barriles del cliente"
+msgstr "Customer keg returns"
+
+msgid "Días fuera"
+msgstr "Days out"
+
+msgid "Ej: 26001"
+msgstr "E.g. 26001"
+
+msgid "Ej: A001"
+msgstr "E.g. A001"
+
+msgid "Ej: Lavado CIP, lavado manual, observaciones, etc."
+msgstr "E.g. CIP cleaning, manual cleaning, notes, etc."
+
+msgid "Ej: salida a cliente, envío a enlatado, observaciones"
+msgstr "E.g. customer delivery, sent for canning, notes"
+
+msgid "Ejemplos válidos: A001 → A110, B001 → B050"
+msgstr "Valid examples: A001 → A110, B001 → B050"
+
+msgid "El bache seleccionado no existe."
+msgstr "The selected batch does not exist."
+
+msgid "El barril no tiene movimientos para eliminar."
+msgstr "The keg has no movements to delete."
+
+msgid "El barril seleccionado no existe."
+msgstr "The selected keg does not exist."
+
+msgid "El barril ya se encuentra en estado BAJA."
+msgstr "The keg is already decommissioned."
+
+msgid "El cliente seleccionado no existe."
+msgstr "The selected customer does not exist."
+
+msgid "El código final no puede ser menor que el inicial."
+msgstr "The end code cannot be lower than the start code."
+
+msgid "El movimiento no pertenece al barril indicado."
+msgstr "The movement does not belong to the specified keg."
+
+msgid "El rango debe usar el mismo prefijo y el mismo formato numérico."
+msgstr "The range must use the same prefix and numeric format."
+
+msgid "El volumen debe ser mayor que cero."
+msgstr "Volume must be greater than zero."
+
+msgid "El volumen debe ser numérico."
+msgstr "Volume must be numeric."
+
+msgid "El volumen no puede superar la capacidad del barril (%(capacity)s L)."
+msgstr "Volume cannot exceed the keg capacity (%(capacity)s L)."
+
+msgid "Entrega"
+msgstr "Delivery"
+
+msgid "Entrega de barril registrada correctamente."
+msgstr "Keg delivery recorded successfully."
+
+msgid "Escanear QR"
+msgstr "Scan QR"
+
+msgid "Estado actual"
+msgstr "Current status"
+
+msgid "Estilo cerveza"
+msgstr "Beer style"
+
+msgid "Fecha desde"
+msgstr "From date"
+
+msgid "Fecha entrega"
+msgstr "Delivery date"
+
+msgid "Fecha fin"
+msgstr "End date"
+
+msgid "Fecha hasta"
+msgstr "To date"
+
+msgid "Fecha ingreso"
+msgstr "Entry date"
+
+msgid "Fecha inicio"
+msgstr "Start date"
+
+msgid "Fecha último estado"
+msgstr "Latest status date"
+
+msgid "Historial de movimientos"
+msgstr "Movement history"
+
+msgid "Latas"
+msgstr "Cans"
+
+msgid "Lavado"
+msgstr "Cleaning"
+
+msgid "Lavado de barril registrado correctamente."
+msgstr "Keg cleaning recorded successfully."
+
+msgid "Lavado de barriles"
+msgstr "Keg cleaning"
+
+msgid "Litros llenado"
+msgstr "Filled liters"
+
+msgid "Llenado"
+msgstr "Filling"
+
+msgid "Llenado de barril registrado correctamente."
+msgstr "Keg filling recorded successfully."
+
+msgid "Llenado de barriles"
+msgstr "Keg filling"
+
+msgid "Los códigos deben tener formato tipo A001, B050, etc."
+msgstr "Codes must use a format such as A001, B050, etc."
+
+msgid "No fue posible eliminar el movimiento: %(error)s"
+msgstr "The movement could not be deleted: %(error)s"
+
+msgid "No hay barriles actualmente en estado LLENO con esos filtros."
+msgstr "There are currently no full kegs matching those filters."
+
+msgid "No hay barriles pendientes de devolución con esos filtros."
+msgstr "There are no kegs pending return matching those filters."
+
+msgid "No hay barriles registrados."
+msgstr "No kegs have been registered."
+
+msgid "No hay movimientos registrados."
+msgstr "No movements have been recorded."
+
+msgid "No hay resultados para los filtros seleccionados."
+msgstr "There are no results for the selected filters."
+
+msgid "No se encontró un movimiento de llenado previo para este barril."
+msgstr "No previous filling movement was found for this keg."
+
+msgid "No se encontró una entrega previa para este barril."
+msgstr "No previous delivery was found for this keg."
+
+msgid "Obligatorio cuando el destino es Cliente."
+msgstr "Required when the destination is Customer."
+
+msgid "Paginación de barriles"
+msgstr "Keg pagination"
+
+msgid "Registrar devolución"
+msgstr "Record return"
+
+msgid "Registrar lavado"
+msgstr "Record cleaning"
+
+msgid "Registrar llenado"
+msgstr "Record filling"
+
+msgid "Registrar salida"
+msgstr "Record dispatch"
+
+msgid "Salida"
+msgstr "Dispatch"
+
+msgid "Salida a latas"
+msgstr "Sent for canning"
+
+msgid "Salida a latas registrada correctamente. El barril quedó en estado SUCIO."
+msgstr "Canning dispatch recorded successfully. The keg is now dirty."
+
+msgid "Salida de barriles"
+msgstr "Keg dispatch"
+
+msgid "Se crearon %(count)s barriles correctamente."
+msgstr "%(count)s kegs were created successfully."
+
+msgid "Seleccionar bache"
+msgstr "Select batch"
+
+msgid "Seleccionar barril"
+msgstr "Select keg"
+
+msgid "Seleccionar cliente"
+msgstr "Select customer"
+
+msgid "Sin cliente"
+msgstr "No customer"
+
+msgid "Sin estilo"
+msgstr "No style"
+
+msgid "Solo aparecen barriles en estado ENTREGADO. El sistema tomará automáticamente cliente, bache y volumen de la última entrega."
+msgstr "Only delivered kegs are shown. The system will automatically use the customer, batch, and volume from the latest delivery."
+
+msgid "Solo aparecen barriles en estado LIMPIO."
+msgstr "Only clean kegs are shown."
+
+msgid "Solo aparecen barriles en estado LLENO."
+msgstr "Only full kegs are shown."
+
+msgid "Solo aparecen barriles en estado SUCIO."
+msgstr "Only dirty kegs are shown."
+
+msgid "Solo se permite borrar el último movimiento del barril."
+msgstr "Only the keg's latest movement can be deleted."
+
+msgid "Solo se pueden devolver barriles en estado ENTREGADO."
+msgstr "Only delivered kegs can be returned."
+
+msgid "Solo se pueden lavar barriles en estado SUCIO."
+msgstr "Only dirty kegs can be cleaned."
+
+msgid "Solo se pueden llenar barriles en estado LIMPIO."
+msgstr "Only clean kegs can be filled."
+
+msgid "Solo se pueden procesar barriles en estado LLENO."
+msgstr "Only full kegs can be processed."
+
+msgid "Sucios"
+msgstr "Dirty"
+
+msgid "Tipo de movimiento"
+msgstr "Movement type"
+
+msgid "Todos"
+msgstr "All"
+
+msgid "Total barriles"
+msgstr "Total kegs"
+
+msgid "Ubicación"
+msgstr "Location"
+
+msgid "Último movimiento eliminado correctamente."
+msgstr "Latest movement deleted successfully."
+
+msgid "Volumen"
+msgstr "Volume"
+
+msgid "Volumen llenado (L)"
+msgstr "Filled volume (L)"
+
+msgid "Volver a lista"
+msgstr "Back to list"
+
+msgid "Ya existe un barril con ese código."
+msgstr "A keg with that code already exists."
+
+msgid "Ya existen estos códigos y no se creó el lote: %(codes)s"
+msgstr "These codes already exist, so the batch was not created: %(codes)s"
+
+msgid "%(count)s fila"
+msgid_plural "%(count)s filas"
+msgstr[0] "%(count)s row"
+msgstr[1] "%(count)s rows"
+
+msgid "%(count)s pendiente"
+msgid_plural "%(count)s pendientes"
+msgstr[0] "%(count)s pending"
+msgstr[1] "%(count)s pending"
+
+msgid "%(count)s día"
+msgid_plural "%(count)s días"
+msgstr[0] "%(count)s day"
+msgstr[1] "%(count)s days"

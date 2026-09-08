@@ -5,7 +5,8 @@ function textoInterfaz(key, replacements = {}) {
   let text = translations[key] || key;
 
   for (const [name, value] of Object.entries(replacements)) {
-    text = text.replace(`__${name.toUpperCase()}__`, value);
+    const token = `__${name.toUpperCase()}__`;
+    text = text.split(token).join(String(value));
   }
 
   return text;
@@ -135,12 +136,12 @@ function abrirScannerQR({ targetInputId = null, targetSelectId = null, targetDis
         onScanSuccess,
         onScanFailure
       ).catch(err => {
-        console.error("Camera start error:", err);
+        console.error(textoInterfaz("cameraStartError"), err);
         alert(textoInterfaz("cameraStartError"));
       });
     })
     .catch(err => {
-      console.error("Camera access error:", err);
+      console.error(textoInterfaz("cameraAccessError"), err);
       alert(textoInterfaz("cameraAccessError"));
     });
 
