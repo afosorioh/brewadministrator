@@ -1,41 +1,54 @@
 {% extends "base.html" %}
 
-{% block title %}Detalle materia prima{% endblock %}
+{% set tipo_labels = {
+  "MALTA": _("Malta"),
+  "LUPULO": _("Lúpulo"),
+  "LEVADURA": _("Levadura"),
+  "OTRO": _("Otro")
+} %}
+{% set unidad_labels = {"UNIDAD": _("Unidad")} %}
+{% set insumo_labels = {
+  "SALES": _("Sales"),
+  "ADJUNTOS": _("Adjuntos"),
+  "EXTRACTOS": _("Extractos"),
+  "FRUTAS": _("Frutas")
+} %}
+
+{% block title %}{{ _("Detalle materia prima") }}{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-3">Detalle materia prima</h1>
+<h1 class="h3 mb-3">{{ _("Detalle materia prima") }}</h1>
 
 <div class="card mb-3">
   <div class="card-body">
     <h5 class="card-title">{{ mp.nombre }}</h5>
     <h6 class="card-subtitle mb-2 text-muted">
-      Tipo: {{ mp.tipo }} | Unidad base: {{ mp.unidad_base }}
+      {{ _("Tipo:") }} {{ tipo_labels.get(mp.tipo, mp.tipo) }} |
+      {{ _("Unidad base:") }} {{ unidad_labels.get(mp.unidad_base, mp.unidad_base) }}
     </h6>
 
-    <p class="mb-1"><strong>Fabricante:</strong> {{ mp.fabricante or "-" }}</p>
-    <p class="mb-1"><strong>Origen:</strong> {{ mp.origen or "-" }}</p>
-    <p class="mb-1"><strong>Activo:</strong> {{ 'Sí' if mp.activo else 'No' }}</p>
+    <p class="mb-1"><strong>{{ _("Fabricante:") }}</strong> {{ mp.fabricante or "-" }}</p>
+    <p class="mb-1"><strong>{{ _("Origen:") }}</strong> {{ mp.origen or "-" }}</p>
+    <p class="mb-1"><strong>{{ _("Activo:") }}</strong> {{ _("Sí") if mp.activo else _("No") }}</p>
 
     {% if mp.notas %}
-      <p class="mt-3"><strong>Notas:</strong><br>{{ mp.notas }}</p>
+      <p class="mt-3"><strong>{{ _("Notas:") }}</strong><br>{{ mp.notas }}</p>
     {% endif %}
 
     {% if mp.tipo == "OTRO" and mp.otros_detalle %}
       <p class="mt-3">
-        <strong>Tipo de insumo:</strong> {{ mp.otros_detalle.tipo }}<br>
-        <strong>Nombre específico:</strong> {{ mp.otros_detalle.nombre }}
+        <strong>{{ _("Tipo de insumo:") }}</strong> {{ insumo_labels.get(mp.otros_detalle.tipo, mp.otros_detalle.tipo) }}<br>
+        <strong>{{ _("Nombre específico:") }}</strong> {{ mp.otros_detalle.nombre }}
       </p>
     {% endif %}
-
   </div>
 </div>
 
-
-<h5 class="mt-4">Lotes de esta materia prima</h5>
+<h5 class="mt-4">{{ _("Lotes de esta materia prima") }}</h5>
 
 <div class="mb-2">
   <a href="{{ url_for('materias_primas.crear_lote', mp_id=mp.id) }}" class="btn btn-sm btn-primary">
-    Nuevo lote
+    {{ _("Nuevo lote") }}
   </a>
 </div>
 
@@ -43,13 +56,13 @@
   <table class="table table-sm table-striped align-middle">
     <thead>
       <tr>
-        <th>Código lote</th>
-        <th>Fecha compra</th>
-        <th>Proveedor</th>
-        <th>Cant. inicial</th>
-        <th>Cant. disponible</th>
-        <th>Fecha vencimiento</th>
-        <th style="width: 150px;">Acciones</th>
+        <th>{{ _("Código lote") }}</th>
+        <th>{{ _("Fecha compra") }}</th>
+        <th>{{ _("Proveedor") }}</th>
+        <th>{{ _("Cant. inicial") }}</th>
+        <th>{{ _("Cant. disponible") }}</th>
+        <th>{{ _("Fecha vencimiento") }}</th>
+        <th style="width: 150px;">{{ _("Acciones") }}</th>
       </tr>
     </thead>
     <tbody>
@@ -58,20 +71,20 @@
         <td>{{ l.codigo_lote }}</td>
         <td>{{ l.fecha_compra or "-" }}</td>
         <td>{{ l.proveedor or "-" }}</td>
-        <td>{{ l.cantidad_inicial }} {{ mp.unidad_base }}</td>
-        <td>{{ l.cantidad_disponible }} {{ mp.unidad_base }}</td>
+        <td>{{ l.cantidad_inicial }} {{ unidad_labels.get(mp.unidad_base, mp.unidad_base) }}</td>
+        <td>{{ l.cantidad_disponible }} {{ unidad_labels.get(mp.unidad_base, mp.unidad_base) }}</td>
         <td>{{ l.fecha_vencimiento or "-" }}</td>
         <td>
           <a href="{{ url_for('materias_primas.editar_lote', mp_id=mp.id, lote_id=l.id) }}"
              class="btn btn-sm btn-warning">
-            Editar
+            {{ _("Editar") }}
           </a>
           <form action="{{ url_for('materias_primas.eliminar_lote', mp_id=mp.id, lote_id=l.id) }}"
                 method="post"
                 style="display:inline;"
-                onsubmit="return confirm('¿Seguro que deseas eliminar este lote?');">
+                onsubmit='return confirm({{ _("¿Seguro que deseas eliminar este lote?")|tojson }});'>
             <button type="submit" class="btn btn-sm btn-danger">
-              Eliminar
+              {{ _("Eliminar") }}
             </button>
           </form>
         </td>
@@ -80,13 +93,13 @@
     </tbody>
   </table>
 {% else %}
-  <p>No hay lotes registrados para esta materia prima.</p>
+  <p>{{ _("No hay lotes registrados para esta materia prima.") }}</p>
 {% endif %}
 
 <a href="{{ url_for('materias_primas.editar', mp_id=mp.id) }}" class="btn btn-warning">
-  Editar
+  {{ _("Editar") }}
 </a>
 <a href="{{ url_for('materias_primas.lista') }}" class="btn btn-secondary">
-  Volver a la lista
+  {{ _("Volver a la lista") }}
 </a>
 {% endblock %}
