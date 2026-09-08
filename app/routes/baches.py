@@ -19,6 +19,7 @@ from app.models import (
 )
 
 from flask_login import login_required
+from flask_babel import gettext as _
 from app.authz import role_required
 
 from app.utils.datetime_utils import (
@@ -37,6 +38,55 @@ baches_bp = Blueprint(
     __name__,
     url_prefix="/baches",
 )
+
+
+def _batch_status_label(code):
+    return {
+        "PLANIFICADO": _("Planificado"),
+        "EN_CURSO": _("En curso"),
+        "FERMENTANDO": _("Fermentando"),
+        "MADURANDO": _("Madurando"),
+        "LISTO": _("Listo"),
+        "COMPLETADO": _("Completado"),
+        "DESCARTADO": _("Descartado"),
+    }.get(code, code)
+
+
+def _raw_material_type_label(code):
+    return {
+        "MALTA": _("Malta"),
+        "LUPULO": _("Lúpulo"),
+        "LEVADURA": _("Levadura"),
+        "OTRO": _("Otro"),
+    }.get(code, code)
+
+
+def _process_stage_label(code):
+    return {
+        "MACERACION": _("Maceración"),
+        "HERVOR": _("Hervor"),
+        "WHIRLPOOL": _("Whirlpool"),
+        "FERMENTACION": _("Fermentación"),
+        "MADURACION": _("Maduración"),
+        "OTRA": _("Otra"),
+    }.get(code, code)
+
+
+def _yeast_usage_label(code):
+    return {
+        "NUEVA": _("Nueva"),
+        "REUTILIZADA": _("Reutilizada"),
+    }.get(code, code)
+
+
+def _measurement_type_label(code):
+    return {
+        "PH": "pH",
+        "TEMPERATURA": _("Temperatura"),
+        "DENSIDAD": _("Densidad"),
+        "VIABILIDAD": _("Viabilidad"),
+        "OTRO": _("Otro"),
+    }.get(code, code)
 
 
 def _to_sg(x):
@@ -231,17 +281,23 @@ def _parse_materias_primas_form():
             lote_id_int = int(lote_id)
             cantidad_float = float(cant)
         except (TypeError, ValueError):
-            return None, "Hay materias primas con lote o cantidad inválida."
+            return None, _("Hay materias primas con lote o cantidad inválida.")
 
         if cantidad_float <= 0:
-            return None, "La cantidad usada de cada lote debe ser mayor que cero."
+            return None, _("La cantidad usada de cada lote debe ser mayor que cero.")
 
         lote = lotes_map.get(lote_id_int)
         if not lote:
-            return None, f"No existe el lote con ID {lote_id_int}."
+            return None, _(
+                "No existe el lote con ID %(lot_id)s.",
+                lot_id=lote_id_int,
+            )
 
         if not lote.materia_prima or not lote.materia_prima.unidad_base:
-            return None, f"El lote {lote.codigo_lote} no tiene unidad base definida."
+            return None, _(
+                "El lote %(lot_code)s no tiene unidad base definida.",
+                lot_code=lote.codigo_lote,
+            )
 
         unidad_fija = lote.materia_prima.unidad_base
 
@@ -267,14 +323,21 @@ def _validar_y_descontar_lotes(filas_mp):
     for fila in filas_mp:
         lote = lotes_map.get(fila["id_lote"])
         if not lote:
-            return False, f"No existe el lote con ID {fila['id_lote']}."
+            return False, _(
+                "No existe el lote con ID %(lot_id)s.",
+                lot_id=fila["id_lote"],
+            )
 
         unidad_base = lote.materia_prima.unidad_base if lote.materia_prima else None
         if fila["unidad"] != unidad_base:
             return (
                 False,
-                f"Unidad inválida para el lote {lote.codigo_lote}. "
-                f"Debe usarse {unidad_base}."
+                _(
+                    "Unidad inválida para el lote %(lot_code)s. "
+                    "Debe usarse %(unit)s.",
+                    lot_code=lote.codigo_lote,
+                    unit=unidad_base,
+                )
             )
 
         acumulado_por_lote.setdefault(fila["id_lote"], 0.0)
@@ -287,8 +350,13 @@ def _validar_y_descontar_lotes(filas_mp):
         if total_usado > disponible:
             return (
                 False,
-                f"El lote {lote.codigo_lote} no tiene suficiente cantidad disponible. "
-                f"Disponible: {disponible}, solicitada: {total_usado}."
+                _(
+                    "El lote %(lot_code)s no tiene suficiente cantidad disponible. "
+                    "Disponible: %(available)s, solicitada: %(requested)s.",
+                    lot_code=lote.codigo_lote,
+                    available=disponible,
+                    requested=total_usado,
+                )
             )
 
     for lote_id, total_usado in acumulado_por_lote.items():
@@ -338,7 +406,10 @@ def _guardar_mediciones_bache(bache):
 
         fecha_local = _parse_datetime_local(fecha_raw)
         if not fecha_local:
-            return f"La fecha de la medición #{i + 1} no es válida."
+            return _(
+                "La fecha de la medición #%(row)s no es válida.",
+                row=i + 1,
+            )
         fecha_utc = local_to_utc(fecha_local)
 
         tipo = (tipo_raw or "").strip().upper()
@@ -346,7 +417,10 @@ def _guardar_mediciones_bache(bache):
         try:
             valor_num = float(str(valor_raw).replace(",", "."))
         except ValueError:
-            return f"El valor de la medición #{i + 1} no es numérico válido."
+            return _(
+                "El valor de la medición #%(row)s no es numérico válido.",
+                row=i + 1,
+            )
 
         medicion = MedicionBache(
             id_bache=bache.id,
@@ -420,7 +494,10 @@ def crear():
         notas = request.form.get("notas") or None
 
         if not codigo_bache or not nombre_cerveza or not fecha_coccion:
-            flash("Código, nombre de cerveza y fecha de cocción son obligatorios", "danger")
+            flash(
+                _("Código, nombre de cerveza y fecha de cocción son obligatorios"),
+                "danger",
+            )
             return redirect(url_for("baches.crear"))
 
         bache = Bache(
@@ -476,7 +553,7 @@ def crear():
         _guardar_usos_levadura(bache, lote_ids, lev_tipo_uso, lev_generacion, lev_comentarios)
 
         db.session.commit()
-        flash("Bache creado correctamente", "success")
+        flash(_("Bache creado correctamente"), "success")
         return redirect(url_for("baches.detalle", bache_id=bache.id))
 
     return render_template(
@@ -551,7 +628,10 @@ def editar(bache_id):
         bache.notas = request.form.get("notas") or None
 
         if not bache.codigo_bache or not bache.nombre_cerveza or not bache.fecha_coccion:
-            flash("Código, nombre de cerveza y fecha de cocción son obligatorios", "danger")
+            flash(
+                _("Código, nombre de cerveza y fecha de cocción son obligatorios"),
+                "danger",
+            )
             return redirect(url_for("baches.editar", bache_id=bache.id))
 
         # Reponer stock de materias primas previamente asociadas a este bache
@@ -604,7 +684,7 @@ def editar(bache_id):
             return redirect(url_for("baches.editar", bache_id=bache.id))
 
         db.session.commit()
-        flash("Bache actualizado correctamente", "success")
+        flash(_("Bache actualizado correctamente"), "success")
         return redirect(url_for("baches.detalle", bache_id=bache.id))
 
     # GET
@@ -646,7 +726,7 @@ def eliminar(bache_id):
     bache = Bache.query.get_or_404(bache_id)
     db.session.delete(bache)
     db.session.commit()
-    flash("Bache eliminado correctamente", "success")
+    flash(_("Bache eliminado correctamente"), "success")
     return redirect(url_for("baches.lista"))
 
 
@@ -672,27 +752,66 @@ def exportar_pdf(bache_id):
             y = height - 40
 
     c.setFont("Helvetica-Bold", 14)
-    draw_line(f"Reporte de Bache: {bache.codigo_bache} - {bache.nombre_cerveza}", dy=1.5)
+    draw_line(
+        _(
+            "Reporte de bache: %(code)s - %(beer)s",
+            code=bache.codigo_bache,
+            beer=bache.nombre_cerveza,
+        ),
+        dy=1.5,
+    )
     c.setFont("Helvetica", 10)
 
-    draw_line(f"Fecha cocción: {bache.fecha_coccion} | Estado: {bache.estado}")
+    draw_line(
+        _(
+            "Fecha cocción: %(date)s | Estado: %(status)s",
+            date=bache.fecha_coccion,
+            status=_batch_status_label(bache.estado),
+        )
+    )
     if bache.receta:
-        draw_line(f"Receta: {bache.receta.nombre} ({bache.receta.estilo or '-'})")
+        draw_line(
+            _(
+                "Receta: %(recipe)s (%(style)s)",
+                recipe=bache.receta.nombre,
+                style=bache.receta.estilo or "-",
+            )
+        )
     else:
-        draw_line("Receta: -")
-    draw_line(f"Volumen objetivo (L): {bache.volumen_objetivo_litros or '-'} | Volumen final (L): {bache.volumen_final_litros or '-'}")
-    draw_line(f"Densidad inicial: {bache.densidad_inicial or '-'}")
-    draw_line(f"Temp maceración: {bache.temp_maceracion or '-'} C | Temp mash-off: {bache.temp_mashoff or '-'} C")
-    draw_line(f"pH macerado: {bache.ph_macerado or '-'} | pH fin hervido: {bache.ph_fin_hervido or '-'}")
+        draw_line(_("Receta: -"))
+    draw_line(
+        _(
+            "Volumen objetivo (L): %(target)s | Volumen final (L): %(final)s",
+            target=bache.volumen_objetivo_litros or "-",
+            final=bache.volumen_final_litros or "-",
+        )
+    )
+    draw_line(
+        _("Densidad inicial: %(density)s", density=bache.densidad_inicial or "-")
+    )
+    draw_line(
+        _(
+            "Temp. maceración: %(mash)s °C | Temp. mash-off: %(mashoff)s °C",
+            mash=bache.temp_maceracion or "-",
+            mashoff=bache.temp_mashoff or "-",
+        )
+    )
+    draw_line(
+        _(
+            "pH macerado: %(mash_ph)s | pH fin hervido: %(boil_ph)s",
+            mash_ph=bache.ph_macerado or "-",
+            boil_ph=bache.ph_fin_hervido or "-",
+        )
+    )
 
     if bache.notas:
-        draw_line("Notas:", dy=1.2)
+        draw_line(_("Notas:"), dy=1.2)
         for chunk in str(bache.notas).splitlines():
             draw_line(f"  {chunk}")
 
     draw_line("", dy=1)
     c.setFont("Helvetica-Bold", 12)
-    draw_line("Indicadores (calculados)", dy=1.2)
+    draw_line(_("Indicadores (calculados)"), dy=1.2)
     c.setFont("Helvetica", 10)
     og = ctx["og"]
     fg = ctx["fg"]
@@ -700,13 +819,17 @@ def exportar_pdf(bache_id):
     atn = ctx["atenuacion"]
 
     draw_line(f"OG: {og:.3f}" if og else "OG: -")
-    draw_line(f"FG (última densidad): {fg:.3f}" if fg else "FG (última densidad): -")
-    draw_line(f"ABV aprox: {abv:.2f} %" if abv is not None else "ABV aprox: -")
-    draw_line(f"Atenuación aparente: {atn:.1f} %" if atn is not None else "Atenuación aparente: -")
+    draw_line(
+        _("FG (última densidad):") + (f" {fg:.3f}" if fg else " -")
+    )
+    draw_line(_("ABV aprox.:") + (f" {abv:.2f} %" if abv is not None else " -"))
+    draw_line(
+        _("Atenuación aparente:") + (f" {atn:.1f} %" if atn is not None else " -")
+    )
 
     draw_line("", dy=1)
     c.setFont("Helvetica-Bold", 12)
-    draw_line("Últimas mediciones", dy=1.2)
+    draw_line(_("Últimas mediciones"), dy=1.2)
     c.setFont("Helvetica", 10)
 
     def fmt_med(m):
@@ -715,13 +838,13 @@ def exportar_pdf(bache_id):
         fecha_local = format_local_datetime(m.fecha)
         return f"{m.valor} ({fecha_local})" + (f" | {m.comentario}" if m.comentario else "")
 
-    draw_line(f"Densidad: {fmt_med(ctx['ult_dens'])}")
-    draw_line(f"Temperatura: {fmt_med(ctx['ult_temp'])}")
+    draw_line(_("Densidad:") + f" {fmt_med(ctx['ult_dens'])}")
+    draw_line(_("Temperatura:") + f" {fmt_med(ctx['ult_temp'])}")
     draw_line(f"pH: {fmt_med(ctx['ult_ph'])}")
 
     draw_line("", dy=1)
     c.setFont("Helvetica-Bold", 11)
-    draw_line("Materias primas usadas", dy=1)
+    draw_line(_("Materias primas usadas"), dy=1)
     c.setFont("Helvetica", 9)
 
     for m, lote, mp in ctx["materias"]:
@@ -729,24 +852,30 @@ def exportar_pdf(bache_id):
         extra = ""
         if mp.tipo == "LEVADURA" and uso:
             if uso.tipo_uso == "REUTILIZADA":
-                extra = f" | Uso levadura: REUTILIZADA | G:{uso.generacion}"
+                extra = (
+                    f" | {_('Uso levadura:')} "
+                    f"{_yeast_usage_label(uso.tipo_uso)} | G:{uso.generacion}"
+                )
             else:
-                extra = f" | Uso levadura: NUEVA"
+                extra = f" | {_('Uso levadura:')} {_yeast_usage_label(uso.tipo_uso)}"
 
         draw_line(
-            f"- {mp.nombre} ({mp.tipo}) | Lote: {lote.codigo_lote} | "
-            f"{m.cantidad_usada} {m.unidad} | Etapa: {m.etapa_proceso}"
+            f"- {mp.nombre} ({_raw_material_type_label(mp.tipo)}) | "
+            f"{_('Lote:')} {lote.codigo_lote} | "
+            f"{m.cantidad_usada} {m.unidad} | "
+            f"{_('Etapa:')} {_process_stage_label(m.etapa_proceso)}"
             f"{extra}"
         )
 
     draw_line("", dy=1)
     c.setFont("Helvetica-Bold", 12)
-    draw_line("Histórico de mediciones", dy=1.2)
+    draw_line(_("Histórico de mediciones"), dy=1.2)
     c.setFont("Helvetica", 9)
 
     for med in ctx["mediciones"]:
         draw_line(
-            f"- {format_local_datetime(med.fecha)} | {med.tipo} | {med.valor}"
+            f"- {format_local_datetime(med.fecha)} | "
+            f"{_measurement_type_label(med.tipo)} | {med.valor}"
             + (f" | {med.comentario}" if med.comentario else "")
         )
 

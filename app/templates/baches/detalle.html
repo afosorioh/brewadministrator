@@ -1,19 +1,45 @@
 {% extends "base.html" %}
 
-{% block title %}Detalle bache{% endblock %}
+{% set estado_labels = {
+  "PLANIFICADO": _("Planificado"), "EN_CURSO": _("En curso"),
+  "FERMENTANDO": _("Fermentando"), "MADURANDO": _("Madurando"),
+  "LISTO": _("Listo"), "COMPLETADO": _("Completado"),
+  "DESCARTADO": _("Descartado")
+} %}
+{% set tipo_mp_labels = {
+  "MALTA": _("Malta"), "LUPULO": _("Lúpulo"),
+  "LEVADURA": _("Levadura"), "OTRO": _("Otro")
+} %}
+{% set etapa_labels = {
+  "MACERACION": _("Maceración"), "HERVOR": _("Hervor"),
+  "WHIRLPOOL": _("Whirlpool"), "FERMENTACION": _("Fermentación"),
+  "MADURACION": _("Maduración"), "OTRA": _("Otra")
+} %}
+{% set aplicacion_labels = {
+  "GENERAL": _("General"), "AMARGOR": _("Amargor"),
+  "SABOR": _("Sabor"), "AROMA": _("Aroma"),
+  "DRY_HOP": _("Dry hop"), "NUTRIENTE": _("Nutriente"),
+  "OTRA": _("Otra")
+} %}
+{% set uso_levadura_labels = {
+  "NUEVA": _("Nueva"), "REUTILIZADA": _("Reutilizada")
+} %}
+{% set unidad_labels = {"UNIDAD": _("Unidad")} %}
+
+{% block title %}{{ _("Detalle bache") }}{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-3">Detalle bache</h1>
+<h1 class="h3 mb-3">{{ _("Detalle bache") }}</h1>
 
 <div class="card mb-3">
   <div class="card-body">
     <h5 class="card-title">{{ bache.codigo_bache }} - {{ bache.nombre_cerveza }}</h5>
     <h6 class="card-subtitle mb-2 text-muted">
-      Fecha cocción: {{ bache.fecha_coccion }} |
-      Estado: {{ bache.estado }}
+      {{ _("Fecha cocción:") }} {{ bache.fecha_coccion }} |
+      {{ _("Estado:") }} {{ estado_labels.get(bache.estado, bache.estado) }}
     </h6>
 
-    <p class="mb-1"><strong>Receta:</strong>
+    <p class="mb-1"><strong>{{ _("Receta:") }}</strong>
       {% if bache.receta %}
         {{ bache.receta.nombre }} ({{ bache.receta.estilo or '-' }})
       {% else %}
@@ -22,74 +48,62 @@
     </p>
 
     <p class="mb-1">
-      <strong>Volumen objetivo (L):</strong> {{ bache.volumen_objetivo_litros or "-" }}<br>
-      <strong>Volumen final (L):</strong> {{ bache.volumen_final_litros or "-" }}
+      <strong>{{ _("Volumen objetivo (L):") }}</strong> {{ bache.volumen_objetivo_litros if bache.volumen_objetivo_litros is not none else "-" }}<br>
+      <strong>{{ _("Volumen final (L):") }}</strong> {{ bache.volumen_final_litros if bache.volumen_final_litros is not none else "-" }}
     </p>
 
     <p class="mb-1">
-      <strong>Densidad inicial:</strong> {{ bache.densidad_inicial or "-" }}<br>
-      <strong>Temp. maceración:</strong> {{ bache.temp_maceracion or "-" }} °C<br>
-      <strong>Temp. mash-off:</strong> {{ bache.temp_mashoff or "-" }} °C<br>
+      <strong>{{ _("Densidad inicial:") }}</strong> {{ bache.densidad_inicial if bache.densidad_inicial is not none else "-" }}<br>
+      <strong>{{ _("Temp. maceración:") }}</strong> {{ bache.temp_maceracion if bache.temp_maceracion is not none else "-" }} °C<br>
+      <strong>{{ _("Temp. mash-off:") }}</strong> {{ bache.temp_mashoff if bache.temp_mashoff is not none else "-" }} °C
     </p>
 
     <p class="mb-1">
-      <strong>pH macerado:</strong> {{ bache.ph_macerado or "-" }}<br>
-      <strong>pH fin de hervido:</strong> {{ bache.ph_fin_hervido or "-" }}
+      <strong>{{ _("pH macerado:") }}</strong> {{ bache.ph_macerado if bache.ph_macerado is not none else "-" }}<br>
+      <strong>{{ _("pH fin de hervido:") }}</strong> {{ bache.ph_fin_hervido if bache.ph_fin_hervido is not none else "-" }}
     </p>
-    
+
     {% if bache.notas %}
-      <p class="mt-2"><strong>Notas:</strong><br>{{ bache.notas }}</p>
+      <p class="mt-2"><strong>{{ _("Notas:") }}</strong><br>{{ bache.notas }}</p>
     {% endif %}
 
     <hr class="my-4">
-
-    <h5>Indicadores (calculados)</h5>
+    <h5>{{ _("Indicadores (calculados)") }}</h5>
 
     <div class="row">
       <div class="col-md-4">
         <div class="border rounded p-3 mb-3">
-          <div><strong>OG (densidad inicial):</strong> {{ "%.3f"|format(og) if og else "-" }}</div>
-          <div><strong>FG (última densidad):</strong> {{ "%.3f"|format(fg) if fg else "-" }}</div>
+          <div><strong>{{ _("OG (densidad inicial):") }}</strong> {{ "%.3f"|format(og) if og else "-" }}</div>
+          <div><strong>{{ _("FG (última densidad):") }}</strong> {{ "%.3f"|format(fg) if fg else "-" }}</div>
         </div>
       </div>
 
       <div class="col-md-4">
         <div class="border rounded p-3 mb-3">
-          <div><strong>Alcohol (ABV aprox):</strong>
-            {% if abv is not none %}
-              {{ "%.2f"|format(abv) }} %
-            {% else %}
-              -
-            {% endif %}
+          <div><strong>{{ _("Alcohol (ABV aprox.):") }}</strong>
+            {% if abv is not none %}{{ "%.2f"|format(abv) }} %{% else %}-{% endif %}
           </div>
-          <div><strong>Atenuación aparente:</strong>
-            {% if atenuacion is not none %}
-              {{ "%.1f"|format(atenuacion) }} %
-            {% else %}
-              -
-            {% endif %}
+          <div><strong>{{ _("Atenuación aparente:") }}</strong>
+            {% if atenuacion is not none %}{{ "%.1f"|format(atenuacion) }} %{% else %}-{% endif %}
           </div>
         </div>
       </div>
 
       <div class="col-md-4">
         <div class="border rounded p-3 mb-3">
-          <div class="mb-2"><strong>Últimas mediciones ({{ configured_timezone }})</strong></div>
-
+          <div class="mb-2"><strong>{{ _("Últimas mediciones") }} ({{ configured_timezone }})</strong></div>
           <div>
-            <strong>Densidad:</strong>
+            <strong>{{ _("Densidad:") }}</strong>
             {% if ult_dens %}
               {{ ult_dens.valor }} <small class="text-muted">({{ ult_dens.fecha|format_local_datetime }})</small>
             {% else %}-{% endif %}
           </div>
-
           <div>
-            <strong>Temperatura:</strong>
+            <strong>{{ _("Temperatura:") }}</strong>
             {% if ult_temp %}
               {{ ult_temp.valor }} <small class="text-muted">({{ ult_temp.fecha|format_local_datetime }})</small>
             {% else %}-{% endif %}
           </div>
-
           <div>
             <strong>pH:</strong>
             {% if ult_ph %}
@@ -102,77 +116,63 @@
 
     {% if ult_dens and ult_dens.comentario %}
       <div class="alert alert-secondary">
-        <strong>Comentario última densidad:</strong> {{ ult_dens.comentario }}
+        <strong>{{ _("Comentario última densidad:") }}</strong> {{ ult_dens.comentario }}
       </div>
     {% endif %}
-
   </div>
 </div>
 
-<h5>Materias primas usadas</h5>
+<h5>{{ _("Materias primas usadas") }}</h5>
 
 {% if materias %}
   <table class="table table-sm table-striped">
     <thead>
       <tr>
-        <th>Materia prima</th>
-        <th>Lote</th>
-        <th>Cantidad</th>
-        <th>Etapa</th>
-        <th>Tipo aplicación</th>
-        <th>Uso levadura</th>
-        <th>Generación</th>        
-        <th>Tiempo hervor (min)</th>
-        <th>Días ferm.</th>
+        <th>{{ _("Materia prima") }}</th>
+        <th>{{ _("Lote") }}</th>
+        <th>{{ _("Cantidad") }}</th>
+        <th>{{ _("Etapa") }}</th>
+        <th>{{ _("Tipo aplicación") }}</th>
+        <th>{{ _("Uso levadura") }}</th>
+        <th>{{ _("Generación") }}</th>
+        <th>{{ _("Tiempo hervor (min)") }}</th>
+        <th>{{ _("Días ferm.") }}</th>
       </tr>
     </thead>
     <tbody>
       {% for m, lote, mp in materias %}
       {% set uso = usos_levadura_por_lote.get(lote.id) %}
       <tr>
-        <td>{{ mp.nombre }} ({{ mp.tipo }})</td>
+        <td>{{ mp.nombre }} ({{ tipo_mp_labels.get(mp.tipo, mp.tipo) }})</td>
         <td>{{ lote.codigo_lote }}</td>
-        <td>{{ m.cantidad_usada }} {{ m.unidad }}</td>
-        <td>{{ m.etapa_proceso }}</td>
-        <td>{{ m.tipo_aplicacion }}</td>
-
+        <td>{{ m.cantidad_usada }} {{ unidad_labels.get(m.unidad, m.unidad) }}</td>
+        <td>{{ etapa_labels.get(m.etapa_proceso, m.etapa_proceso) }}</td>
+        <td>{{ aplicacion_labels.get(m.tipo_aplicacion, m.tipo_aplicacion) }}</td>
         <td>
           {% if mp.tipo == "LEVADURA" and uso %}
-            {{ uso.tipo_uso }}
-          {% else %}
-            -
-          {% endif %}
+            {{ uso_levadura_labels.get(uso.tipo_uso, uso.tipo_uso) }}
+          {% else %}-{% endif %}
         </td>
-
         <td>
           {% if mp.tipo == "LEVADURA" and uso and uso.tipo_uso == "REUTILIZADA" %}
             {{ uso.generacion }}GEN
           {% elif mp.tipo == "LEVADURA" and uso and uso.tipo_uso == "NUEVA" %}
             0GEN
-          {% else %}
-            -
-          {% endif %}
+          {% else %}-{% endif %}
         </td>
-
-        <td>{{ m.tiempo_minutos_desde_inicio_hervor or "-" }}</td>
-        <td>{{ m.dias_desde_inicio_fermentacion or "-" }}</td>
+        <td>{{ m.tiempo_minutos_desde_inicio_hervor if m.tiempo_minutos_desde_inicio_hervor is not none else "-" }}</td>
+        <td>{{ m.dias_desde_inicio_fermentacion if m.dias_desde_inicio_fermentacion is not none else "-" }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 {% else %}
-  <p>No se han registrado materias primas para este bache.</p>
+  <p>{{ _("No se han registrado materias primas para este bache.") }}</p>
 {% endif %}
 
 <div class="mt-3">
-  <a href="{{ url_for('baches.editar', bache_id=bache.id) }}" class="btn btn-warning">
-    Editar
-  </a>
-  <a href="{{ url_for('baches.lista') }}" class="btn btn-secondary">
-    Volver a la lista
-  </a>
-  <a href="{{ url_for('baches.exportar_pdf', bache_id=bache.id) }}" class="btn btn-outline-primary">
-  Exportar PDF
-  </a>
+  <a href="{{ url_for('baches.editar', bache_id=bache.id) }}" class="btn btn-warning">{{ _("Editar") }}</a>
+  <a href="{{ url_for('baches.lista') }}" class="btn btn-secondary">{{ _("Volver a la lista") }}</a>
+  <a href="{{ url_for('baches.exportar_pdf', bache_id=bache.id) }}" class="btn btn-outline-primary">{{ _("Exportar PDF") }}</a>
 </div>
 {% endblock %}
