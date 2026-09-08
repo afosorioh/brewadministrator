@@ -1,28 +1,33 @@
 let qrScannerInstance = null;
 
-function vibrarConfirmacion() {
-  if (navigator.vibrate) {
-    navigator.vibrate([120, 60, 120]);
+function textoInterfaz(key, replacements = {}) {
+  const translations = window.brewTranslations || {};
+  let text = translations[key] || key;
+
+  for (const [name, value] of Object.entries(replacements)) {
+    text = text.replace(`%(${name})s`, value);
   }
+
+  return text;
+}
+
+function vibrarConfirmacion() {
+  if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
 }
 
 function mostrarCodigoLeido(codigo, targetDisplayId = null) {
   if (!targetDisplayId) return;
-
   const el = document.getElementById(targetDisplayId);
   if (!el) return;
-
-  el.textContent = `Código leído: ${codigo}`;
+  el.textContent = textoInterfaz("codeRead", { code: codigo });
   el.classList.remove("d-none", "text-muted");
   el.classList.add("text-success", "fw-semibold");
 }
 
 function limpiarCodigoLeido(targetDisplayId = null) {
   if (!targetDisplayId) return;
-
   const el = document.getElementById(targetDisplayId);
   if (!el) return;
-
   el.textContent = "";
   el.classList.add("d-none");
   el.classList.remove("text-success", "fw-semibold");
@@ -30,20 +35,14 @@ function limpiarCodigoLeido(targetDisplayId = null) {
 
 function resaltarSelect(select) {
   if (!select) return;
-
   select.classList.add("border-success", "shadow-sm");
-  setTimeout(() => {
-    select.classList.remove("border-success", "shadow-sm");
-  }, 2500);
+  setTimeout(() => select.classList.remove("border-success", "shadow-sm"), 2500);
 }
 
 function resaltarInput(input) {
   if (!input) return;
-
   input.classList.add("border-success", "shadow-sm");
-  setTimeout(() => {
-    input.classList.remove("border-success", "shadow-sm");
-  }, 2500);
+  setTimeout(() => input.classList.remove("border-success", "shadow-sm"), 2500);
 }
 
 function cerrarScannerQR() {
@@ -51,27 +50,20 @@ function cerrarScannerQR() {
     qrScannerInstance.stop()
       .then(() => qrScannerInstance.clear())
       .catch(() => {})
-      .finally(() => {
-        qrScannerInstance = null;
-      });
+      .finally(() => { qrScannerInstance = null; });
   }
 }
 
-function abrirScannerQR({
-  targetInputId = null,
-  targetSelectId = null,
-  targetDisplayId = null
-}) {
+function abrirScannerQR({ targetInputId = null, targetSelectId = null, targetDisplayId = null }) {
   const modalEl = document.getElementById("qrScannerModal");
   const qrReaderId = "qr-reader";
 
   if (!modalEl) {
-    alert("No se encontró el modal del escáner QR.");
+    alert(textoInterfaz("qrModalNotFound"));
     return;
   }
 
   limpiarCodigoLeido(targetDisplayId);
-
   const modal = new bootstrap.Modal(modalEl);
   modal.show();
 
@@ -80,7 +72,6 @@ function abrirScannerQR({
     mostrarCodigoLeido(codigo, targetDisplayId);
     vibrarConfirmacion();
 
-    // Caso 1: llenar input directamente
     if (targetInputId) {
       const input = document.getElementById(targetInputId);
       if (input) {
@@ -93,15 +84,12 @@ function abrirScannerQR({
       return;
     }
 
-    // Caso 2: buscar en select por data-codigo
     if (targetSelectId) {
       const select = document.getElementById(targetSelectId);
       if (select) {
         let encontrado = false;
-
         for (const option of select.options) {
           const codigoOption = (option.getAttribute("data-codigo") || "").trim();
-
           if (codigoOption.toUpperCase() === codigo.toUpperCase()) {
             select.value = option.value;
             select.dispatchEvent(new Event("change"));
@@ -110,9 +98,8 @@ function abrirScannerQR({
             break;
           }
         }
-
         if (!encontrado) {
-          alert(`No se encontró un barril con código: ${codigo}`);
+          alert(textoInterfaz("kegNotFound", { code: codigo }));
           return;
         }
       }
@@ -123,46 +110,38 @@ function abrirScannerQR({
   }
 
   function onScanFailure(error) {
-    // silencioso
+    // Los errores de lectura se ignoran mientras el escáner sigue activo.
   }
 
   qrScannerInstance = new Html5Qrcode(qrReaderId);
-
   Html5Qrcode.getCameras()
     .then(cameras => {
       if (!cameras || cameras.length === 0) {
-        alert("No se detectó ninguna cámara.");
+        alert(textoInterfaz("noCamera"));
         return;
       }
 
       let cameraId = cameras[0].id;
-
       const backCam = cameras.find(c =>
         (c.label || "").toLowerCase().includes("back") ||
         (c.label || "").toLowerCase().includes("rear") ||
         (c.label || "").toLowerCase().includes("environment")
       );
-
-      if (backCam) {
-        cameraId = backCam.id;
-      }
+      if (backCam) cameraId = backCam.id;
 
       qrScannerInstance.start(
         cameraId,
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 }
-        },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
         onScanSuccess,
         onScanFailure
       ).catch(err => {
-        console.error("Error iniciando cámara:", err);
-        alert("No fue posible iniciar la cámara.");
+        console.error("Camera start error:", err);
+        alert(textoInterfaz("cameraStartError"));
       });
     })
     .catch(err => {
-      console.error("Error obteniendo cámaras:", err);
-      alert("No fue posible acceder a la cámara.");
+      console.error("Camera access error:", err);
+      alert(textoInterfaz("cameraAccessError"));
     });
 
   modalEl.addEventListener("hidden.bs.modal", function onHidden() {

@@ -1,15 +1,20 @@
 from flask import Flask, redirect, url_for
-from config import Config
-from app.extensions import db, login_manager
-from flask_migrate import Migrate
+from flask_babel import get_locale
 from flask_login import current_user
-migrate = Migrate()
+from flask_migrate import Migrate
 
+from config import Config
+from app.extensions import babel, db, login_manager
+from app.i18n import LANGUAGE_LABELS, SUPPORTED_LANGUAGES, locale_bp, select_locale
+
+migrate = Migrate()
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.config.setdefault("BABEL_DEFAULT_LOCALE", "es")
+    app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", "translations")
 
     from app.utils.datetime_utils import (
         DEFAULT_TIMEZONE,
@@ -21,24 +26,28 @@ def create_app():
     app.config.setdefault("TIMEZONE", DEFAULT_TIMEZONE)
     validate_timezone_name(app.config["TIMEZONE"])
 
-
     # Inicializar extensiones
     db.init_app(app)
     migrate.init_app(app, db)
-
     login_manager.init_app(app)
-     
+    babel.init_app(app, locale_selector=select_locale)
+
     login_manager.login_view = "auth.login"
 
     from app import models
-
     from app.models import Usuario
+
     app.jinja_env.filters["local_datetime"] = utc_to_local
     app.jinja_env.filters["format_local_datetime"] = format_local_datetime
 
     @app.context_processor
-    def inject_timezone_config():
-        return {"configured_timezone": app.config["TIMEZONE"]}
+    def inject_global_template_values():
+        return {
+            "configured_timezone": app.config["TIMEZONE"],
+            "current_locale": str(get_locale()),
+            "supported_languages": SUPPORTED_LANGUAGES,
+            "language_labels": LANGUAGE_LABELS,
+        }
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -52,6 +61,7 @@ def create_app():
     from app.routes.recetas import recetas_bp
     from app.routes.dashboard import dashboard_bp
 
+    app.register_blueprint(locale_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(usuarios_bp)
     app.register_blueprint(baches_bp)
@@ -93,5 +103,5 @@ def create_app():
         if current_user.is_authenticated:
             return redirect(url_for("dashboard.inicio"))
         return redirect(url_for("auth.login"))
-    
+
     return app

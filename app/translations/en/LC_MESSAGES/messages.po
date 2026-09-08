@@ -1,0 +1,137 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: BrewAdministrator\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "ADMIN creado. Ya puedes iniciar sesión."
+msgstr "ADMIN created. You can now sign in."
+
+msgid "Apunta la cámara al código QR del barril."
+msgstr "Point the camera at the keg QR code."
+
+msgid "Baches"
+msgstr "Batches"
+
+msgid "Barriles"
+msgstr "Kegs"
+
+msgid "Bienvenido."
+msgstr "Welcome."
+
+msgid "Bootstrap deshabilitado."
+msgstr "Bootstrap is disabled."
+
+msgid "Catas"
+msgstr "Tastings"
+
+msgid "Cerrar"
+msgstr "Close"
+
+msgid "Clientes"
+msgstr "Customers"
+
+msgid "Código leído: %(code)s"
+msgstr "Scanned code: %(code)s"
+
+msgid "Configurar administrador"
+msgstr "Set up administrator"
+
+msgid "Confirmar contraseña"
+msgstr "Confirm password"
+
+msgid "Contraseña"
+msgstr "Password"
+
+msgid "Crear administrador"
+msgstr "Create administrator"
+
+msgid "Crear el primer administrador"
+msgstr "Create the first administrator"
+
+msgid "Credenciales inválidas o usuario inactivo."
+msgstr "Invalid credentials or inactive user."
+
+msgid "Entrar"
+msgstr "Sign in"
+
+msgid "Escanear QR de barril"
+msgstr "Scan keg QR code"
+
+msgid "Ese username ya existe."
+msgstr "That username already exists."
+
+msgid "Estadísticas"
+msgstr "Statistics"
+
+msgid "Iniciar sesión"
+msgstr "Sign in"
+
+msgid "Inicio"
+msgstr "Home"
+
+msgid "Inventario"
+msgstr "Inventory"
+
+msgid "Las contraseñas no coinciden."
+msgstr "The passwords do not match."
+
+msgid "Materias primas"
+msgstr "Raw materials"
+
+msgid "Mostrar/ocultar menú"
+msgstr "Show/hide menu"
+
+msgid "No fue posible acceder a la cámara."
+msgstr "The camera could not be accessed."
+
+msgid "No fue posible iniciar la cámara."
+msgstr "The camera could not be started."
+
+msgid "No se detectó ninguna cámara."
+msgstr "No camera was detected."
+
+msgid "No se encontró el modal del escáner QR."
+msgstr "The QR scanner dialog was not found."
+
+msgid "No se encontró un barril con código: %(code)s"
+msgstr "No keg was found with code: %(code)s"
+
+msgid "Recetas"
+msgstr "Recipes"
+
+msgid "Salir"
+msgstr "Sign out"
+
+msgid "Seleccionar idioma"
+msgstr "Select language"
+
+msgid "Sesión cerrada."
+msgstr "You have been signed out."
+
+msgid "Temperaturas"
+msgstr "Temperatures"
+
+msgid "Token"
+msgstr "Token"
+
+msgid "Token inválido."
+msgstr "Invalid token."
+
+msgid "Username y contraseña son obligatorios."
+msgstr "Username and password are required."
+
+msgid "Usuario"
+msgstr "Username"
+
+msgid "Usuario administrador"
+msgstr "Administrator username"
+
+msgid "Usuarios"
+msgstr "Users"
+
+msgid "Ya existe un ADMIN. No se puede usar setup-admin."
+msgstr "An ADMIN already exists. setup-admin cannot be used."
