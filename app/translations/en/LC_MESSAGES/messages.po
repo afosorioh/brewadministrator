@@ -135,3 +135,176 @@ msgstr "Users"
 
 msgid "Ya existe un ADMIN. No se puede usar setup-admin."
 msgstr "An ADMIN already exists. setup-admin cannot be used."
+
+msgid "Activa"
+msgstr "Active"
+
+msgid "Activas"
+msgstr "Active"
+
+msgid "Activos"
+msgstr "Active"
+
+msgid "Bache"
+msgstr "Batch"
+
+msgid "Baja"
+msgstr "Decommissioned"
+
+msgid "Cerveza"
+msgstr "Beer"
+
+msgid "Código"
+msgstr "Code"
+
+msgid "Completado"
+msgstr "Completed"
+
+msgid "Completados"
+msgstr "Completed"
+
+msgid "Controlador"
+msgstr "Controller"
+
+msgid "Controladores activos"
+msgstr "Active controllers"
+
+msgid "Descartado"
+msgstr "Discarded"
+
+msgid "Disponibilidad y ubicación operacional."
+msgstr "Availability and current location."
+
+msgid "En curso"
+msgstr "In progress"
+
+msgid "En línea"
+msgstr "Online"
+
+msgid "Entregado"
+msgstr "Delivered"
+
+msgid "Entregados"
+msgstr "Delivered"
+
+msgid "Errores de sensor"
+msgstr "Sensor errors"
+
+msgid "Estado"
+msgstr "Status"
+
+msgid "Estado de controladores y últimas lecturas."
+msgstr "Controller status and latest readings."
+
+msgid "Estado general de la cervecería al"
+msgstr "Brewery status as of"
+
+msgid "Fermentando"
+msgstr "Fermenting"
+
+msgid "Gestionar"
+msgstr "Manage"
+
+msgid "Inactiva"
+msgstr "Inactive"
+
+msgid "Inventario de insumos y vencimientos."
+msgstr "Raw material inventory and expiration dates."
+
+msgid "Levadura"
+msgstr "Yeast"
+
+msgid "Limpio"
+msgstr "Clean"
+
+msgid "Limpios"
+msgstr "Clean"
+
+msgid "Lleno"
+msgstr "Full"
+
+msgid "Llenos"
+msgstr "Full"
+
+msgid "Listo"
+msgstr "Ready"
+
+msgid "Lotes con saldo"
+msgstr "Lots with stock"
+
+msgid "Lotes vencidos"
+msgstr "Expired lots"
+
+msgid "Lúpulo"
+msgstr "Hops"
+
+msgid "Madurando"
+msgstr "Conditioning"
+
+msgid "Malta"
+msgstr "Malt"
+
+msgid "Mantenimiento"
+msgstr "Maintenance"
+
+msgid "No hay baches activos actualmente."
+msgstr "There are currently no active batches."
+
+msgid "No hay controladores activos registrados."
+msgstr "No active controllers are registered."
+
+msgid "No hay sesiones de cata registradas."
+msgstr "No tasting sessions are registered."
+
+msgid "Operativos"
+msgstr "Operational"
+
+msgid "Otro"
+msgstr "Other"
+
+msgid "Planificado"
+msgstr "Planned"
+
+msgid "Producción activa y últimos baches."
+msgstr "Active production and recent batches."
+
+msgid "Referencias activas"
+msgstr "Active items"
+
+msgid "Resumen de operación"
+msgstr "Operations overview"
+
+msgid "Respuestas"
+msgstr "Responses"
+
+msgid "Sesiones"
+msgstr "Sessions"
+
+msgid "Sesiones y participación registrada."
+msgstr "Sessions and recorded participation."
+
+msgid "Setpoint"
+msgstr "Setpoint"
+
+msgid "Sin comunicación"
+msgstr "Offline"
+
+msgid "Sucio"
+msgstr "Dirty"
+
+msgid "Temperatura"
+msgstr "Temperature"
+
+msgid "Última lectura"
+msgstr "Last reading"
+
+msgid "Vencen en 30 días"
+msgstr "Expiring within 30 days"
+
+msgid "Ver"
+msgstr "View"
+
+msgid "respuesta"
+msgid_plural "respuestas"
+msgstr[0] "response"
+msgstr[1] "responses"
