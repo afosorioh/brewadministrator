@@ -5,7 +5,7 @@ function textoInterfaz(key, replacements = {}) {
   let text = translations[key] || key;
 
   for (const [name, value] of Object.entries(replacements)) {
-    text = text.replace(`%(${name})s`, value);
+    text = text.replace(`__${name.toUpperCase()}__`, value);
   }
 
   return text;
