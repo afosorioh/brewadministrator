@@ -105,12 +105,12 @@
 
     <div class="row">
       <div class="col-md-6 mb-3">
-        <label class="form-label">{{ _("Atenuación mínima (%)") }}</label>
+        <label class="form-label">{{ _("Atenuación mínima (%%)") }}</label>
         <input type="number" class="form-control" name="lev_atenuacion_min"
                value="{{ lev.atenuacion_min if lev and lev.atenuacion_min is not none else '' }}">
       </div>
       <div class="col-md-6 mb-3">
-        <label class="form-label">{{ _("Atenuación máxima (%)") }}</label>
+        <label class="form-label">{{ _("Atenuación máxima (%%)") }}</label>
         <input type="number" class="form-control" name="lev_atenuacion_max"
                value="{{ lev.atenuacion_max if lev and lev.atenuacion_max is not none else '' }}">
       </div>
@@ -164,12 +164,12 @@
 
     <div class="row">
       <div class="col-md-6 mb-3">
-        <label class="form-label">{{ _("Alfa ácidos (%)") }}</label>
+        <label class="form-label">{{ _("Alfa ácidos (%%)") }}</label>
         <input type="number" step="0.01" class="form-control" name="lup_alfa"
                value="{{ lup.alfa_acidos_pct if lup and lup.alfa_acidos_pct is not none else '' }}">
       </div>
       <div class="col-md-6 mb-3">
-        <label class="form-label">{{ _("Beta ácidos (%)") }}</label>
+        <label class="form-label">{{ _("Beta ácidos (%%)") }}</label>
         <input type="number" step="0.01" class="form-control" name="lup_beta"
                value="{{ lup.beta_acidos_pct if lup and lup.beta_acidos_pct is not none else '' }}">
       </div>
@@ -177,7 +177,7 @@
 
     <div class="row">
       <div class="col-md-6 mb-3">
-        <label class="form-label">{{ _("Cohumulona (%)") }}</label>
+        <label class="form-label">{{ _("Cohumulona (%%)") }}</label>
         <input type="number" step="0.01" class="form-control" name="lup_cohumulona"
                value="{{ lup.cohumulona_pct if lup and lup.cohumulona_pct is not none else '' }}">
       </div>
@@ -237,7 +237,7 @@
 
     <div class="row">
       <div class="col-md-6 mb-3">
-        <label class="form-label">{{ _("Proteínas (%)") }}</label>
+        <label class="form-label">{{ _("Proteínas (%%)") }}</label>
         <input type="number" step="0.01" class="form-control" name="mal_proteinas"
                value="{{ mal.proteinas_pct if mal and mal.proteinas_pct is not none else '' }}">
       </div>
@@ -249,7 +249,7 @@
     </div>
 
     <div class="mb-3">
-      <label class="form-label">{{ _("Uso máximo recomendado en molienda (%)") }}</label>
+      <label class="form-label">{{ _("Uso máximo recomendado en molienda (%%)") }}</label>
       <input type="number" step="0.01" class="form-control" name="mal_uso_max"
              value="{{ mal.uso_max_pct_molienda if mal and mal.uso_max_pct_molienda is not none else '' }}">
     </div>
