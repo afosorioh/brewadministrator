@@ -21,6 +21,28 @@
            class="form-text"
            aria-live="polite"></div>
     </div>
+    {% set tipo_labels = {
+      "MALTA": _("Malta"),
+      "LUPULO": _("Lúpulo"),
+      "LEVADURA": _("Levadura"),
+      "OTRO": _("Otro")
+    } %}
+    <form method="get" action="{{ url_for('materias_primas.lista') }}">
+      <label class="visually-hidden" for="raw-material-type-filter">
+        {{ _("Filtrar por tipo") }}
+      </label>
+      <select id="raw-material-type-filter"
+              name="tipo"
+              class="form-select"
+              onchange="this.form.submit()">
+        <option value="">{{ _("Todos los tipos") }}</option>
+        {% for tipo in tipos %}
+          <option value="{{ tipo }}"{% if tipo == tipo_seleccionado %} selected{% endif %}>
+            {{ tipo_labels.get(tipo, tipo) }}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
     <a href="{{ url_for('materias_primas.crear') }}" class="btn btn-primary text-nowrap">
       {{ _("Nueva materia prima") }}
     </a>
@@ -40,7 +62,7 @@
       </tr>
     </thead>
     <tbody id="raw-material-results">
-      {% set empty_message = _("No hay materias primas registradas todavía.") %}
+      {% set empty_message = _("No se encontraron materias primas.") if tipo_seleccionado else _("No hay materias primas registradas todavía.") %}
       {% include "materias_primas/_filas_lista.html" %}
     </tbody>
   </table>
@@ -48,7 +70,7 @@
 
 <script>
   window.rawMaterialSearchConfig = {{ {
-    "url": url_for("materias_primas.buscar"),
+    "url": url_for("materias_primas.buscar", tipo=tipo_seleccionado or none),
     "minimumLength": 3,
     "minimumMessage": _("Escribe al menos 3 caracteres para buscar."),
     "loadingMessage": _("Buscando..."),

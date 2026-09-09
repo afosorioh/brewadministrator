@@ -28,18 +28,37 @@ materias_primas_bp = Blueprint(
     url_prefix="/materias_primas",
 )
 
+TIPOS_MATERIA_PRIMA = ("MALTA", "LUPULO", "LEVADURA", "OTRO")
+
+
+def _tipo_filtro_solicitado():
+    tipo = (request.args.get("tipo") or "").strip().upper()
+    return tipo if tipo in TIPOS_MATERIA_PRIMA else ""
+
 
 @materias_primas_bp.route("/")
 @login_required
 def lista():
-    materias = MateriaPrima.query.order_by(MateriaPrima.nombre).all()
-    return render_template("materias_primas/lista.html", materias=materias)
+    tipo_seleccionado = _tipo_filtro_solicitado()
+    consulta = MateriaPrima.query
+
+    if tipo_seleccionado:
+        consulta = consulta.filter(MateriaPrima.tipo == tipo_seleccionado)
+
+    materias = consulta.order_by(MateriaPrima.nombre).all()
+    return render_template(
+        "materias_primas/lista.html",
+        materias=materias,
+        tipos=TIPOS_MATERIA_PRIMA,
+        tipo_seleccionado=tipo_seleccionado,
+    )
 
 
 @materias_primas_bp.route("/buscar")
 @login_required
 def buscar():
     termino = (request.args.get("q") or "").strip()
+    tipo_seleccionado = _tipo_filtro_solicitado()
 
     if len(termino) < 3:
         materias = []
@@ -50,17 +69,19 @@ def buscar():
             .replace("%", "\\%")
             .replace("_", "\\_")
         )
-        materias = (
-            MateriaPrima.query
-            .filter(
-                MateriaPrima.nombre.ilike(
-                    f"{escaped}%",
-                    escape="\\",
-                )
+        consulta = MateriaPrima.query.filter(
+            MateriaPrima.nombre.ilike(
+                f"{escaped}%",
+                escape="\\",
             )
-            .order_by(MateriaPrima.nombre)
-            .all()
         )
+
+        if tipo_seleccionado:
+            consulta = consulta.filter(
+                MateriaPrima.tipo == tipo_seleccionado
+            )
+
+        materias = consulta.order_by(MateriaPrima.nombre).all()
         empty_message = _("No se encontraron materias primas.")
 
     return render_template(

@@ -22,6 +22,8 @@ class RawMaterialsInternationalizationTestCase(unittest.TestCase):
                 "Search raw materials by name",
             )
             self.assertEqual(gettext("Buscando..."), "Searching...")
+            self.assertEqual(gettext("Filtrar por tipo"), "Filter by type")
+            self.assertEqual(gettext("Todos los tipos"), "All types")
             self.assertEqual(gettext("Detalles de levadura"), "Yeast details")
             self.assertEqual(gettext("Floculación baja"), "Low")
             self.assertEqual(gettext("Lotes de esta materia prima"), "Lots for this raw material")
@@ -57,6 +59,9 @@ class RawMaterialsInternationalizationTestCase(unittest.TestCase):
         self.assertIn('window.setTimeout(() => search(query, sequence), 300)', script)
         self.assertIn('activeRequest.abort()', script)
         self.assertIn('url.searchParams.set("q", query)', script)
+        self.assertIn('name="tipo"', listing)
+        self.assertIn('onchange="this.form.submit()"', listing)
+        self.assertIn('tipo=tipo_seleccionado or none', listing)
 
     def test_search_query_uses_a_case_insensitive_escaped_prefix(self):
         route = self.project_root / "app" / "routes" / "materias_primas.py"
