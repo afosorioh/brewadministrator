@@ -1,0 +1,39 @@
+{% set tipo_labels = {
+  "MALTA": _("Malta"),
+  "LUPULO": _("Lúpulo"),
+  "LEVADURA": _("Levadura"),
+  "OTRO": _("Otro")
+} %}
+{% set unidad_labels = {"UNIDAD": _("Unidad")} %}
+
+{% for mp in materias %}
+<tr data-search-result>
+  <td>{{ mp.id }}</td>
+  <td>{{ mp.nombre }}</td>
+  <td>{{ tipo_labels.get(mp.tipo, mp.tipo) }}</td>
+  <td>{{ unidad_labels.get(mp.unidad_base, mp.unidad_base) }}</td>
+  <td>{{ _("Sí") if mp.activo else _("No") }}</td>
+  <td>
+    <a href="{{ url_for('materias_primas.detalle', mp_id=mp.id) }}" class="btn btn-sm btn-secondary">
+      {{ _("Ver") }}
+    </a>
+    <a href="{{ url_for('materias_primas.editar', mp_id=mp.id) }}" class="btn btn-sm btn-warning">
+      {{ _("Editar") }}
+    </a>
+    <form action="{{ url_for('materias_primas.eliminar', mp_id=mp.id) }}"
+          method="post"
+          style="display:inline;"
+          onsubmit='return confirm({{ _("¿Seguro que deseas eliminar esta materia prima?")|tojson }});'>
+      <button type="submit" class="btn btn-sm btn-danger">
+        {{ _("Eliminar") }}
+      </button>
+    </form>
+  </td>
+</tr>
+{% else %}
+<tr>
+  <td colspan="6" class="text-center text-muted py-4">
+    {{ empty_message }}
+  </td>
+</tr>
+{% endfor %}

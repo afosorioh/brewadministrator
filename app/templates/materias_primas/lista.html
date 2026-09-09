@@ -1,24 +1,33 @@
 {% extends "base.html" %}
 
-{% set tipo_labels = {
-  "MALTA": _("Malta"),
-  "LUPULO": _("Lúpulo"),
-  "LEVADURA": _("Levadura"),
-  "OTRO": _("Otro")
-} %}
-{% set unidad_labels = {"UNIDAD": _("Unidad")} %}
-
 {% block title %}{{ _("Materias primas") }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-3">
   <h1 class="h3">{{ _("Materias primas") }}</h1>
-  <a href="{{ url_for('materias_primas.crear') }}" class="btn btn-primary">
-    {{ _("Nueva materia prima") }}
-  </a>
+  <div class="d-flex flex-column flex-sm-row align-items-sm-start gap-2">
+    <div style="min-width: 280px;">
+      <label class="visually-hidden" for="raw-material-search">
+        {{ _("Buscar materia prima por nombre") }}
+      </label>
+      <input type="search"
+             id="raw-material-search"
+             class="form-control"
+             maxlength="100"
+             autocomplete="off"
+             placeholder="{{ _('Buscar materia prima por nombre') }}"
+             aria-describedby="raw-material-search-status">
+      <div id="raw-material-search-status"
+           class="form-text"
+           aria-live="polite"></div>
+    </div>
+    <a href="{{ url_for('materias_primas.crear') }}" class="btn btn-primary text-nowrap">
+      {{ _("Nueva materia prima") }}
+    </a>
+  </div>
 </div>
 
-{% if materias %}
+<div class="table-responsive">
   <table class="table table-striped table-hover">
     <thead>
       <tr>
@@ -30,35 +39,21 @@
         <th style="width: 180px;">{{ _("Acciones") }}</th>
       </tr>
     </thead>
-    <tbody>
-      {% for mp in materias %}
-      <tr>
-        <td>{{ mp.id }}</td>
-        <td>{{ mp.nombre }}</td>
-        <td>{{ tipo_labels.get(mp.tipo, mp.tipo) }}</td>
-        <td>{{ unidad_labels.get(mp.unidad_base, mp.unidad_base) }}</td>
-        <td>{{ _("Sí") if mp.activo else _("No") }}</td>
-        <td>
-          <a href="{{ url_for('materias_primas.detalle', mp_id=mp.id) }}" class="btn btn-sm btn-secondary">
-            {{ _("Ver") }}
-          </a>
-          <a href="{{ url_for('materias_primas.editar', mp_id=mp.id) }}" class="btn btn-sm btn-warning">
-            {{ _("Editar") }}
-          </a>
-          <form action="{{ url_for('materias_primas.eliminar', mp_id=mp.id) }}"
-                method="post"
-                style="display:inline;"
-                onsubmit='return confirm({{ _("¿Seguro que deseas eliminar esta materia prima?")|tojson }});'>
-            <button type="submit" class="btn btn-sm btn-danger">
-              {{ _("Eliminar") }}
-            </button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
+    <tbody id="raw-material-results">
+      {% set empty_message = _("No hay materias primas registradas todavía.") %}
+      {% include "materias_primas/_filas_lista.html" %}
     </tbody>
   </table>
-{% else %}
-  <p>{{ _("No hay materias primas registradas todavía.") }}</p>
-{% endif %}
+</div>
+
+<script>
+  window.rawMaterialSearchConfig = {{ {
+    "url": url_for("materias_primas.buscar"),
+    "minimumLength": 3,
+    "minimumMessage": _("Escribe al menos 3 caracteres para buscar."),
+    "loadingMessage": _("Buscando..."),
+    "errorMessage": _("No fue posible realizar la búsqueda.")
+  }|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/materias_primas_busqueda.js') }}"></script>
 {% endblock %}

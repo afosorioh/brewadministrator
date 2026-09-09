@@ -17,6 +17,11 @@ class RawMaterialsInternationalizationTestCase(unittest.TestCase):
         with self.app.test_request_context():
             self.assertEqual(gettext("Materias primas"), "Raw materials")
             self.assertEqual(gettext("Nueva materia prima"), "New raw material")
+            self.assertEqual(
+                gettext("Buscar materia prima por nombre"),
+                "Search raw materials by name",
+            )
+            self.assertEqual(gettext("Buscando..."), "Searching...")
             self.assertEqual(gettext("Detalles de levadura"), "Yeast details")
             self.assertEqual(gettext("Floculación baja"), "Low")
             self.assertEqual(gettext("Lotes de esta materia prima"), "Lots for this raw material")
@@ -34,6 +39,36 @@ class RawMaterialsInternationalizationTestCase(unittest.TestCase):
         self.assertIn('<option value="{{ val }}"', form)
         self.assertIn('|tojson', listing)
         self.assertIn('|tojson', detail)
+
+    def test_search_interface_is_safe_and_starts_after_three_characters(self):
+        materials_dir = self.project_root / "app" / "templates" / "materias_primas"
+        listing = (materials_dir / "lista.html").read_text(encoding="utf-8")
+        script = (
+            self.project_root
+            / "app"
+            / "static"
+            / "js"
+            / "materias_primas_busqueda.js"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn('"minimumLength": 3', listing)
+        self.assertIn('}|tojson', listing)
+        self.assertIn('query.length < config.minimumLength', script)
+        self.assertIn('window.setTimeout(() => search(query, sequence), 300)', script)
+        self.assertIn('activeRequest.abort()', script)
+        self.assertIn('url.searchParams.set("q", query)', script)
+
+    def test_search_query_uses_a_case_insensitive_escaped_prefix(self):
+        route = self.project_root / "app" / "routes" / "materias_primas.py"
+        source = route.read_text(encoding="utf-8")
+
+        self.assertIn('@materias_primas_bp.route("/buscar")', source)
+        self.assertIn('if len(termino) < 3:', source)
+        self.assertIn('.replace("%", "\\\\%")', source)
+        self.assertIn('.replace("_", "\\\\_")', source)
+        self.assertIn('MateriaPrima.nombre.ilike(', source)
+        self.assertIn('f"{escaped}%"', source)
+        self.assertIn('escape="\\\\"', source)
 
     def test_percent_labels_render_in_english(self):
         labels = {
