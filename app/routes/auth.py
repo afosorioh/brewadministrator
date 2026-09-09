@@ -1,8 +1,18 @@
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_babel import gettext as _
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app.extensions import db
+from app.i18n import SUPPORTED_LANGUAGES
 from app.models import Rol, Usuario
 from app.services.security import ensure_roles
 
@@ -24,6 +34,11 @@ def login():
             return redirect(url_for("auth.login"))
 
         login_user(user)
+        session["language"] = (
+            user.idioma_preferido
+            if user.idioma_preferido in SUPPORTED_LANGUAGES
+            else "es"
+        )
         flash(_("Bienvenido."), "success")
         next_page = request.args.get("next")
         if next_page:

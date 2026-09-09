@@ -12,11 +12,20 @@ class Rol(db.Model):
 
 class Usuario(UserMixin, db.Model):
     __tablename__ = "usuario"
+    __table_args__ = (
+        db.CheckConstraint(
+            "idioma_preferido IN ('es', 'en')",
+            name="ck_usuario_idioma_preferido",
+        ),
+    )
 
     id = db.Column("id_usuario", db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     activo = db.Column(db.Boolean, default=True, nullable=False)
+    idioma_preferido = db.Column(
+        db.String(5), default="es", server_default="es", nullable=False
+    )
 
     id_rol = db.Column(db.Integer, db.ForeignKey("rol.id_rol", ondelete="RESTRICT"), nullable=False)
 
