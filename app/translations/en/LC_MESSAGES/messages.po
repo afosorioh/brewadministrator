@@ -2268,3 +2268,33 @@ msgid "Última %(count)s lectura"
 msgid_plural "Últimas %(count)s lecturas"
 msgstr[0] "Latest %(count)s reading"
 msgstr[1] "Latest %(count)s readings"
+
+msgid "Estadísticas por bache"
+msgstr "Batch statistics"
+
+msgid "Ej.: BATCH-001"
+msgstr "E.g.: BATCH-001"
+
+msgid "Indicadores"
+msgstr "Indicators"
+
+msgid "Atenuación"
+msgstr "Attenuation"
+
+msgid "Gráfica"
+msgstr "Chart"
+
+msgid "Gráfica de mediciones del bache"
+msgstr "Batch measurements chart"
+
+msgid "No se encontró el bache."
+msgstr "The batch was not found."
+
+msgid "Densidad (SG)"
+msgstr "Gravity (SG)"
+
+msgid "Temperatura (°C)"
+msgstr "Temperature (°C)"
+
+msgid "Fecha y hora (%(timezone)s)"
+msgstr "Date and time (%(timezone)s)"

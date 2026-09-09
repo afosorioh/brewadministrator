@@ -1,5 +1,6 @@
 from io import BytesIO
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
+from flask_babel import gettext as _
 from flask_login import login_required
 
 from app.extensions import db
@@ -78,7 +79,7 @@ def bache():
         bache = Bache.query.filter_by(codigo_bache=codigo).first()
 
         if not bache:
-            flash("No se encontró el bache.", "warning")
+            flash(_("No se encontró el bache."), "warning")
             return render_template("estadisticas/bache.html", bache=None)
 
         # Materias primas usadas en el bache
@@ -182,10 +183,10 @@ def bache_grafica(bache_id):
     ax[0].set_title("pH")
 
     ax[1].plot(fechas["DENSIDAD"], valores["DENSIDAD"], marker="o")
-    ax[1].set_title("Densidad (SG)")
+    ax[1].set_title(_("Densidad (SG)"))
 
     ax[2].plot(fechas["TEMPERATURA"], valores["TEMPERATURA"], marker="o")
-    ax[2].set_title("Temperatura (°C)")
+    ax[2].set_title(_("Temperatura (°C)"))
 
     for a in ax:
         a.grid(True)
@@ -193,7 +194,9 @@ def bache_grafica(bache_id):
             mdates.DateFormatter("%Y-%m-%d", tz=app_timezone())
         )
 
-    ax[2].set_xlabel("Fecha y hora (%s)" % app_timezone())
+    ax[2].set_xlabel(
+        _("Fecha y hora (%(timezone)s)", timezone=str(app_timezone()))
+    )
 
     fig.autofmt_xdate()
     fig.tight_layout()
