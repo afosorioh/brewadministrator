@@ -1,6 +1,9 @@
 from urllib.parse import urlsplit
 
 from flask import Blueprint, abort, redirect, request, session, url_for
+from flask_login import current_user
+
+from app.extensions import db
 
 
 SUPPORTED_LANGUAGES = ("es", "en")
@@ -17,6 +20,11 @@ def select_locale():
     selected = session.get("language")
     if selected in SUPPORTED_LANGUAGES:
         return selected
+
+    if current_user.is_authenticated:
+        preferred = getattr(current_user, "idioma_preferido", None)
+        if preferred in SUPPORTED_LANGUAGES:
+            return preferred
 
     return request.accept_languages.best_match(
         SUPPORTED_LANGUAGES,
@@ -42,6 +50,13 @@ def change_language(language):
         abort(404)
 
     session["language"] = language
+
+    if (
+        current_user.is_authenticated
+        and current_user.idioma_preferido != language
+    ):
+        current_user.idioma_preferido = language
+        db.session.commit()
 
     next_page = request.form.get("next")
     if not _is_safe_redirect(next_page):
