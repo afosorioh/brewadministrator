@@ -31,6 +31,8 @@ class StatisticsInternationalizationTestCase(unittest.TestCase):
             )
             self.assertEqual(gettext("Atenuación"), "Attenuation")
             self.assertEqual(gettext("Gráfica"), "Chart")
+            self.assertEqual(gettext("Seleccionar bache"), "Select batch")
+            self.assertEqual(gettext("Sin estilo"), "No style")
             self.assertEqual(
                 gettext("No se encontró el bache."),
                 "The batch was not found.",
@@ -91,6 +93,9 @@ class StatisticsInternationalizationTestCase(unittest.TestCase):
         for message in (
             "Estadísticas por bache",
             "Código de bache",
+            "Seleccionar bache",
+            "Seleccione un bache",
+            "Sin estilo",
             "Buscar",
             "Fecha cocción",
             "Estado",
@@ -103,6 +108,21 @@ class StatisticsInternationalizationTestCase(unittest.TestCase):
             "Gráfica de mediciones del bache",
         ):
             self.assertIn(f"_('{message}')", template)
+
+    def test_batch_selector_format_and_navigation(self):
+        template = self.template_path.read_text(encoding="utf-8")
+
+        self.assertIn("for item in baches", template)
+        self.assertIn("item.receta.estilo", template)
+        self.assertIn("item.fecha_coccion.strftime('%d/%m/%Y')", template)
+        self.assertIn("codigo_bache=item.codigo_bache", template)
+        self.assertIn("window.location.href = this.value", template)
+
+    def test_batches_are_loaded_in_descending_code_order(self):
+        route = self.route_path.read_text(encoding="utf-8")
+
+        self.assertIn("joinedload(Bache.receta)", route)
+        self.assertIn("order_by(Bache.codigo_bache.desc())", route)
 
 
 if __name__ == "__main__":

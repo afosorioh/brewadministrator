@@ -2,6 +2,7 @@ from io import BytesIO
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
 from flask_babel import gettext as _
 from flask_login import login_required
+from sqlalchemy.orm import joinedload
 
 from app.extensions import db
 from app.models import LoteMateriaPrima, MateriaPrima, Bache, BacheMateriaPrima, MedicionBache
@@ -70,6 +71,12 @@ def bache():
     bache = None
     materias = []
     stats = {}
+    baches = (
+        Bache.query
+        .options(joinedload(Bache.receta))
+        .order_by(Bache.codigo_bache.desc())
+        .all()
+    )
 
     codigo = request.form.get("codigo_bache") if request.method == "POST" else request.args.get("codigo_bache")
 
@@ -80,7 +87,11 @@ def bache():
 
         if not bache:
             flash(_("No se encontró el bache."), "warning")
-            return render_template("estadisticas/bache.html", bache=None)
+            return render_template(
+                "estadisticas/bache.html",
+                bache=None,
+                baches=baches,
+            )
 
         # Materias primas usadas en el bache
         materias = (
@@ -142,6 +153,7 @@ def bache():
     return render_template(
         "estadisticas/bache.html",
         bache=bache,
+        baches=baches,
         materias=materias,
         stats=stats,
     )
