@@ -2060,3 +2060,211 @@ msgstr "High"
 msgctxt "foam level"
 msgid "Poca"
 msgstr "Low"
+
+msgid "¿Eliminar el controlador y todo su historial?"
+msgstr "Delete the controller and all its history?"
+
+msgid "%(field)s debe ser un número."
+msgstr "%(field)s must be a number."
+
+msgid "%(field)s debe tener como máximo un decimal."
+msgstr "%(field)s must have at most one decimal place."
+
+msgid "Asociar también a este bache las lecturas históricas que aún no tienen bache"
+msgstr "Also associate historical readings that do not yet have a batch with this batch"
+
+msgid "Bache actual"
+msgstr "Current batch"
+
+msgid "Bache actualmente asociado"
+msgstr "Currently associated batch"
+
+msgid "Cambiar"
+msgstr "Change"
+
+msgid "Cambio de setpoint encolado. Se aplicará en el siguiente ciclo."
+msgstr "Setpoint change queued. It will be applied during the next cycle."
+
+msgid "Código interno"
+msgstr "Internal code"
+
+msgid "Comandos recientes"
+msgstr "Recent commands"
+
+msgid "Consultar este controlador desde la Raspberry"
+msgstr "Poll this controller from the Raspberry Pi"
+
+msgid "Controlador actualizado."
+msgstr "Controller updated."
+
+msgid "Controlador creado. La Raspberry lo detectará en el siguiente ciclo."
+msgstr "Controller created. The Raspberry Pi will detect it during the next cycle."
+
+msgid "Controlador y su historial fueron eliminados."
+msgstr "The controller and its history were deleted."
+
+msgid "Controladores MT-512E Log conectados a la Raspberry Pi."
+msgstr "MT-512E Log controllers connected to the Raspberry Pi."
+
+msgid "Debe existir una lectura reciente antes de enviar comandos."
+msgstr "A recent reading is required before sending commands."
+
+msgid "Editar controlador"
+msgstr "Edit controller"
+
+msgid "El bache seleccionado no es válido."
+msgstr "The selected batch is invalid."
+
+msgid "El código debe usar minúsculas, números y guiones (3 a 80 caracteres)."
+msgstr "The code must use lowercase letters, numbers, and hyphens (3 to 80 characters)."
+
+msgid "El código o el ID RS-485 ya está registrado en ese gateway."
+msgstr "The code or RS-485 ID is already registered on that gateway."
+
+msgid "El controlador está inactivo."
+msgstr "The controller is inactive."
+
+msgid "El ID RS-485 debe estar entre 1 y 247."
+msgstr "The RS-485 ID must be between 1 and 247."
+
+msgid "El ID RS-485 debe ser numérico."
+msgstr "The RS-485 ID must be numeric."
+
+msgid "El límite mínimo debe ser menor que el máximo."
+msgstr "The minimum limit must be lower than the maximum."
+
+msgid "El protocolo debe ser Sitrad o Modbus."
+msgstr "The protocol must be Sitrad or Modbus."
+
+msgid "El setpoint está fuera de los límites configurados."
+msgstr "The setpoint is outside the configured limits."
+
+msgid "Eliminar controlador e historial"
+msgstr "Delete controller and history"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Error de sensor"
+msgstr "Sensor error"
+
+msgid "F30 en Sitrad; Addr del menú 485 en Modbus."
+msgstr "F30 in Sitrad; Addr in the 485 menu in Modbus."
+
+msgid "Fallido"
+msgstr "Failed"
+
+msgid "Fecha de lectura"
+msgstr "Reading date"
+
+msgid "Fermentador 5"
+msgstr "Fermenter 5"
+
+msgid "Gateway Raspberry"
+msgstr "Raspberry Pi gateway"
+
+msgid "Historial"
+msgstr "History"
+
+msgid "Inactivo"
+msgstr "Inactive"
+
+msgid "La última lectura tiene más de 3 minutos; no se envió el comando."
+msgstr "The latest reading is more than 3 minutes old; the command was not sent."
+
+msgid "Las nuevas mediciones conservarán este bache aunque después el controlador sea asignado a otro."
+msgstr "New readings will retain this batch even if the controller is later assigned to another one."
+
+msgid "Lecturas recientes"
+msgstr "Recent readings"
+
+msgid "Los límites deben estar entre -50.0 y 200.0 °C."
+msgstr "The limits must be between -50.0 and 200.0 °C."
+
+msgid "Minúsculas, números y guiones. No debe cambiarse después de desplegarlo."
+msgstr "Lowercase letters, numbers, and hyphens. Do not change it after deployment."
+
+msgid "Monitoreo de temperatura"
+msgstr "Temperature monitoring"
+
+msgid "No hay controladores registrados. Crea el primero para que la Raspberry comience a consultarlo."
+msgstr "No controllers are registered. Create the first one so the Raspberry Pi can begin polling it."
+
+msgid "Nombre y gateway son obligatorios."
+msgstr "Name and gateway are required."
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Nuevo controlador"
+msgstr "New controller"
+
+msgid "Nuevo setpoint"
+msgstr "New setpoint"
+
+msgid "Pendiente"
+msgstr "Pending"
+
+msgid "Por seguridad, cada comando puede cambiar como máximo %(delta)s °C."
+msgstr "For safety, each command can change the setpoint by at most %(delta)s °C."
+
+msgid "Protocolo"
+msgstr "Protocol"
+
+msgid "Refrigeración"
+msgstr "Cooling"
+
+msgid "Refrigeración activa"
+msgstr "Cooling active"
+
+msgid "Refrigeración inactiva"
+msgstr "Cooling inactive"
+
+msgid "Resultado"
+msgstr "Result"
+
+msgid "Sensor"
+msgstr "Sensor"
+
+msgid "Setpoint °C"
+msgstr "Setpoint °C"
+
+msgid "Setpoint máximo"
+msgstr "Maximum setpoint"
+
+msgid "Setpoint mínimo"
+msgstr "Minimum setpoint"
+
+msgid "Sin asignar"
+msgstr "Unassigned"
+
+msgid "Sin bache asignado"
+msgstr "No batch assigned"
+
+msgid "Sin comandos."
+msgstr "No commands."
+
+msgid "Sin lecturas."
+msgstr "No readings."
+
+msgid "Temperatura °C"
+msgstr "Temperature °C"
+
+msgid "Todavía no se han recibido lecturas."
+msgstr "No readings have been received yet."
+
+msgid "Último comando"
+msgstr "Latest command"
+
+msgid "Ya existe un cambio de setpoint pendiente para este controlador."
+msgstr "A setpoint change is already pending for this controller."
+
+msgid "%(count)s segundo"
+msgid_plural "%(count)s segundos"
+msgstr[0] "%(count)s second"
+msgstr[1] "%(count)s seconds"
+
+msgid "Última %(count)s lectura"
+msgid_plural "Últimas %(count)s lecturas"
+msgstr[0] "Latest %(count)s reading"
+msgstr[1] "Latest %(count)s readings"

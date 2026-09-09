@@ -3,6 +3,7 @@ import uuid
 from decimal import Decimal, InvalidOperation
 
 from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask_babel import gettext as _
 from flask_login import current_user, login_required
 from sqlalchemy.exc import IntegrityError
 
@@ -23,12 +24,21 @@ CODE_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$")
 
 def _decimal_form(name):
     value = (request.form.get(name) or "").strip()
+    field_label = {
+        "setpoint_min_c": _("Setpoint mínimo"),
+        "setpoint_max_c": _("Setpoint máximo"),
+        "setpoint_c": _("Setpoint"),
+    }.get(name, name)
     try:
         parsed = Decimal(value)
     except (InvalidOperation, ValueError):
-        raise ValueError("%s debe ser un numero" % name)
+        raise ValueError(
+            _("%(field)s debe ser un número.", field=field_label)
+        )
     if not parsed.is_finite() or parsed != parsed.quantize(Decimal("0.1")):
-        raise ValueError("%s debe tener como maximo un decimal" % name)
+        raise ValueError(
+            _("%(field)s debe tener como máximo un decimal.", field=field_label)
+        )
     return parsed
 
 
@@ -38,25 +48,25 @@ def _populate_from_form(controller):
     gateway_id = (request.form.get("gateway_id") or "").strip()
     if not CODE_PATTERN.match(codigo):
         raise ValueError(
-            "El codigo debe usar minusculas, numeros y guiones (3 a 80 caracteres)."
+            _("El código debe usar minúsculas, números y guiones (3 a 80 caracteres).")
         )
     if not nombre or not gateway_id:
-        raise ValueError("Nombre y gateway son obligatorios.")
+        raise ValueError(_("Nombre y gateway son obligatorios."))
     try:
         device_id = int(request.form.get("device_id", ""))
     except ValueError:
-        raise ValueError("El ID RS-485 debe ser numerico.")
+        raise ValueError(_("El ID RS-485 debe ser numérico."))
     if not 1 <= device_id <= 247:
-        raise ValueError("El ID RS-485 debe estar entre 1 y 247.")
+        raise ValueError(_("El ID RS-485 debe estar entre 1 y 247."))
     protocolo = (request.form.get("protocolo") or "sitrad").strip().lower()
     if protocolo not in ("sitrad", "modbus"):
-        raise ValueError("El protocolo debe ser Sitrad o Modbus.")
+        raise ValueError(_("El protocolo debe ser Sitrad o Modbus."))
     minimum = _decimal_form("setpoint_min_c")
     maximum = _decimal_form("setpoint_max_c")
     if minimum < Decimal("-50.0") or maximum > Decimal("200.0"):
-        raise ValueError("Los limites deben estar entre -50.0 y 200.0 C.")
+        raise ValueError(_("Los límites deben estar entre -50.0 y 200.0 °C."))
     if minimum >= maximum:
-        raise ValueError("El limite minimo debe ser menor que el maximo.")
+        raise ValueError(_("El límite mínimo debe ser menor que el máximo."))
 
     batch_value = (request.form.get("id_bache_actual") or "").strip()
     batch_id = None
@@ -64,9 +74,9 @@ def _populate_from_form(controller):
         try:
             batch_id = int(batch_value)
         except ValueError:
-            raise ValueError("El bache seleccionado no es valido.")
+            raise ValueError(_("El bache seleccionado no es válido."))
         if db.session.get(Bache, batch_id) is None:
-            raise ValueError("El bache seleccionado no existe.")
+            raise ValueError(_("El bache seleccionado no existe."))
 
     controller.codigo = codigo
     controller.nombre = nombre
@@ -128,9 +138,9 @@ def crear():
             flash(str(error), "danger")
         except IntegrityError:
             db.session.rollback()
-            flash("El codigo o el ID RS-485 ya esta registrado en ese gateway.", "danger")
+            flash(_("El código o el ID RS-485 ya está registrado en ese gateway."), "danger")
         else:
-            flash("Controlador creado. La Raspberry lo detectara en el siguiente ciclo.", "success")
+            flash(_("Controlador creado. La Raspberry lo detectará en el siguiente ciclo."), "success")
             return redirect(url_for("temperatura.lista"))
     return render_template(
         "temperatura/formulario.html", controller=controller, accion="crear",
@@ -161,9 +171,9 @@ def editar(controller_id):
             flash(str(error), "danger")
         except IntegrityError:
             db.session.rollback()
-            flash("El codigo o el ID RS-485 ya esta registrado en ese gateway.", "danger")
+            flash(_("El código o el ID RS-485 ya está registrado en ese gateway."), "danger")
         else:
-            flash("Controlador actualizado.", "success")
+            flash(_("Controlador actualizado."), "success")
             return redirect(url_for("temperatura.lista"))
     return render_template(
         "temperatura/formulario.html", controller=controller, accion="editar",
@@ -199,14 +209,14 @@ def detalle(controller_id):
 def cambiar_setpoint(controller_id):
     controller = ControladorTemperatura.query.get_or_404(controller_id)
     if not controller.activo:
-        flash("El controlador esta inactivo.", "danger")
+        flash(_("El controlador está inactivo."), "danger")
         return redirect(url_for("temperatura.lista"))
     if controller.setpoint_actual_c is None or controller.ultima_lectura_en is None:
-        flash("Debe existir una lectura reciente antes de enviar comandos.", "danger")
+        flash(_("Debe existir una lectura reciente antes de enviar comandos."), "danger")
         return redirect(url_for("temperatura.lista"))
     age = (utc_now() - controller.ultima_lectura_en).total_seconds()
     if age > 180:
-        flash("La ultima lectura tiene mas de 3 minutos; no se envio el comando.", "danger")
+        flash(_("La última lectura tiene más de 3 minutos; no se envió el comando."), "danger")
         return redirect(url_for("temperatura.lista"))
     try:
         target = _decimal_form("setpoint_c")
@@ -214,15 +224,18 @@ def cambiar_setpoint(controller_id):
         flash(str(error), "danger")
         return redirect(url_for("temperatura.lista"))
     if not controller.setpoint_min_c <= target <= controller.setpoint_max_c:
-        flash("El setpoint esta fuera de los limites configurados.", "danger")
+        flash(_("El setpoint está fuera de los límites configurados."), "danger")
         return redirect(url_for("temperatura.lista"))
     maximum_delta = Decimal(str(current_app.config.get(
         "TEMPERATURE_COMMAND_MAX_DELTA_C", 5.0
     )))
     if abs(target - controller.setpoint_actual_c) > maximum_delta:
         flash(
-            "Por seguridad, cada comando puede cambiar maximo %.1f C." %
-            float(maximum_delta), "danger"
+            _(
+                "Por seguridad, cada comando puede cambiar como máximo %(delta)s °C.",
+                delta=f"{float(maximum_delta):.1f}",
+            ),
+            "danger",
         )
         return redirect(url_for("temperatura.lista"))
     pending = ComandoControladorTemperatura.query.filter(
@@ -230,7 +243,7 @@ def cambiar_setpoint(controller_id):
         ComandoControladorTemperatura.estado.in_(("pending", "delivered")),
     ).first()
     if pending is not None:
-        flash("Ya existe un cambio de setpoint pendiente para este controlador.", "warning")
+        flash(_("Ya existe un cambio de setpoint pendiente para este controlador."), "warning")
         return redirect(url_for("temperatura.lista"))
 
     command = ComandoControladorTemperatura(
@@ -245,7 +258,7 @@ def cambiar_setpoint(controller_id):
     )
     db.session.add(command)
     db.session.commit()
-    flash("Cambio de setpoint encolado. Se aplicara en el siguiente ciclo.", "success")
+    flash(_("Cambio de setpoint encolado. Se aplicará en el siguiente ciclo."), "success")
     return redirect(url_for("temperatura.lista"))
 
 
@@ -256,5 +269,5 @@ def eliminar(controller_id):
     controller = ControladorTemperatura.query.get_or_404(controller_id)
     db.session.delete(controller)
     db.session.commit()
-    flash("Controlador y su historial fueron eliminados.", "success")
+    flash(_("Controlador y su historial fueron eliminados."), "success")
     return redirect(url_for("temperatura.lista"))
