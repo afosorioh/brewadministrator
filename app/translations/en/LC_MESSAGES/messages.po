@@ -2352,3 +2352,18 @@ msgstr "Volume (ml)"
 
 msgid "¿Desactivar este producto?"
 msgstr "Deactivate this product?"
+
+msgid "Buscar materia prima por nombre"
+msgstr "Search raw materials by name"
+
+msgid "Escribe al menos 3 caracteres para buscar."
+msgstr "Enter at least 3 characters to search."
+
+msgid "Buscando..."
+msgstr "Searching..."
+
+msgid "No se encontraron materias primas."
+msgstr "No raw materials were found."
+
+msgid "No fue posible realizar la búsqueda."
+msgstr "The search could not be completed."

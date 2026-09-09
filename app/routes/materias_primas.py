@@ -35,6 +35,41 @@ def lista():
     materias = MateriaPrima.query.order_by(MateriaPrima.nombre).all()
     return render_template("materias_primas/lista.html", materias=materias)
 
+
+@materias_primas_bp.route("/buscar")
+@login_required
+def buscar():
+    termino = (request.args.get("q") or "").strip()
+
+    if len(termino) < 3:
+        materias = []
+        empty_message = _("Escribe al menos 3 caracteres para buscar.")
+    else:
+        escaped = (
+            termino.replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        )
+        materias = (
+            MateriaPrima.query
+            .filter(
+                MateriaPrima.nombre.ilike(
+                    f"{escaped}%",
+                    escape="\\",
+                )
+            )
+            .order_by(MateriaPrima.nombre)
+            .all()
+        )
+        empty_message = _("No se encontraron materias primas.")
+
+    return render_template(
+        "materias_primas/_filas_lista.html",
+        materias=materias,
+        empty_message=empty_message,
+    )
+
+
 @materias_primas_bp.route("/nueva", methods=["GET", "POST"])
 @login_required
 @role_required("ADMIN", "GESTOR")
