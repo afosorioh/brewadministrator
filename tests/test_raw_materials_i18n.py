@@ -24,6 +24,18 @@ class RawMaterialsInternationalizationTestCase(unittest.TestCase):
             self.assertEqual(gettext("Buscando..."), "Searching...")
             self.assertEqual(gettext("Filtrar por tipo"), "Filter by type")
             self.assertEqual(gettext("Todos los tipos"), "All types")
+            self.assertEqual(
+                gettext("Certificado de calidad"),
+                "Quality certificate",
+            )
+            self.assertEqual(gettext("Sin certificado"), "No certificate")
+            self.assertEqual(
+                gettext(
+                    "El certificado supera el tamaño máximo de %(size)s MB.",
+                    size=10,
+                ),
+                "The certificate exceeds the maximum size of 10 MB.",
+            )
             self.assertEqual(gettext("Detalles de levadura"), "Yeast details")
             self.assertEqual(gettext("Floculación baja"), "Low")
             self.assertEqual(gettext("Lotes de esta materia prima"), "Lots for this raw material")
@@ -34,6 +46,9 @@ class RawMaterialsInternationalizationTestCase(unittest.TestCase):
         form = (materials_dir / "formulario.html").read_text(encoding="utf-8")
         listing = (materials_dir / "lista.html").read_text(encoding="utf-8")
         detail = (materials_dir / "detalle.html").read_text(encoding="utf-8")
+        lot_form = (materials_dir / "lote_formulario.html").read_text(
+            encoding="utf-8"
+        )
 
         for code in ("MALTA", "LUPULO", "LEVADURA", "OTRO"):
             self.assertIn(f'"{code}"', form)
@@ -41,6 +56,10 @@ class RawMaterialsInternationalizationTestCase(unittest.TestCase):
         self.assertIn('<option value="{{ val }}"', form)
         self.assertIn('|tojson', listing)
         self.assertIn('|tojson', detail)
+        self.assertIn('enctype="multipart/form-data"', lot_form)
+        self.assertIn('name="certificado_calidad"', lot_form)
+        self.assertIn("descargar_certificado_lote", lot_form)
+        self.assertIn("descargar_certificado_lote", detail)
 
     def test_search_interface_is_safe_and_starts_after_three_characters(self):
         materials_dir = self.project_root / "app" / "templates" / "materias_primas"
@@ -110,7 +129,12 @@ class RawMaterialsInternationalizationTestCase(unittest.TestCase):
             message = node.args[0]
             self.assertIsInstance(message, ast.Call)
             self.assertIsInstance(message.func, ast.Name)
-            self.assertEqual(message.func.id, "_")
+            if message.func.id == "_":
+                continue
+            self.assertEqual(message.func.id, "str")
+            self.assertEqual(len(message.args), 1)
+            self.assertIsInstance(message.args[0], ast.Name)
+            self.assertEqual(message.args[0].id, "error")
 
 
 if __name__ == "__main__":

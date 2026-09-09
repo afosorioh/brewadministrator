@@ -2373,3 +2373,30 @@ msgstr "Filter by type"
 
 msgid "Todos los tipos"
 msgstr "All types"
+
+msgid "Certificado de calidad"
+msgstr "Quality certificate"
+
+msgid "PDF, JPG o PNG. Tamaño máximo: %(size)s MB."
+msgstr "PDF, JPG, or PNG. Maximum size: %(size)s MB."
+
+msgid "Certificado actual:"
+msgstr "Current certificate:"
+
+msgid "Adjunta un archivo nuevo para reemplazarlo."
+msgstr "Attach a new file to replace it."
+
+msgid "Descargar"
+msgstr "Download"
+
+msgid "Sin certificado"
+msgstr "No certificate"
+
+msgid "El certificado debe ser un archivo PDF, JPG o PNG."
+msgstr "The certificate must be a PDF, JPG, or PNG file."
+
+msgid "El certificado supera el tamaño máximo de %(size)s MB."
+msgstr "The certificate exceeds the maximum size of %(size)s MB."
+
+msgid "El contenido del certificado no coincide con el tipo de archivo."
+msgstr "The certificate content does not match the file type."

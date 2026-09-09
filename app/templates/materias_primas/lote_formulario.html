@@ -14,7 +14,7 @@
 {% block content %}
 <h1 class="h3 mb-3">{{ titulo }} - {{ mp.nombre }}</h1>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
   <div class="row mb-3">
     <div class="col-md-4">
       <label class="form-label">{{ _("Código lote") }}</label>
@@ -84,6 +84,28 @@
     <label class="form-label">{{ _("Fecha vencimiento") }}</label>
     <input type="date" class="form-control" name="fecha_vencimiento"
            value="{{ lote.fecha_vencimiento if lote and lote.fecha_vencimiento else '' }}">
+  </div>
+
+  <div class="mb-3">
+    <label for="certificado_calidad" class="form-label">
+      {{ _("Certificado de calidad") }}
+    </label>
+    <input type="file"
+           id="certificado_calidad"
+           name="certificado_calidad"
+           class="form-control"
+           accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+    <div class="form-text">
+      {{ _("PDF, JPG o PNG. Tamaño máximo: %(size)s MB.", size=maximo_certificado_mb) }}
+      {% if lote and lote.certificado_calidad_archivo %}
+        <br>
+        {{ _("Certificado actual:") }}
+        <a href="{{ url_for('materias_primas.descargar_certificado_lote', mp_id=mp.id, lote_id=lote.id) }}">
+          {{ lote.certificado_calidad_nombre }}
+        </a>.
+        {{ _("Adjunta un archivo nuevo para reemplazarlo.") }}
+      {% endif %}
+    </div>
   </div>
 
   <div class="mb-3">
