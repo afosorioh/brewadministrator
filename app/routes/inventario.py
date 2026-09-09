@@ -1,6 +1,7 @@
 # app/routes/inventario.py
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_babel import gettext as _
 from flask_login import login_required, current_user
 
 from app.services.chatbot_inventory_client import (
@@ -12,6 +13,7 @@ from app.services.chatbot_inventory_client import (
     delete_product,
     ChatbotInventoryError,
 )
+
 
 def _payload_from_form():
     return {
@@ -25,12 +27,13 @@ def _payload_from_form():
         "active": request.form.get("active") == "on",
     }
 
+
 inventario_bp = Blueprint("inventario", __name__, url_prefix="/inventario")
 
 
 def admin_required():
     if not current_user.is_authenticated or current_user.rol.nombre != "ADMIN":
-        flash("No tienes permisos para gestionar inventario.", "danger")
+        flash(_("No tienes permisos para gestionar inventario."), "danger")
         return False
     return True
 
@@ -56,6 +59,7 @@ def lista():
         active=active,
     )
 
+
 @inventario_bp.route("/nuevo", methods=["GET", "POST"])
 @login_required
 def nuevo():
@@ -65,12 +69,13 @@ def nuevo():
     if request.method == "POST":
         try:
             create_product(_payload_from_form())
-            flash("Producto creado correctamente.", "success")
+            flash(_("Producto creado correctamente."), "success")
             return redirect(url_for("inventario.lista"))
         except ChatbotInventoryError as e:
             flash(str(e), "danger")
 
     return render_template("inventario/formulario.html", product=None)
+
 
 @inventario_bp.route("/<int:product_id>/editar", methods=["GET", "POST"])
 @login_required
@@ -87,7 +92,7 @@ def editar(product_id):
     if request.method == "POST":
         try:
             update_product(product_id, _payload_from_form())
-            flash("Producto actualizado correctamente.", "success")
+            flash(_("Producto actualizado correctamente."), "success")
             return redirect(url_for("inventario.lista"))
         except ChatbotInventoryError as e:
             flash(str(e), "danger")
@@ -103,7 +108,7 @@ def stock(product_id):
 
     try:
         update_stock(product_id, request.form.get("stock_quantity"))
-        flash("Stock actualizado correctamente.", "success")
+        flash(_("Stock actualizado correctamente."), "success")
     except ChatbotInventoryError as e:
         flash(str(e), "danger")
 
@@ -118,7 +123,7 @@ def borrar(product_id):
 
     try:
         delete_product(product_id)
-        flash("Producto desactivado correctamente.", "success")
+        flash(_("Producto desactivado correctamente."), "success")
     except ChatbotInventoryError as e:
         flash(str(e), "danger")
 

@@ -1,5 +1,6 @@
 import requests
 from flask import current_app
+from flask_babel import gettext as _
 
 
 class ChatbotInventoryError(Exception):
@@ -24,7 +25,11 @@ def _handle_response(response):
         data = {}
 
     if not response.ok:
-        msg = data.get("error") or data.get("message") or "Error llamando API de inventario"
+        msg = (
+            data.get("error")
+            or data.get("message")
+            or _("Error al consultar la API de inventario.")
+        )
         raise ChatbotInventoryError(msg)
 
     return data

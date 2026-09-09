@@ -1,70 +1,77 @@
 {% extends "base.html" %}
+{% block title %}{{ _('Inventario de cervezas') }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
 
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Inventario de cervezas</h2>
+    <h2>{{ _('Inventario de cervezas') }}</h2>
     <a href="{{ url_for('inventario.nuevo') }}" class="btn btn-primary">
-      Nuevo producto
+      {{ _('Nuevo producto') }}
     </a>
   </div>
 
   <form method="get" class="mb-3">
-    <select name="active" class="form-select w-auto d-inline">
-      <option value="true" {% if active == 'true' %}selected{% endif %}>Activos</option>
-      <option value="false" {% if active == 'false' %}selected{% endif %}>Inactivos</option>
-      <option value="" {% if active == '' %}selected{% endif %}>Todos</option>
+    <label class="visually-hidden" for="active">{{ _('Estado del producto') }}</label>
+    <select id="active" name="active" class="form-select w-auto d-inline">
+      <option value="true" {% if active == 'true' %}selected{% endif %}>{{ _('Activos') }}</option>
+      <option value="false" {% if active == 'false' %}selected{% endif %}>{{ _('Inactivos') }}</option>
+      <option value="" {% if active == '' %}selected{% endif %}>{{ _('Todos') }}</option>
     </select>
-    <button class="btn btn-secondary">Filtrar</button>
+    <button class="btn btn-secondary">{{ _('Filtrar') }}</button>
   </form>
 
-  <table class="table table-striped table-hover">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Estilo</th>
-        <th>Presentación</th>
-        <th>Volumen</th>
-        <th>Precio</th>
-        <th>Stock</th>
-        <th>Activo</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for p in products %}
-      <tr>
-        <td>{{ p.name }}</td>
-        <td>{{ p.style }}</td>
-        <td>{{ p.presentation }}</td>
-        <td>{{ p.volume_ml }} ml</td>
-        <td>${{ "{:,.0f}".format(p.price) }}</td>
-        <td>
-          <form method="post" action="{{ url_for('inventario.stock', product_id=p.id) }}" class="d-flex gap-1">
-            <input type="number" step="0.01" name="stock_quantity" value="{{ p.stock_quantity }}" class="form-control form-control-sm" style="width:90px;">
-            <button class="btn btn-sm btn-outline-primary">OK</button>
-          </form>
-        </td>
-        <td>{{ "Sí" if p.active else "No" }}</td>
-        <td>
-          <a href="{{ url_for('inventario.editar', product_id=p.id) }}" class="btn btn-sm btn-warning">
-            Editar
-          </a>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>{{ _('Nombre') }}</th>
+          <th>{{ _('Estilo') }}</th>
+          <th>{{ _('Presentación') }}</th>
+          <th>{{ _('Volumen') }}</th>
+          <th>{{ _('Precio') }}</th>
+          <th>Stock</th>
+          <th>{{ _('Activo') }}</th>
+          <th>{{ _('Acciones') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>{{ p.name }}</td>
+          <td>{{ p.style }}</td>
+          <td>{{ p.presentation }}</td>
+          <td>{{ p.volume_ml }} ml</td>
+          <td>${{ "{:,.0f}".format(p.price) }}</td>
+          <td>
+            <form method="post" action="{{ url_for('inventario.stock', product_id=p.id) }}" class="d-flex gap-1">
+              <label class="visually-hidden" for="stock-{{ p.id }}">{{ _('Stock de %(product)s', product=p.name) }}</label>
+              <input id="stock-{{ p.id }}" type="number" step="0.01"
+                     name="stock_quantity" value="{{ p.stock_quantity }}"
+                     class="form-control form-control-sm" style="width:90px;">
+              <button class="btn btn-sm btn-outline-primary">OK</button>
+            </form>
+          </td>
+          <td>{{ _('Sí') if p.active else _('No') }}</td>
+          <td>
+            <a href="{{ url_for('inventario.editar', product_id=p.id) }}" class="btn btn-sm btn-warning">
+              {{ _('Editar') }}
+            </a>
 
-          <form method="post" action="{{ url_for('inventario.borrar', product_id=p.id) }}" class="d-inline"
-                onsubmit="return confirm('¿Desactivar este producto?');">
-            <button class="btn btn-sm btn-danger">Borrar</button>
-          </form>
-        </td>
-      </tr>
-      {% else %}
-      <tr>
-        <td colspan="8" class="text-center">No hay productos.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+            <form method="post" action="{{ url_for('inventario.borrar', product_id=p.id) }}" class="d-inline"
+                  onsubmit='return confirm({{ _("¿Desactivar este producto?")|tojson }});'>
+              <button class="btn btn-sm btn-danger">{{ _('Borrar') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" class="text-center">{{ _('No hay productos.') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
 </div>
 {% endblock %}
