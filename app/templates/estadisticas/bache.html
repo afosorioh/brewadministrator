@@ -11,11 +11,36 @@
 
 <h2>{{ _('Estadísticas por bache') }}</h2>
 
-<form method="post" class="card p-3 mb-3" style="max-width:400px;">
-  <label for="codigo_bache">{{ _('Código de bache') }}</label>
-  <input id="codigo_bache" name="codigo_bache" class="form-control"
-         placeholder="{{ _('Ej.: BATCH-001') }}" required>
-  <button class="btn btn-primary mt-2">{{ _('Buscar') }}</button>
+<form method="post" class="card p-3 mb-3" style="max-width:900px;">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-5">
+      <label for="codigo_bache" class="form-label">
+        {{ _('Código de bache') }}
+      </label>
+      <input id="codigo_bache" name="codigo_bache" class="form-control"
+             placeholder="{{ _('Ej.: BATCH-001') }}" required>
+    </div>
+    <div class="col-md-5">
+      <label for="selector_bache" class="form-label">
+        {{ _('Seleccionar bache') }}
+      </label>
+      <select id="selector_bache"
+              class="form-select"
+              onchange="if (this.value) { window.location.href = this.value; }">
+        <option value="">{{ _('Seleccione un bache') }}</option>
+        {% for item in baches %}
+          {% set estilo = item.receta.estilo if item.receta and item.receta.estilo else _('Sin estilo') %}
+          <option value="{{ url_for('estadisticas.bache', codigo_bache=item.codigo_bache) }}"
+                  {% if bache and item.id == bache.id %}selected{% endif %}>
+            {{ item.codigo_bache }} ({{ estilo }}-{{ item.fecha_coccion.strftime('%d/%m/%Y') }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2 d-grid">
+      <button class="btn btn-primary">{{ _('Buscar') }}</button>
+    </div>
+  </div>
 </form>
 
 {% if bache %}
