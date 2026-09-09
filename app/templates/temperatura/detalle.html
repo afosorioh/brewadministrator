@@ -2,6 +2,10 @@
 {% block title %}{{ controller.nombre }}{% endblock %}
 
 {% block content %}
+{% set command_status_labels = {
+  "pending": _('Pendiente'), "delivered": _('Entregado'),
+  "completed": _('Completado'), "failed": _('Fallido')
+} %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <h1 class="h3 mb-1">{{ controller.nombre }}</h1>
@@ -9,8 +13,8 @@
       {{ controller.codigo }} · {{ controller.gateway_id }} · ID {{ controller.device_id }}
       · {{ "Modbus RTU" if controller.protocolo == "modbus" else "Sitrad" }}
       {% if controller.bache_actual %}
-        · Bache actual: <strong>{{ controller.bache_actual.codigo_bache }}</strong>
-        · Estilo:
+        · {{ _('Bache actual') }}: <strong>{{ controller.bache_actual.codigo_bache }}</strong>
+        · {{ _('Estilo') }}:
         <strong>
           {% if controller.bache_actual.receta and controller.bache_actual.receta.estilo %}
             {{ controller.bache_actual.receta.estilo }}
@@ -19,25 +23,25 @@
           {% endif %}
         </strong>
       {% else %}
-        · Sin bache asignado
+        · {{ _('Sin bache asignado') }}
       {% endif %}
     </p>
   </div>
-  <a class="btn btn-secondary" href="{{ url_for('temperatura.lista') }}">Volver</a>
+  <a class="btn btn-secondary" href="{{ url_for('temperatura.lista') }}">{{ _('Volver') }}</a>
 </div>
 
 {% if readings %}
 <div class="card shadow-sm mb-4">
-  <div class="card-header"><strong>Últimas {{ readings|length }} lecturas</strong></div>
+  <div class="card-header"><strong>{{ ngettext('Última %(count)s lectura', 'Últimas %(count)s lecturas', readings|length, count=readings|length) }}</strong></div>
   <div class="card-body"><canvas id="temperatureChart" height="90"></canvas></div>
 </div>
 {% endif %}
 
 <div class="card shadow-sm mb-4">
-  <div class="card-header"><strong>Lecturas recientes</strong></div>
+  <div class="card-header"><strong>{{ _('Lecturas recientes') }}</strong></div>
   <div class="table-responsive">
     <table class="table table-sm table-striped mb-0">
-      <thead><tr><th>Fecha de lectura ({{ configured_timezone }})</th><th>Bache</th><th>Temperatura</th><th>Setpoint</th><th>Refrigeración</th><th>Sensor</th></tr></thead>
+      <thead><tr><th>{{ _('Fecha de lectura') }} ({{ configured_timezone }})</th><th>{{ _('Bache') }}</th><th>{{ _('Temperatura') }}</th><th>Setpoint</th><th>{{ _('Refrigeración') }}</th><th>{{ _('Sensor') }}</th></tr></thead>
       <tbody>
       {% for reading in readings %}
         <tr>
@@ -46,16 +50,16 @@
             {% if reading.bache %}
               {{ reading.bache.codigo_bache }}
             {% else %}
-              <span class="text-muted">Sin asignar</span>
+              <span class="text-muted">{{ _('Sin asignar') }}</span>
             {% endif %}
           </td>
           <td>{{ "%.1f"|format(reading.temperatura_c|float) }} °C</td>
           <td>{{ "%.1f"|format(reading.setpoint_c|float) }} °C</td>
-          <td>{{ "Activa" if reading.salida_activa else "Inactiva" }}</td>
-          <td>{{ "Error" if reading.error_sensor else "Normal" }}</td>
+          <td>{{ _('Activa') if reading.salida_activa else _('Inactiva') }}</td>
+          <td>{{ _('Error') if reading.error_sensor else _('Normal') }}</td>
         </tr>
       {% else %}
-        <tr><td colspan="6" class="text-muted">Sin lecturas.</td></tr>
+        <tr><td colspan="6" class="text-muted">{{ _('Sin lecturas.') }}</td></tr>
       {% endfor %}
       </tbody>
     </table>
@@ -63,20 +67,20 @@
 </div>
 
 <div class="card shadow-sm">
-  <div class="card-header"><strong>Comandos recientes</strong></div>
+  <div class="card-header"><strong>{{ _('Comandos recientes') }}</strong></div>
   <div class="table-responsive">
     <table class="table table-sm mb-0">
-      <thead><tr><th>Creado ({{ configured_timezone }})</th><th>Valor</th><th>Estado</th><th>Resultado</th></tr></thead>
+      <thead><tr><th>{{ _('Creado') }} ({{ configured_timezone }})</th><th>{{ _('Valor') }}</th><th>{{ _('Estado') }}</th><th>{{ _('Resultado') }}</th></tr></thead>
       <tbody>
       {% for command in commands %}
         <tr>
           <td>{{ command.creado_en|format_local_datetime }}</td>
           <td>{{ "%.1f"|format(command.valor|float) }} °C</td>
-          <td>{{ command.estado }}</td>
+          <td>{{ command_status_labels.get(command.estado, command.estado) }}</td>
           <td>{{ command.mensaje or "—" }}</td>
         </tr>
       {% else %}
-        <tr><td colspan="4" class="text-muted">Sin comandos.</td></tr>
+        <tr><td colspan="4" class="text-muted">{{ _('Sin comandos.') }}</td></tr>
       {% endfor %}
       </tbody>
     </table>
@@ -94,8 +98,8 @@ new Chart(document.getElementById('temperatureChart'), {
   data: {
     labels: labels,
     datasets: [
-      {label: 'Temperatura °C', data: temperatures, borderColor: '#dc3545', tension: 0.2, pointRadius: 1},
-      {label: 'Setpoint °C', data: setpoints, borderColor: '#0d6efd', borderDash: [6, 4], tension: 0, pointRadius: 0}
+      {label: {{ _('Temperatura °C')|tojson }}, data: temperatures, borderColor: '#dc3545', tension: 0.2, pointRadius: 1},
+      {label: {{ _('Setpoint °C')|tojson }}, data: setpoints, borderColor: '#0d6efd', borderDash: [6, 4], tension: 0, pointRadius: 0}
     ]
   },
   options: {responsive: true, interaction: {mode: 'index', intersect: false}}

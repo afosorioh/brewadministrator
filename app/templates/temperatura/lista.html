@@ -1,14 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Monitoreo de temperatura{% endblock %}
+{% block title %}{{ _('Monitoreo de temperatura') }}{% endblock %}
 
 {% block content %}
+{% set command_status_labels = {
+  "pending": _('Pendiente'), "delivered": _('Entregado'),
+  "completed": _('Completado'), "failed": _('Fallido')
+} %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
-    <h1 class="h3 mb-1">Monitoreo de temperatura</h1>
-    <p class="text-muted mb-0">Controladores MT-512E Log conectados a la Raspberry Pi.</p>
+    <h1 class="h3 mb-1">{{ _('Monitoreo de temperatura') }}</h1>
+    <p class="text-muted mb-0">{{ _('Controladores MT-512E Log conectados a la Raspberry Pi.') }}</p>
   </div>
   {% if current_user.rol.nombre in ["ADMIN", "GESTOR"] %}
-    <a class="btn btn-primary" href="{{ url_for('temperatura.crear') }}">Nuevo controlador</a>
+    <a class="btn btn-primary" href="{{ url_for('temperatura.crear') }}">{{ _('Nuevo controlador') }}</a>
   {% endif %}
 </div>
 
@@ -29,17 +33,17 @@
             </span>
           </div>
           {% if not controller.activo %}
-            <span class="badge text-bg-secondary">Inactivo</span>
+            <span class="badge text-bg-secondary">{{ _('Inactivo') }}</span>
           {% elif online %}
-            <span class="badge text-bg-success">En línea</span>
+            <span class="badge text-bg-success">{{ _('En línea') }}</span>
           {% else %}
-            <span class="badge text-bg-danger">Sin comunicación</span>
+            <span class="badge text-bg-danger">{{ _('Sin comunicación') }}</span>
           {% endif %}
         </div>
         <div class="card-body">
           <div class="row text-center mb-3">
             <div class="col-6 border-end">
-              <div class="text-muted small">Temperatura</div>
+              <div class="text-muted small">{{ _('Temperatura') }}</div>
               <div class="display-6 fw-semibold">
                 {% if controller.temperatura_actual_c is not none %}
                   {{ "%.1f"|format(controller.temperatura_actual_c|float) }} °C
@@ -59,7 +63,7 @@
           <div class="d-flex gap-2 flex-wrap mb-3">
             {% if controller.bache_actual %}
               <span class="badge text-bg-dark">
-                Bache {{ controller.bache_actual.codigo_bache }}
+                {{ _('Bache') }} {{ controller.bache_actual.codigo_bache }}
               </span>
               <span class="badge text-bg-secondary">
                 {% if controller.bache_actual.receta and controller.bache_actual.receta.estilo %}
@@ -69,15 +73,15 @@
                 {% endif %}
               </span>
             {% else %}
-              <span class="badge text-bg-warning">Sin bache asignado</span>
+              <span class="badge text-bg-warning">{{ _('Sin bache asignado') }}</span>
             {% endif %}
             {% if controller.salida_activa is sameas true %}
-              <span class="badge text-bg-primary">Refrigeración activa</span>
+              <span class="badge text-bg-primary">{{ _('Refrigeración activa') }}</span>
             {% elif controller.salida_activa is sameas false %}
-              <span class="badge text-bg-light border text-dark">Refrigeración inactiva</span>
+              <span class="badge text-bg-light border text-dark">{{ _('Refrigeración inactiva') }}</span>
             {% endif %}
             {% if controller.error_sensor %}
-              <span class="badge text-bg-danger">Error de sensor</span>
+              <span class="badge text-bg-danger">{{ _('Error de sensor') }}</span>
             {% endif %}
             {% if controller.firmware_version is not none %}
               <span class="badge text-bg-light border text-dark">Firmware {{ controller.firmware_version }}</span>
@@ -86,17 +90,17 @@
 
           <p class="small text-muted">
             {% if controller.ultima_lectura_en %}
-              Última lectura: {{ controller.ultima_lectura_en|format_local_datetime }}
+              {{ _('Última lectura') }}: {{ controller.ultima_lectura_en|format_local_datetime }}
               ({{ configured_timezone }})
-              {% if age is not none %}({{ age }} s){% endif %}
+              {% if age is not none %}({{ ngettext('%(count)s segundo', '%(count)s segundos', age, count=age) }}){% endif %}
             {% else %}
-              Todavía no se han recibido lecturas.
+              {{ _('Todavía no se han recibido lecturas.') }}
             {% endif %}
           </p>
 
           {% if command %}
             <div class="alert py-2 mb-3 {% if command.estado == 'completed' %}alert-success{% elif command.estado == 'failed' %}alert-danger{% else %}alert-warning{% endif %}">
-              Último comando: <strong>{{ command.estado }}</strong>
+              {{ _('Último comando') }}: <strong>{{ command_status_labels.get(command.estado, command.estado) }}</strong>
               {% if command.mensaje %}— {{ command.mensaje }}{% endif %}
             </div>
           {% endif %}
@@ -104,7 +108,7 @@
           {% if current_user.rol.nombre in ["ADMIN", "GESTOR"] %}
             <form method="post" action="{{ url_for('temperatura.cambiar_setpoint', controller_id=controller.id) }}" class="row g-2 align-items-end">
               <div class="col">
-                <label class="form-label" for="setpoint-{{ controller.id }}">Nuevo setpoint</label>
+                <label class="form-label" for="setpoint-{{ controller.id }}">{{ _('Nuevo setpoint') }}</label>
                 <div class="input-group">
                   <input id="setpoint-{{ controller.id }}" name="setpoint_c" type="number"
                          class="form-control" step="0.1"
@@ -117,16 +121,16 @@
               <div class="col-auto">
                 <button class="btn btn-warning" type="submit"
                         {% if not online or not controller.activo %}disabled{% endif %}>
-                  Cambiar
+                  {{ _('Cambiar') }}
                 </button>
               </div>
             </form>
           {% endif %}
         </div>
         <div class="card-footer d-flex gap-2">
-          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('temperatura.detalle', controller_id=controller.id) }}">Historial</a>
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('temperatura.detalle', controller_id=controller.id) }}">{{ _('Historial') }}</a>
           {% if current_user.rol.nombre in ["ADMIN", "GESTOR"] %}
-            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('temperatura.editar', controller_id=controller.id) }}">Editar</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('temperatura.editar', controller_id=controller.id) }}">{{ _('Editar') }}</a>
           {% endif %}
         </div>
       </div>
@@ -135,7 +139,7 @@
 </div>
 {% else %}
   <div class="alert alert-info">
-    No hay controladores registrados. Crea el primero para que la Raspberry comience a consultarlo.
+    {{ _('No hay controladores registrados. Crea el primero para que la Raspberry comience a consultarlo.') }}
   </div>
 {% endif %}
 {% endblock %}
