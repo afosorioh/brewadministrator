@@ -1,61 +1,62 @@
 {% extends "base.html" %}
+{% block title %}{{ _('Editar producto') if product else _('Nuevo producto') }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
 
-  <h2>{{ "Editar producto" if product else "Nuevo producto" }}</h2>
+  <h2>{{ _('Editar producto') if product else _('Nuevo producto') }}</h2>
 
   <form method="post">
 
     <div class="mb-3">
-      <label class="form-label">Nombre</label>
-      <input type="text" name="name" class="form-control" required
+      <label class="form-label" for="name">{{ _('Nombre') }}</label>
+      <input id="name" type="text" name="name" class="form-control" required
              value="{{ product.name if product else '' }}">
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Estilo</label>
-      <input type="text" name="style" class="form-control"
+      <label class="form-label" for="style">{{ _('Estilo') }}</label>
+      <input id="style" type="text" name="style" class="form-control"
              value="{{ product.style if product else '' }}">
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Descripción</label>
-      <textarea name="description" class="form-control">{{ product.description if product else '' }}</textarea>
+      <label class="form-label" for="description">{{ _('Descripción') }}</label>
+      <textarea id="description" name="description" class="form-control">{{ product.description if product else '' }}</textarea>
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Presentación</label>
-      <input type="text" name="presentation" class="form-control"
+      <label class="form-label" for="presentation">{{ _('Presentación') }}</label>
+      <input id="presentation" type="text" name="presentation" class="form-control"
              value="{{ product.presentation if product else 'Lata 330 ml' }}">
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Volumen ml</label>
-      <input type="number" name="volume_ml" class="form-control"
+      <label class="form-label" for="volume_ml">{{ _('Volumen (ml)') }}</label>
+      <input id="volume_ml" type="number" name="volume_ml" class="form-control"
              value="{{ product.volume_ml if product else 330 }}">
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Precio</label>
-      <input type="number" step="0.01" name="price" class="form-control" required
+      <label class="form-label" for="price">{{ _('Precio') }}</label>
+      <input id="price" type="number" step="0.01" name="price" class="form-control" required
              value="{{ product.price if product else '' }}">
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Stock</label>
-      <input type="number" step="0.01" name="stock_quantity" class="form-control"
+      <label class="form-label" for="stock_quantity">Stock</label>
+      <input id="stock_quantity" type="number" step="0.01" name="stock_quantity" class="form-control"
              value="{{ product.stock_quantity if product else 0 }}">
     </div>
 
     <div class="form-check mb-3">
       <input type="checkbox" name="active" class="form-check-input" id="active"
              {% if not product or product.active %}checked{% endif %}>
-      <label class="form-check-label" for="active">Activo</label>
+      <label class="form-check-label" for="active">{{ _('Activo') }}</label>
     </div>
 
-    <button class="btn btn-primary">Guardar</button>
-    <a href="{{ url_for('inventario.lista') }}" class="btn btn-secondary">Cancelar</a>
+    <button class="btn btn-primary">{{ _('Guardar') }}</button>
+    <a href="{{ url_for('inventario.lista') }}" class="btn btn-secondary">{{ _('Cancelar') }}</a>
 
   </form>
 

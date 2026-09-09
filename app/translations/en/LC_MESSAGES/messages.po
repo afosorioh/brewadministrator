@@ -2298,3 +2298,57 @@ msgstr "Temperature (°C)"
 
 msgid "Fecha y hora (%(timezone)s)"
 msgstr "Date and time (%(timezone)s)"
+
+msgid "Editar producto"
+msgstr "Edit product"
+
+msgid "Error al consultar la API de inventario."
+msgstr "Error while querying the inventory API."
+
+msgid "Estado del producto"
+msgstr "Product status"
+
+msgid "Filtrar"
+msgstr "Filter"
+
+msgid "Inactivos"
+msgstr "Inactive"
+
+msgid "Inventario de cervezas"
+msgstr "Beer inventory"
+
+msgid "No hay productos."
+msgstr "There are no products."
+
+msgid "No tienes permisos para gestionar inventario."
+msgstr "You do not have permission to manage inventory."
+
+msgid "Nuevo producto"
+msgstr "New product"
+
+msgid "Precio"
+msgstr "Price"
+
+msgid "Presentación"
+msgstr "Presentation"
+
+msgid "Producto actualizado correctamente."
+msgstr "Product updated successfully."
+
+msgid "Producto creado correctamente."
+msgstr "Product created successfully."
+
+msgid "Producto desactivado correctamente."
+msgstr "Product deactivated successfully."
+
+msgid "Stock actualizado correctamente."
+msgstr "Stock updated successfully."
+
+msgid "Stock de %(product)s"
+msgstr "Stock for %(product)s"
+
+msgid "Volumen (ml)"
+msgstr "Volume (ml)"
+
+msgid "¿Desactivar este producto?"
+msgstr "Deactivate this product?"
