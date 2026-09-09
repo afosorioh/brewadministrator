@@ -50,6 +50,11 @@ class RawMaterialSearchTestCase(unittest.TestCase):
                         unidad_base="G",
                     ),
                     MateriaPrima(nombre="Avena", tipo="MALTA", unidad_base="KG"),
+                    MateriaPrima(
+                        nombre="Amarillo Malt",
+                        tipo="MALTA",
+                        unidad_base="KG",
+                    ),
                     MateriaPrima(nombre="100% Malt", tipo="MALTA", unidad_base="KG"),
                     MateriaPrima(nombre="100X Malt", tipo="MALTA", unidad_base="KG"),
                 ]
@@ -103,6 +108,32 @@ class RawMaterialSearchTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn("/auth/login", response.headers["Location"])
+
+    def test_list_filters_by_selected_type(self):
+        response = self.client.get("/materias_primas/?tipo=MALTA")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Avena", response.data)
+        self.assertIn(b"Amarillo Malt", response.data)
+        self.assertNotIn(b">Amarillo<", response.data)
+        self.assertIn(b'value="MALTA" selected', response.data)
+
+    def test_name_search_respects_selected_type(self):
+        response = self.client.get(
+            "/materias_primas/buscar?q=Ama&tipo=MALTA"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Amarillo Malt", response.data)
+        self.assertNotIn(b">Amarillo<", response.data)
+        self.assertNotIn(b"Amarillo Gold", response.data)
+
+    def test_invalid_type_does_not_filter_the_list(self):
+        response = self.client.get("/materias_primas/?tipo=INVALIDO")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Avena", response.data)
+        self.assertIn(b">Amarillo<", response.data)
 
 
 if __name__ == "__main__":
