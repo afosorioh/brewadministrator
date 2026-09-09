@@ -1,36 +1,45 @@
 {% extends "base.html" %}
-{% block content %}
+{% block title %}{{ _('Estadísticas por bache') }}{% endblock %}
 
-<h2>Estadísticas por Bache</h2>
+{% block content %}
+{% set batch_status_labels = {
+  "PLANIFICADO": _('Planificado'), "EN_CURSO": _('En curso'),
+  "FERMENTANDO": _('Fermentando'), "MADURANDO": _('Madurando'),
+  "LISTO": _('Listo'), "COMPLETADO": _('Completado'),
+  "DESCARTADO": _('Descartado')
+} %}
+
+<h2>{{ _('Estadísticas por bache') }}</h2>
 
 <form method="post" class="card p-3 mb-3" style="max-width:400px;">
-  <label>Código de bache</label>
-  <input name="codigo_bache" class="form-control" placeholder="Ej: BATCH-001" required>
-  <button class="btn btn-primary mt-2">Buscar</button>
+  <label for="codigo_bache">{{ _('Código de bache') }}</label>
+  <input id="codigo_bache" name="codigo_bache" class="form-control"
+         placeholder="{{ _('Ej.: BATCH-001') }}" required>
+  <button class="btn btn-primary mt-2">{{ _('Buscar') }}</button>
 </form>
 
 {% if bache %}
 <div class="card p-3 mb-3">
   <h4>{{ bache.codigo_bache }} – {{ bache.nombre_cerveza }}</h4>
-  <p>Fecha cocción: {{ bache.fecha_coccion }}</p>
-  <p>Estado: {{ bache.estado }}</p>
+  <p>{{ _('Fecha cocción') }}: {{ bache.fecha_coccion }}</p>
+  <p>{{ _('Estado') }}: {{ batch_status_labels.get(bache.estado, bache.estado) }}</p>
 
-  <h5>Indicadores</h5>
+  <h5>{{ _('Indicadores') }}</h5>
   <ul>
     <li>OG: {{ "%.3f"|format(stats.og) if stats.og else "-" }}</li>
     <li>FG: {{ "%.3f"|format(stats.fg) if stats.fg else "-" }}</li>
     <li>ABV: {{ "%.2f"|format(stats.abv) if stats.abv else "-" }} %</li>
-    <li>Atenuación: {{ "%.1f"|format(stats.atenuacion) if stats.atenuacion else "-" }} %</li>
+    <li>{{ _('Atenuación') }}: {{ "%.1f"|format(stats.atenuacion) if stats.atenuacion else "-" }} %</li>
   </ul>
 
-  <h5>Últimas mediciones ({{ configured_timezone }})</h5>
+  <h5>{{ _('Últimas mediciones') }} ({{ configured_timezone }})</h5>
   <ul>
     <li>
-      Densidad: {{ stats.ult_dens.valor if stats.ult_dens else "-" }}
+      {{ _('Densidad') }}: {{ stats.ult_dens.valor if stats.ult_dens else "-" }}
       {% if stats.ult_dens %}({{ stats.ult_dens.fecha|format_local_datetime }}){% endif %}
     </li>
     <li>
-      Temp: {{ stats.ult_temp.valor if stats.ult_temp else "-" }}
+      {{ _('Temperatura') }}: {{ stats.ult_temp.valor if stats.ult_temp else "-" }}
       {% if stats.ult_temp %}({{ stats.ult_temp.fecha|format_local_datetime }}){% endif %}
     </li>
     <li>
@@ -41,9 +50,10 @@
 </div>
 
 <div class="card p-3">
-  <h5>Gráfica</h5>
+  <h5>{{ _('Gráfica') }}</h5>
   <img class="img-fluid"
-       src="{{ url_for('estadisticas.bache_grafica', bache_id=bache.id) }}">
+       src="{{ url_for('estadisticas.bache_grafica', bache_id=bache.id) }}"
+       alt="{{ _('Gráfica de mediciones del bache') }}">
 </div>
 {% endif %}
 
