@@ -223,6 +223,8 @@ class LoteMateriaPrima(db.Model):
     fecha_vencimiento = db.Column(db.Date)
     notas = db.Column(db.Text)
     generacion_actual = db.Column(db.SmallInteger, default=0)
+    certificado_calidad_archivo = db.Column(db.String(80))
+    certificado_calidad_nombre = db.Column(db.String(255))
 
     materia_prima = db.relationship(
         "MateriaPrima", back_populates="lotes"

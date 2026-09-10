@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, redirect, url_for
 from flask_babel import get_locale
 from flask_login import current_user
@@ -15,6 +17,11 @@ def create_app():
     app.config.from_object(Config)
     app.config.setdefault("BABEL_DEFAULT_LOCALE", "es")
     app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", "translations")
+    app.config.setdefault(
+        "QUALITY_CERTIFICATES_FOLDER",
+        os.path.join(app.instance_path, "quality_certificates"),
+    )
+    app.config.setdefault("QUALITY_CERTIFICATE_MAX_BYTES", 10 * 1024 * 1024)
 
     from app.utils.datetime_utils import (
         DEFAULT_TIMEZONE,

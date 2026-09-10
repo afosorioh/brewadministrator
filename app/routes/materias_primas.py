@@ -1,8 +1,10 @@
 from flask import (
     Blueprint,
+    abort,
     render_template,
     request,
     redirect,
+    send_from_directory,
     url_for,
     flash,
 )
@@ -21,6 +23,13 @@ from app.models import (
 from flask_login import login_required
 from flask_babel import gettext as _
 from app.authz import role_required
+from app.services.quality_certificates import (
+    InvalidQualityCertificate,
+    certificate_directory,
+    delete_quality_certificate,
+    maximum_certificate_size_mb,
+    save_quality_certificate,
+)
 
 materias_primas_bp = Blueprint(
     "materias_primas",
@@ -419,6 +428,14 @@ def crear_lote(mp_id):
             flash(_("La cantidad debe ser mayor que cero."), "danger")
             return redirect(url_for("materias_primas.crear_lote", mp_id=mp.id))
 
+        try:
+            certificado = save_quality_certificate(
+                request.files.get("certificado_calidad")
+            )
+        except InvalidQualityCertificate as error:
+            flash(str(error), "danger")
+            return redirect(url_for("materias_primas.crear_lote", mp_id=mp.id))
+
         lote = LoteMateriaPrima(
             id_materia_prima=mp.id,
             codigo_lote=codigo_lote,
@@ -429,9 +446,17 @@ def crear_lote(mp_id):
             costo_unitario=costo_unitario,
             fecha_vencimiento=fecha_vencimiento,
             notas=notas,
+            certificado_calidad_archivo=(certificado or (None, None))[0],
+            certificado_calidad_nombre=(certificado or (None, None))[1],
         )
         db.session.add(lote)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            if certificado:
+                delete_quality_certificate(certificado[0])
+            raise
 
         flash(_("Lote creado correctamente."), "success")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
@@ -441,6 +466,7 @@ def crear_lote(mp_id):
         mp=mp,
         lote=None,
         accion="crear",
+        maximo_certificado_mb=maximum_certificate_size_mb(),
     )
 
 @materias_primas_bp.route("/<int:mp_id>/lotes/<int:lote_id>/editar", methods=["GET", "POST"])
@@ -471,6 +497,16 @@ def editar_lote(mp_id, lote_id):
             flash(_("La cantidad a agregar no puede ser negativa."), "danger")
             return redirect(url_for("materias_primas.editar_lote", mp_id=mp.id, lote_id=lote.id))
 
+        try:
+            certificado_nuevo = save_quality_certificate(
+                request.files.get("certificado_calidad")
+            )
+        except InvalidQualityCertificate as error:
+            flash(str(error), "danger")
+            return redirect(url_for("materias_primas.editar_lote", mp_id=mp.id, lote_id=lote.id))
+
+        certificado_anterior = lote.certificado_calidad_archivo
+
         lote.codigo_lote = codigo_lote
         lote.fecha_compra = fecha_compra
         lote.proveedor = proveedor
@@ -482,7 +518,20 @@ def editar_lote(mp_id, lote_id):
             lote.cantidad_inicial = float(lote.cantidad_inicial) + cantidad_adicional
             lote.cantidad_disponible = float(lote.cantidad_disponible) + cantidad_adicional
 
-        db.session.commit()
+        if certificado_nuevo:
+            lote.certificado_calidad_archivo = certificado_nuevo[0]
+            lote.certificado_calidad_nombre = certificado_nuevo[1]
+
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            if certificado_nuevo:
+                delete_quality_certificate(certificado_nuevo[0])
+            raise
+
+        if certificado_nuevo:
+            delete_quality_certificate(certificado_anterior)
         flash(_("Lote actualizado correctamente."), "success")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
@@ -491,9 +540,30 @@ def editar_lote(mp_id, lote_id):
         mp=mp,
         lote=lote,
         accion="editar",
+        maximo_certificado_mb=maximum_certificate_size_mb(),
+    )
+
+
+@materias_primas_bp.route(
+    "/<int:mp_id>/lotes/<int:lote_id>/certificado"
+)
+@login_required
+def descargar_certificado_lote(mp_id, lote_id):
+    lote = LoteMateriaPrima.query.get_or_404(lote_id)
+
+    if lote.id_materia_prima != mp_id or not lote.certificado_calidad_archivo:
+        abort(404)
+
+    return send_from_directory(
+        certificate_directory(),
+        lote.certificado_calidad_archivo,
+        as_attachment=True,
+        download_name=lote.certificado_calidad_nombre,
     )
 
 @materias_primas_bp.route("/<int:mp_id>/lotes/<int:lote_id>/eliminar", methods=["POST"])
+@login_required
+@role_required("ADMIN", "GESTOR")
 def eliminar_lote(mp_id, lote_id):
     mp = MateriaPrima.query.get_or_404(mp_id)
     lote = LoteMateriaPrima.query.get_or_404(lote_id)
@@ -502,8 +572,10 @@ def eliminar_lote(mp_id, lote_id):
         flash(_("El lote no pertenece a esta materia prima"), "danger")
         return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 
+    certificado = lote.certificado_calidad_archivo
     db.session.delete(lote)
     db.session.commit()
+    delete_quality_certificate(certificado)
     flash(_("Lote eliminado correctamente"), "success")
     return redirect(url_for("materias_primas.detalle", mp_id=mp.id))
 

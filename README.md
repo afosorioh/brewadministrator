@@ -224,6 +224,8 @@ PostgreSQL
 
 Recommended operational controls include TLS termination, restricted database access, environment-based secrets, regular PostgreSQL backups, structured application logs, and migration review before releases.
 
+Raw-material quality certificates are stored outside the public static directory in `instance/quality_certificates` by default. Production backups should include this directory together with the PostgreSQL database. Deployments may override the location with the `QUALITY_CERTIFICATES_FOLDER` application setting; the Gunicorn service user must have read and write access to it. The reverse proxy request-body limit must also accommodate the configured certificate size (for the 10 MB default, an Nginx `client_max_body_size 11M;` limit allows multipart overhead).
+
 ## Project status
 
 The platform is under active development and is already used for brewery operations. Current work focuses on extending operational workflows, reporting, inventory integrations, usability, and production traceability.

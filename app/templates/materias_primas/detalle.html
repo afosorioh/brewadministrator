@@ -53,6 +53,7 @@
 </div>
 
 {% if lotes %}
+<div class="table-responsive">
   <table class="table table-sm table-striped align-middle">
     <thead>
       <tr>
@@ -62,7 +63,8 @@
         <th>{{ _("Cant. inicial") }}</th>
         <th>{{ _("Cant. disponible") }}</th>
         <th>{{ _("Fecha vencimiento") }}</th>
-        <th style="width: 150px;">{{ _("Acciones") }}</th>
+        <th>{{ _("Certificado de calidad") }}</th>
+        <th style="width: 190px;">{{ _("Acciones") }}</th>
       </tr>
     </thead>
     <tbody>
@@ -74,6 +76,16 @@
         <td>{{ l.cantidad_inicial }} {{ unidad_labels.get(mp.unidad_base, mp.unidad_base) }}</td>
         <td>{{ l.cantidad_disponible }} {{ unidad_labels.get(mp.unidad_base, mp.unidad_base) }}</td>
         <td>{{ l.fecha_vencimiento or "-" }}</td>
+        <td>
+          {% if l.certificado_calidad_archivo %}
+            <a href="{{ url_for('materias_primas.descargar_certificado_lote', mp_id=mp.id, lote_id=l.id) }}"
+               class="btn btn-sm btn-outline-primary">
+              {{ _("Descargar") }}
+            </a>
+          {% else %}
+            <span class="text-muted">{{ _("Sin certificado") }}</span>
+          {% endif %}
+        </td>
         <td>
           <a href="{{ url_for('materias_primas.editar_lote', mp_id=mp.id, lote_id=l.id) }}"
              class="btn btn-sm btn-warning">
@@ -92,6 +104,7 @@
       {% endfor %}
     </tbody>
   </table>
+</div>
 {% else %}
   <p>{{ _("No hay lotes registrados para esta materia prima.") }}</p>
 {% endif %}
