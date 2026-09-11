@@ -30,9 +30,39 @@
   <a class="btn btn-secondary" href="{{ url_for('temperatura.lista') }}">{{ _('Volver') }}</a>
 </div>
 
+{% if batches %}
+<form method="get" class="card shadow-sm mb-4">
+  <div class="card-body">
+    <label class="form-label" for="temperature-batch-filter">
+      {{ _('Filtrar historial por bache') }}
+    </label>
+    <select class="form-select"
+            id="temperature-batch-filter"
+            name="bache_id"
+            onchange="this.form.submit()">
+      <option value="">{{ _('Todos los baches') }}</option>
+      {% for batch in batches %}
+        {% set batch_style = batch.receta.estilo
+          if batch.receta and batch.receta.estilo
+          else _('Sin estilo') %}
+        <option value="{{ batch.id }}"
+                {% if selected_batch and selected_batch.id == batch.id %}selected{% endif %}>
+          {{ batch.codigo_bache }} - {{ batch_style }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+{% endif %}
+
 {% if readings %}
 <div class="card shadow-sm mb-4">
-  <div class="card-header"><strong>{{ ngettext('Última %(count)s lectura', 'Últimas %(count)s lecturas', readings|length, count=readings|length) }}</strong></div>
+  <div class="card-header">
+    <strong>{{ ngettext('Última %(count)s lectura', 'Últimas %(count)s lecturas', readings|length, count=readings|length) }}</strong>
+    {% if selected_batch %}
+      <span class="text-muted">· {{ selected_batch.codigo_bache }}</span>
+    {% endif %}
+  </div>
   <div class="card-body"><canvas id="temperatureChart" height="90"></canvas></div>
 </div>
 {% endif %}
@@ -102,7 +132,18 @@ new Chart(document.getElementById('temperatureChart'), {
       {label: {{ _('Setpoint °C')|tojson }}, data: setpoints, borderColor: '#0d6efd', borderDash: [6, 4], tension: 0, pointRadius: 0}
     ]
   },
-  options: {responsive: true, interaction: {mode: 'index', intersect: false}}
+  options: {
+    responsive: true,
+    interaction: {mode: 'index', intersect: false},
+    scales: {
+      x: {
+        title: {display: true, text: {{ _('Fecha y hora')|tojson }}}
+      },
+      y: {
+        title: {display: true, text: {{ _('Temperatura (°C)')|tojson }}}
+      }
+    }
+  }
 });
 </script>
 {% endif %}

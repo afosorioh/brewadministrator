@@ -2400,3 +2400,15 @@ msgstr "The certificate exceeds the maximum size of %(size)s MB."
 
 msgid "El contenido del certificado no coincide con el tipo de archivo."
 msgstr "The certificate content does not match the file type."
+
+msgid "Filtrar historial por bache"
+msgstr "Filter history by batch"
+
+msgid "Todos los baches"
+msgstr "All batches"
+
+msgid "El bache seleccionado no tiene lecturas para este controlador."
+msgstr "The selected batch has no readings for this controller."
+
+msgid "Fecha y hora"
+msgstr "Date and time"
