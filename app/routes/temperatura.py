@@ -6,6 +6,7 @@ from flask import Blueprint, current_app, flash, redirect, render_template, requ
 from flask_babel import gettext as _
 from flask_login import current_user, login_required
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 
 from app.authz import role_required
 from app.extensions import db
@@ -93,6 +94,21 @@ def _batches_for_form():
     return Bache.query.order_by(
         Bache.fecha_coccion.desc(), Bache.codigo_bache.desc()
     ).all()
+
+
+def _batches_with_readings(controller_id):
+    return (
+        Bache.query
+        .options(joinedload(Bache.receta))
+        .join(
+            LecturaTemperatura,
+            LecturaTemperatura.id_bache == Bache.id,
+        )
+        .filter(LecturaTemperatura.id_controlador == controller_id)
+        .distinct()
+        .order_by(Bache.codigo_bache.desc())
+        .all()
+    )
 
 
 @temperatura_bp.get("/")
@@ -185,9 +201,40 @@ def editar(controller_id):
 @login_required
 def detalle(controller_id):
     controller = ControladorTemperatura.query.get_or_404(controller_id)
+    batches = _batches_with_readings(controller.id)
+    selected_batch = None
+    selected_batch_value = (request.args.get("bache_id") or "").strip()
+
+    if selected_batch_value:
+        try:
+            selected_batch_id = int(selected_batch_value)
+        except ValueError:
+            selected_batch_id = None
+
+        selected_batch = next(
+            (batch for batch in batches if batch.id == selected_batch_id),
+            None,
+        )
+        if selected_batch is None:
+            flash(
+                _("El bache seleccionado no tiene lecturas para este controlador."),
+                "warning",
+            )
+            return redirect(
+                url_for("temperatura.detalle", controller_id=controller.id)
+            )
+
+    readings_query = LecturaTemperatura.query.filter_by(
+        id_controlador=controller.id
+    )
+    if selected_batch is not None:
+        readings_query = readings_query.filter_by(id_bache=selected_batch.id)
+
     readings = (
-        LecturaTemperatura.query.filter_by(id_controlador=controller.id)
-        .order_by(LecturaTemperatura.observado_en.desc()).limit(200).all()
+        readings_query
+        .order_by(LecturaTemperatura.observado_en.desc())
+        .limit(200)
+        .all()
     )
     commands = (
         ComandoControladorTemperatura.query.filter_by(id_controlador=controller.id)
@@ -199,7 +246,8 @@ def detalle(controller_id):
     ]
     return render_template(
         "temperatura/detalle.html", controller=controller,
-        readings=readings, commands=commands, chart_labels=chart_labels
+        readings=readings, commands=commands, chart_labels=chart_labels,
+        batches=batches, selected_batch=selected_batch
     )
 
 

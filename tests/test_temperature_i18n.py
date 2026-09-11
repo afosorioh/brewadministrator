@@ -24,6 +24,12 @@ class TemperatureInternationalizationTestCase(unittest.TestCase):
             self.assertEqual(gettext("Refrigeración activa"), "Cooling active")
             self.assertEqual(gettext("Fallido"), "Failed")
             self.assertEqual(
+                gettext("Filtrar historial por bache"),
+                "Filter history by batch",
+            )
+            self.assertEqual(gettext("Todos los baches"), "All batches")
+            self.assertEqual(gettext("Fecha y hora"), "Date and time")
+            self.assertEqual(
                 gettext(
                     "Por seguridad, cada comando puede cambiar como máximo "
                     "%(delta)s °C.",
@@ -85,6 +91,8 @@ class TemperatureInternationalizationTestCase(unittest.TestCase):
 
         self.assertIn("_('Temperatura °C')|tojson", detail)
         self.assertIn("_('Setpoint °C')|tojson", detail)
+        self.assertIn("_('Fecha y hora')|tojson", detail)
+        self.assertIn("_('Temperatura (°C)')|tojson", detail)
         self.assertIn("|tojson", form)
         self.assertNotIn("confirm('¿Eliminar", form)
 
@@ -127,6 +135,25 @@ class TemperatureInternationalizationTestCase(unittest.TestCase):
                 count=2,
             )
             self.assertEqual(rendered, "2 seconds")
+
+    def test_history_batch_filter_preserves_display_only_labels(self):
+        route = (
+            self.project_root / "app" / "routes" / "temperatura.py"
+        ).read_text(encoding="utf-8")
+        detail = (
+            self.project_root
+            / "app"
+            / "templates"
+            / "temperatura"
+            / "detalle.html"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("_batches_with_readings", route)
+        self.assertIn("LecturaTemperatura.id_controlador == controller_id", route)
+        self.assertIn("readings_query.filter_by(id_bache=selected_batch.id)", route)
+        self.assertIn('name="bache_id"', detail)
+        self.assertIn("batch.codigo_bache }} - {{ batch_style", detail)
+        self.assertIn('onchange="this.form.submit()"', detail)
 
 
 if __name__ == "__main__":
