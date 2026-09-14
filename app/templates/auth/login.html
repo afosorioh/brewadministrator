@@ -1,17 +1,26 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Iniciar sesión') }}{% endblock %}
+{% block title %}{{ _('Iniciar sesión') }} · {{ branding.nombre_aplicacion }}{% endblock %}
+{% block body_class %}login-page{% endblock %}
 {% block content %}
-<h1 class="h3 mb-3">{{ _('Iniciar sesión') }}</h1>
-
-<form method="post" class="card p-3">
-  <div class="mb-3">
-    <label class="form-label">{{ _('Usuario') }}</label>
-    <input class="form-control" name="username" autocomplete="username" required>
+<div class="login-card">
+  <div class="text-center mb-3">
+    {% if branding.logo_archivo %}
+    <img class="login-brand-logo mb-3" src="{{ url_for('configuracion_visual.archivo', kind='logo') }}" alt="{{ branding.nombre_aplicacion }}">
+    {% endif %}
+    <h1 class="h3 mb-1">{{ branding.nombre_aplicacion }}</h1>
+    {% if branding.lema %}<p class="text-muted mb-0">{{ branding.lema }}</p>{% endif %}
   </div>
-  <div class="mb-3">
-    <label class="form-label">{{ _('Contraseña') }}</label>
-    <input type="password" class="form-control" name="password" autocomplete="current-password" required>
-  </div>
-  <button class="btn btn-primary">{{ _('Entrar') }}</button>
-</form>
+  <form method="post" class="card p-3">
+    <h2 class="h5 mb-3">{{ _('Iniciar sesión') }}</h2>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Usuario') }}</label>
+      <input class="form-control" name="username" autocomplete="username" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ _('Contraseña') }}</label>
+      <input type="password" class="form-control" name="password" autocomplete="current-password" required>
+    </div>
+    <button class="btn btn-primary">{{ _('Entrar') }}</button>
+  </form>
+</div>
 {% endblock %}

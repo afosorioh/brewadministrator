@@ -22,6 +22,8 @@ def create_app():
         os.path.join(app.instance_path, "quality_certificates"),
     )
     app.config.setdefault("QUALITY_CERTIFICATE_MAX_BYTES", 10 * 1024 * 1024)
+    app.config.setdefault("BRANDING_FOLDER", os.path.join(app.instance_path, "branding"))
+    app.config.setdefault("BRANDING_IMAGE_MAX_BYTES", 5 * 1024 * 1024)
 
     from app.utils.datetime_utils import (
         DEFAULT_TIMEZONE,
@@ -43,17 +45,21 @@ def create_app():
 
     from app import models
     from app.models import Usuario
+    from app.services.branding import branding_css_values, get_visual_configuration
 
     app.jinja_env.filters["local_datetime"] = utc_to_local
     app.jinja_env.filters["format_local_datetime"] = format_local_datetime
 
     @app.context_processor
     def inject_global_template_values():
+        visual_configuration = get_visual_configuration()
         return {
             "configured_timezone": app.config["TIMEZONE"],
             "current_locale": str(get_locale()),
             "supported_languages": SUPPORTED_LANGUAGES,
             "language_labels": LANGUAGE_LABELS,
+            "branding": visual_configuration,
+            "branding_css": branding_css_values(visual_configuration),
         }
 
     @login_manager.user_loader
@@ -67,6 +73,7 @@ def create_app():
     from app.routes.materias_primas import materias_primas_bp
     from app.routes.recetas import recetas_bp
     from app.routes.dashboard import dashboard_bp
+    from app.routes.configuracion_visual import configuracion_visual_bp
 
     app.register_blueprint(locale_bp)
     app.register_blueprint(auth_bp)
@@ -75,6 +82,7 @@ def create_app():
     app.register_blueprint(materias_primas_bp)
     app.register_blueprint(recetas_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(configuracion_visual_bp)
 
     from app.cli import register_cli
     register_cli(app)
