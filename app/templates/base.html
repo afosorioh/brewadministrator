@@ -48,7 +48,6 @@
     <div class="collapse navbar-collapse" id="navbarMain">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         {% if current_user.is_authenticated %}
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard.inicio') }}">{{ _('Inicio') }}</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('materias_primas.lista') }}">{{ _('Materias primas') }}</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('recetas.lista') }}">{{ _('Recetas') }}</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('baches.lista') }}">{{ _('Baches') }}</a></li>
