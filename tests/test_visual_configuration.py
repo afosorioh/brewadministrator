@@ -143,6 +143,14 @@ class VisualConfigurationTestCase(unittest.TestCase):
             self.assertIsNone(configuration.logo_archivo)
         self.assertFalse((Path(self.uploads.name) / filename).exists())
 
+    def test_module_renders_in_english(self):
+        self.login()
+        self.client.post("/language/en", data={"next": "/configuracion-visual/"})
+        html = self.client.get("/configuracion-visual/").get_data(as_text=True)
+        self.assertIn("Visual settings", html)
+        self.assertIn("These changes are global and affect all users.", html)
+        self.assertIn("System / Bootstrap", html)
+
     def test_migration_seeds_one_global_configuration(self):
         migration = (Path(__file__).resolve().parents[1] / "migrations" / "versions" /
                      "c8a4f1d2e6b0_configuracion_visual_global.py").read_text(encoding="utf-8")

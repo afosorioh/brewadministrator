@@ -52,13 +52,14 @@ def create_app():
 
     @app.context_processor
     def inject_global_template_values():
+        visual_configuration = get_visual_configuration()
         return {
             "configured_timezone": app.config["TIMEZONE"],
             "current_locale": str(get_locale()),
             "supported_languages": SUPPORTED_LANGUAGES,
             "language_labels": LANGUAGE_LABELS,
-            "branding": get_visual_configuration(),
-            "branding_css": branding_css_values(get_visual_configuration()),
+            "branding": visual_configuration,
+            "branding_css": branding_css_values(visual_configuration),
         }
 
     @login_manager.user_loader
