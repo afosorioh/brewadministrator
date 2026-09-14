@@ -21,8 +21,9 @@ from app import create_app
 from app.extensions import db
 from app.models import ConfiguracionVisual, Rol, Usuario
 
-PNG_1X1 = base64.b64decode(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk/x8AAusB9Wl2nWQAAAAASUVORK5CYII="
+PNG_TEST_IMAGE = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR4nGMMMZD6"
+    "z8DAwMDEAAUAGEIBoRXrN/8AAAAASUVORK5CYII="
 )
 
 
@@ -114,7 +115,7 @@ class VisualConfigurationTestCase(unittest.TestCase):
     def test_logo_is_served_and_can_be_removed(self):
         self.login()
         data = self.valid_form()
-        data["logo"] = (io.BytesIO(PNG_1X1), "logo.png")
+        data["logo"] = (io.BytesIO(PNG_TEST_IMAGE), "logo.png")
         self.assertEqual(self.client.post(
             "/configuracion-visual/", data=data, content_type="multipart/form-data"
         ).status_code, 302)
@@ -131,7 +132,7 @@ class VisualConfigurationTestCase(unittest.TestCase):
     def test_restore_recovers_original_values_and_deletes_images(self):
         self.login()
         data = self.valid_form(nombre_corto="Libre", color_primario="#112233")
-        data["logo"] = (io.BytesIO(PNG_1X1), "logo.png")
+        data["logo"] = (io.BytesIO(PNG_TEST_IMAGE), "logo.png")
         self.client.post("/configuracion-visual/", data=data, content_type="multipart/form-data")
         with self.app.app_context():
             filename = db.session.get(ConfiguracionVisual, 1).logo_archivo
