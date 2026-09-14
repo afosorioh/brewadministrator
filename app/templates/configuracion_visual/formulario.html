@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Configuración visual') }} · {{ branding.nombre_aplicacion }}{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h1 class="h3 mb-1">{{ _('Configuración visual') }}</h1>
+  <p class="text-muted mb-0">{{ _('Estos cambios son globales y afectan a todos los usuarios.') }}</p>
+</div>
+<form method="post" enctype="multipart/form-data" id="branding-form">
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card mb-4">
+        <div class="card-header"><strong>{{ _('Identidad visual') }}</strong></div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label" for="nombre_aplicacion">{{ _('Nombre de la aplicación') }}</label>
+            <input class="form-control" id="nombre_aplicacion" name="nombre_aplicacion" maxlength="120" required value="{{ configuration.nombre_aplicacion }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="nombre_corto">{{ _('Nombre corto') }}</label>
+            <input class="form-control" id="nombre_corto" name="nombre_corto" maxlength="60" required value="{{ configuration.nombre_corto }}">
+          </div>
+          <div>
+            <label class="form-label" for="lema">{{ _('Lema') }}</label>
+            <input class="form-control" id="lema" name="lema" maxlength="180" value="{{ configuration.lema or '' }}">
+          </div>
+        </div>
+      </div>
+      <div class="card mb-4">
+        <div class="card-header"><strong>{{ _('Paleta de colores') }}</strong></div>
+        <div class="card-body"><div class="row g-3">
+          {% set color_fields = [
+            ('color_primario', _('Primario')), ('color_primario_oscuro', _('Primario oscuro')),
+            ('color_acento', _('Acento')), ('color_fondo', _('Fondo general')),
+            ('color_superficie', _('Fondo de tarjetas')), ('color_encabezado', _('Fondo de encabezados')),
+            ('color_texto', _('Texto principal')), ('color_texto_nav', _('Texto de navegación')),
+            ('color_borde', _('Bordes'))
+          ] %}
+          {% for field, label in color_fields %}
+          <div class="col-md-6">
+            <label class="form-label" for="{{ field }}">{{ label }}</label>
+            <div class="input-group">
+              <input class="form-control form-control-color" type="color" id="{{ field }}" name="{{ field }}" value="{{ configuration|attr(field) }}" required>
+              <input class="form-control color-text" type="text" aria-label="{{ label }}" data-color-field="{{ field }}" value="{{ configuration|attr(field) }}" maxlength="7">
+            </div>
+          </div>
+          {% endfor %}
+        </div></div>
+      </div>
+      <div class="card mb-4">
+        <div class="card-header"><strong>{{ _('Tipografía') }}</strong></div>
+        <div class="card-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="fuente_cuerpo">{{ _('Texto general') }}</label>
+            <select class="form-select" id="fuente_cuerpo" name="fuente_cuerpo">
+              {% for key, option in font_options.items() %}
+              <option value="{{ key }}" data-stack="{{ option[1] }}" {% if configuration.fuente_cuerpo == key %}selected{% endif %}>{{ _(option[0]) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="fuente_titulos">{{ _('Títulos') }}</label>
+            <select class="form-select" id="fuente_titulos" name="fuente_titulos">
+              {% for key, option in font_options.items() %}
+              <option value="{{ key }}" data-stack="{{ option[1] }}" {% if configuration.fuente_titulos == key %}selected{% endif %}>{{ _(option[0]) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <p class="small text-muted mb-0">{{ _('Las fuentes se aplican con alternativas instaladas en el dispositivo.') }}</p>
+        </div>
+      </div>
+      <div class="card mb-4">
+        <div class="card-header"><strong>{{ _('Imágenes') }}</strong></div>
+        <div class="card-body">
+          {% set image_fields = [
+            ('logo', 'logo_archivo', _('Logo principal'), _('PNG o WebP, máximo 2 MB.')),
+            ('favicon', 'favicon_archivo', _('Favicon'), _('PNG o ICO, máximo 1 MB.')),
+            ('fondo_login', 'fondo_login_archivo', _('Fondo del inicio de sesión'), _('JPG, PNG o WebP, máximo 5 MB.'))
+          ] %}
+          {% for input_name, attribute, label, help_text in image_fields %}
+          <div class="{% if not loop.last %}border-bottom pb-3 mb-3{% endif %}">
+            <label class="form-label" for="{{ input_name }}">{{ label }}</label>
+            {% if configuration|attr(attribute) %}
+            <div class="mb-2"><img class="branding-current-image" src="{{ url_for('configuracion_visual.archivo', kind=input_name|replace('_', '-')) }}" alt="{{ label }}"></div>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="eliminar_{{ attribute }}" name="eliminar_{{ attribute }}">
+              <label class="form-check-label" for="eliminar_{{ attribute }}">{{ _('Eliminar imagen actual') }}</label>
+            </div>
+            {% endif %}
+            <input class="form-control branding-image-input" type="file" id="{{ input_name }}" name="{{ input_name }}"
+                   data-preview="preview-{{ input_name }}"
+                   accept="{% if input_name == 'logo' %}.png,.webp{% elif input_name == 'favicon' %}.png,.ico{% else %}.jpg,.jpeg,.png,.webp{% endif %}">
+            <div class="form-text">{{ help_text }}</div>
+            <img class="branding-upload-preview d-none mt-2" id="preview-{{ input_name }}" alt="{{ _('Vista previa') }}">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 mb-4">
+        <button class="btn btn-primary" type="submit" name="action" value="save">{{ _('Guardar cambios') }}</button>
+        <button class="btn btn-outline-danger" type="submit" name="action" value="restore" formnovalidate
+                onclick="return confirm({{ _('¿Restaurar el diseño predeterminado y eliminar las imágenes actuales?')|tojson }});">
+          {{ _('Restaurar diseño predeterminado') }}
+        </button>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="position-sticky" style="top:1rem">
+        <h2 class="h5">{{ _('Vista previa') }}</h2>
+        <div class="branding-preview" id="branding-preview">
+          <div class="branding-preview-nav" id="preview-nav">{{ configuration.nombre_corto }}</div>
+          <div class="branding-preview-body"><div class="branding-preview-card">
+            <div class="branding-preview-card-header">{{ _('Encabezado de ejemplo') }}</div>
+            <div class="p-3">
+              <h3 class="h5" id="preview-title">{{ configuration.nombre_aplicacion }}</h3>
+              <p id="preview-tagline">{{ configuration.lema or _('Texto de ejemplo para comprobar el tema.') }}</p>
+              <button class="branding-preview-button" type="button">{{ _('Botón principal') }}</button>
+            </div>
+          </div></div>
+        </div>
+        <p class="small text-muted mt-2">{{ _('La vista previa no guarda cambios automáticamente.') }}</p>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const form = document.getElementById('branding-form');
+  const preview = document.getElementById('branding-preview');
+  const colorMap = {
+    color_primario: '--preview-primary', color_fondo: '--preview-background',
+    color_superficie: '--preview-surface', color_encabezado: '--preview-heading',
+    color_texto: '--preview-text', color_texto_nav: '--preview-nav-text',
+    color_borde: '--preview-border'
+  };
+  function updatePreview() {
+    Object.entries(colorMap).forEach(([field, property]) => preview.style.setProperty(property, document.getElementById(field).value));
+    document.getElementById('preview-nav').textContent = document.getElementById('nombre_corto').value;
+    document.getElementById('preview-title').textContent = document.getElementById('nombre_aplicacion').value;
+    document.getElementById('preview-tagline').textContent =
+      document.getElementById('lema').value || {{ _('Texto de ejemplo para comprobar el tema.')|tojson }};
+    const bodySelect = document.getElementById('fuente_cuerpo');
+    const headingSelect = document.getElementById('fuente_titulos');
+    preview.style.setProperty('--preview-body-font', bodySelect.options[bodySelect.selectedIndex].dataset.stack);
+    preview.style.setProperty('--preview-heading-font', headingSelect.options[headingSelect.selectedIndex].dataset.stack);
+  }
+  form.querySelectorAll('input, select').forEach(element => element.addEventListener('input', updatePreview));
+  form.querySelectorAll('.color-text').forEach(textInput => {
+    const picker = document.getElementById(textInput.dataset.colorField);
+    textInput.addEventListener('input', () => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) { picker.value = textInput.value; updatePreview(); }
+    });
+    picker.addEventListener('input', () => { textInput.value = picker.value.toUpperCase(); });
+  });
+  form.querySelectorAll('.branding-image-input').forEach(input => input.addEventListener('change', () => {
+    const target = document.getElementById(input.dataset.preview);
+    const file = input.files[0];
+    if (!file) { target.classList.add('d-none'); target.removeAttribute('src'); return; }
+    target.src = URL.createObjectURL(file);
+    target.classList.remove('d-none');
+  }));
+  updatePreview();
+})();
+</script>
+{% endblock %}

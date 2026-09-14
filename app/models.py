@@ -827,3 +827,35 @@ class ComandoControladorTemperatura(db.Model):
         "ControladorTemperatura", back_populates="comandos"
     )
     usuario = db.relationship("Usuario")
+
+# ============================
+#   CONFIGURACIÓN VISUAL GLOBAL
+# ============================
+
+class ConfiguracionVisual(db.Model):
+    __tablename__ = "configuracion_visual"
+    __table_args__ = (
+        db.CheckConstraint("id_configuracion = 1", name="ck_configuracion_visual_unica"),
+    )
+
+    id = db.Column("id_configuracion", db.SmallInteger, primary_key=True, default=1)
+    nombre_aplicacion = db.Column(db.String(120), nullable=False, default="Cervecería", server_default="Cervecería")
+    nombre_corto = db.Column(db.String(60), nullable=False, default="Cervecería", server_default="Cervecería")
+    lema = db.Column(db.String(180))
+    color_primario = db.Column(db.String(7), nullable=False, default="#54301A", server_default="#54301A")
+    color_primario_oscuro = db.Column(db.String(7), nullable=False, default="#3E2313", server_default="#3E2313")
+    color_acento = db.Column(db.String(7), nullable=False, default="#E9DED3", server_default="#E9DED3")
+    color_fondo = db.Column(db.String(7), nullable=False, default="#F3EEE7", server_default="#F3EEE7")
+    color_superficie = db.Column(db.String(7), nullable=False, default="#FFFFFF", server_default="#FFFFFF")
+    color_encabezado = db.Column(db.String(7), nullable=False, default="#EFE5DA", server_default="#EFE5DA")
+    color_texto = db.Column(db.String(7), nullable=False, default="#24150C", server_default="#24150C")
+    color_texto_nav = db.Column(db.String(7), nullable=False, default="#F7F1EA", server_default="#F7F1EA")
+    color_borde = db.Column(db.String(7), nullable=False, default="#D8C8B8", server_default="#D8C8B8")
+    fuente_cuerpo = db.Column(db.String(30), nullable=False, default="system", server_default="system")
+    fuente_titulos = db.Column(db.String(30), nullable=False, default="system", server_default="system")
+    logo_archivo = db.Column(db.String(80))
+    favicon_archivo = db.Column(db.String(80))
+    fondo_login_archivo = db.Column(db.String(80))
+    actualizado_por = db.Column(db.Integer, db.ForeignKey("usuario.id_usuario", ondelete="SET NULL"))
+    actualizado_en = db.Column(db.DateTime, nullable=False, default=utc_now, onupdate=utc_now)
+    usuario_actualizacion = db.relationship("Usuario")

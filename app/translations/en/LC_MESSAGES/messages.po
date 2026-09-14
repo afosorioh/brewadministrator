@@ -2412,3 +2412,144 @@ msgstr "The selected batch has no readings for this controller."
 
 msgid "Fecha y hora"
 msgstr "Date and time"
+
+msgid "Configuración visual"
+msgstr "Visual settings"
+
+msgid "Estos cambios son globales y afectan a todos los usuarios."
+msgstr "These changes are global and affect all users."
+
+msgid "Identidad visual"
+msgstr "Visual identity"
+
+msgid "Nombre de la aplicación"
+msgstr "Application name"
+
+msgid "Nombre corto"
+msgstr "Short name"
+
+msgid "Lema"
+msgstr "Tagline"
+
+msgid "Paleta de colores"
+msgstr "Color palette"
+
+msgid "Primario"
+msgstr "Primary"
+
+msgid "Primario oscuro"
+msgstr "Dark primary"
+
+msgid "Acento"
+msgstr "Accent"
+
+msgid "Fondo general"
+msgstr "Page background"
+
+msgid "Fondo de tarjetas"
+msgstr "Card background"
+
+msgid "Fondo de encabezados"
+msgstr "Header background"
+
+msgid "Texto principal"
+msgstr "Main text"
+
+msgid "Texto de navegación"
+msgstr "Navigation text"
+
+msgid "Bordes"
+msgstr "Borders"
+
+msgid "Tipografía"
+msgstr "Typography"
+
+msgid "Texto general"
+msgstr "Body text"
+
+msgid "Títulos"
+msgstr "Headings"
+
+msgid "Sistema / Bootstrap"
+msgstr "System / Bootstrap"
+
+msgid "Las fuentes se aplican con alternativas instaladas en el dispositivo."
+msgstr "Fonts use fallbacks installed on the device."
+
+msgid "Imágenes"
+msgstr "Images"
+
+msgid "Logo principal"
+msgstr "Main logo"
+
+msgid "PNG o WebP, máximo 2 MB."
+msgstr "PNG or WebP, maximum 2 MB."
+
+msgid "Favicon"
+msgstr "Favicon"
+
+msgid "PNG o ICO, máximo 1 MB."
+msgstr "PNG or ICO, maximum 1 MB."
+
+msgid "Fondo del inicio de sesión"
+msgstr "Login background"
+
+msgid "JPG, PNG o WebP, máximo 5 MB."
+msgstr "JPG, PNG, or WebP, maximum 5 MB."
+
+msgid "Eliminar imagen actual"
+msgstr "Remove current image"
+
+msgid "Vista previa"
+msgstr "Preview"
+
+msgid "Guardar cambios"
+msgstr "Save changes"
+
+msgid "Restaurar diseño predeterminado"
+msgstr "Restore default design"
+
+msgid "¿Restaurar el diseño predeterminado y eliminar las imágenes actuales?"
+msgstr "Restore the default design and delete the current images?"
+
+msgid "Encabezado de ejemplo"
+msgstr "Sample header"
+
+msgid "Texto de ejemplo para comprobar el tema."
+msgstr "Sample text for checking the theme."
+
+msgid "Botón principal"
+msgstr "Primary button"
+
+msgid "La vista previa no guarda cambios automáticamente."
+msgstr "The preview does not save changes automatically."
+
+msgid "El color debe tener el formato hexadecimal #RRGGBB."
+msgstr "The color must use hexadecimal format #RRGGBB."
+
+msgid "La tipografía seleccionada no es válida."
+msgstr "The selected font is invalid."
+
+msgid "El formato de la imagen no está permitido para este campo."
+msgstr "The image format is not allowed for this field."
+
+msgid "La imagen está vacía o supera el tamaño máximo permitido."
+msgstr "The image is empty or exceeds the maximum allowed size."
+
+msgid "El archivo adjunto no contiene una imagen válida."
+msgstr "The uploaded file does not contain a valid image."
+
+msgid "El contenido de la imagen no coincide con su extensión."
+msgstr "The image content does not match its extension."
+
+msgid "Se restauró el diseño predeterminado."
+msgstr "The default design was restored."
+
+msgid "Configuración visual actualizada."
+msgstr "Visual settings updated."
+
+msgid "El nombre de la aplicación y el nombre corto son obligatorios."
+msgstr "The application name and short name are required."
+
+msgid "Uno de los textos supera la longitud permitida."
+msgstr "One of the texts exceeds the allowed length."

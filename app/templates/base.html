@@ -2,27 +2,49 @@
 <html lang="{{ current_locale }}">
 <head>
   <meta charset="utf-8">
-  <title>{% block title %}Cervecería{% endblock %}</title>
+  <title>{% block title %}{{ branding.nombre_aplicacion }}{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous">
+  {% if branding.favicon_archivo %}
+  <link rel="icon" href="{{ url_for('configuracion_visual.archivo', kind='favicon') }}">
+  {% endif %}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/libre-theme.css') }}">
+  <style>
+    :root {
+      --brand-primary: {{ branding_css.color_primario }};
+      --brand-primary-dark: {{ branding_css.color_primario_oscuro }};
+      --brand-accent: {{ branding_css.color_acento }};
+      --brand-background: {{ branding_css.color_fondo }};
+      --brand-surface: {{ branding_css.color_superficie }};
+      --brand-heading-background: {{ branding_css.color_encabezado }};
+      --brand-text: {{ branding_css.color_texto }};
+      --brand-nav-text: {{ branding_css.color_texto_nav }};
+      --brand-border: {{ branding_css.color_borde }};
+      --brand-font-body: {{ branding_css.fuente_cuerpo }};
+      --brand-font-heading: {{ branding_css.fuente_titulos }};
+      {% if branding.fondo_login_archivo %}
+      --brand-login-background-image: url("{{ url_for('configuracion_visual.archivo', kind='fondo-login') }}");
+      {% endif %}
+    }
+  </style>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{{ url_for('dashboard.inicio') }}">Cervecería</a>
-
-    <button class="navbar-toggler" type="button"
-            data-bs-toggle="collapse" data-bs-target="#navbarMain"
-            aria-controls="navbarMain" aria-expanded="false"
-            aria-label="{{ _('Mostrar/ocultar menú') }}">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('dashboard.inicio') }}">
+      {% if branding.logo_archivo %}
+      <img class="brand-logo" src="{{ url_for('configuracion_visual.archivo', kind='logo') }}" alt="{{ branding.nombre_corto }}">
+      {% endif %}
+      <span>{{ branding.nombre_corto }}</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+            aria-controls="navbarMain" aria-expanded="false" aria-label="{{ _('Mostrar/ocultar menú') }}">
       <span class="navbar-toggler-icon"></span>
     </button>
-
     <div class="collapse navbar-collapse" id="navbarMain">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         {% if current_user.is_authenticated %}
@@ -38,32 +60,24 @@
           <li class="nav-item"><a class="nav-link" href="{{ url_for('inventario.lista') }}">{{ _('Inventario') }}</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('temperatura.lista') }}">{{ _('Temperaturas') }}</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('usuarios.lista') }}">{{ _('Usuarios') }}</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('configuracion_visual.formulario') }}">{{ _('Configuración visual') }}</a></li>
           {% endif %}
         {% endif %}
       </ul>
-
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
         {% if current_user.is_authenticated %}
-          <li class="nav-item">
-            <span class="navbar-text">{{ current_user.username }} ({{ current_user.rol.nombre }})</span>
-          </li>
+          <li class="nav-item"><span class="navbar-text">{{ current_user.username }} ({{ current_user.rol.nombre }})</span></li>
         {% endif %}
         <li class="nav-item dropdown">
-          <button class="btn nav-link dropdown-toggle" type="button"
-                  data-bs-toggle="dropdown" aria-expanded="false"
-                  aria-label="{{ _('Seleccionar idioma') }}">
-            🌐 {{ language_labels.get(current_locale, language_labels['es']) }}
-          </button>
+          <button class="btn nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                  aria-label="{{ _('Seleccionar idioma') }}">🌐 {{ language_labels.get(current_locale, language_labels['es']) }}</button>
           <ul class="dropdown-menu dropdown-menu-end">
             {% for language in supported_languages %}
               <li>
                 <form method="post" action="{{ url_for('locale.change_language', language=language) }}">
                   <input type="hidden" name="next" value="{{ request.full_path }}">
-                  <button type="submit"
-                          class="dropdown-item{% if language == current_locale %} active{% endif %}"
-                          {% if language == current_locale %}aria-current="true"{% endif %}>
-                    {{ language_labels[language] }}
-                  </button>
+                  <button type="submit" class="dropdown-item{% if language == current_locale %} active{% endif %}"
+                          {% if language == current_locale %}aria-current="true"{% endif %}>{{ language_labels[language] }}</button>
                 </form>
               </li>
             {% endfor %}
@@ -78,7 +92,6 @@
     </div>
   </div>
 </nav>
-
 <div class="container">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -90,31 +103,23 @@
       {% endfor %}
     {% endif %}
   {% endwith %}
-
   {% block content %}{% endblock %}
 </div>
-
 <div class="modal fade" id="qrScannerModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ _('Escanear QR de barril') }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Cerrar') }}"></button>
-      </div>
-      <div class="modal-body">
-        <div id="qr-reader" style="width:100%;"></div>
-        <div class="mt-3 text-center">
-          <small class="text-muted">{{ _('Apunta la cámara al código QR del barril.') }}</small>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                onclick="cerrarScannerQR()">{{ _('Cerrar') }}</button>
-      </div>
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">{{ _('Escanear QR de barril') }}</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Cerrar') }}"></button>
     </div>
-  </div>
+    <div class="modal-body">
+      <div id="qr-reader" style="width:100%;"></div>
+      <div class="mt-3 text-center"><small class="text-muted">{{ _('Apunta la cámara al código QR del barril.') }}</small></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="cerrarScannerQR()">{{ _('Cerrar') }}</button>
+    </div>
+  </div></div>
 </div>
-
 <script>
   window.brewTranslations = {{ {
     "codeRead": _("Código leído: __CODE__"),
@@ -126,9 +131,9 @@
   }|tojson }};
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script src="{{ url_for('static', filename='js/barriles_qr.js') }}"></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>
