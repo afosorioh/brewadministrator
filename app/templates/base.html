@@ -54,7 +54,6 @@
           <li class="nav-item"><a class="nav-link" href="{{ url_for('barriles.lista') }}">{{ _('Barriles') }}</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('clientes.lista') }}">{{ _('Clientes') }}</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('catas.lista') }}">{{ _('Catas') }}</a></li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('estadisticas.bache') }}">{{ _('Estadísticas') }}</a></li>
           {% if current_user.rol.nombre == "ADMIN" %}
           <li class="nav-item"><a class="nav-link" href="{{ url_for('inventario.lista') }}">{{ _('Inventario') }}</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('temperatura.lista') }}">{{ _('Temperaturas') }}</a></li>
