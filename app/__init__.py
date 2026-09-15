@@ -99,9 +99,8 @@ def create_app():
     from app.routes.catas_publicas import bp_publica
     app.register_blueprint(bp_publica)
 
-    from app.routes.inventario import inventario_bp
-    app.register_blueprint(inventario_bp)
-
+    # The Meta catalog feed remains independent from the inventory UI and
+    # still consumes the chatbot product API.
     from app.routes.catalog import catalog_bp
     app.register_blueprint(catalog_bp)
 
