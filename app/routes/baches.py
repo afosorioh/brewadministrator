@@ -23,12 +23,20 @@ from flask_babel import gettext as _
 from app.authz import role_required
 
 from app.utils.datetime_utils import (
+    app_timezone,
     format_local_datetime,
     local_to_utc,
+    utc_to_local,
     utc_now,
 )
 from datetime import datetime
 from io import BytesIO
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
@@ -578,6 +586,64 @@ def detalle(bache_id):
         bache=bache,
         **ctx
     )
+
+
+@baches_bp.route("/<int:bache_id>/grafica.png")
+@login_required
+def grafica(bache_id):
+    bache = Bache.query.get_or_404(bache_id)
+    mediciones = (
+        MedicionBache.query
+        .filter_by(id_bache=bache.id)
+        .filter(MedicionBache.tipo.in_(["PH", "TEMPERATURA", "DENSIDAD"]))
+        .order_by(MedicionBache.fecha.asc())
+        .all()
+    )
+
+    fechas = {"PH": [], "TEMPERATURA": [], "DENSIDAD": []}
+    valores = {"PH": [], "TEMPERATURA": [], "DENSIDAD": []}
+
+    for medicion in mediciones:
+        fechas[medicion.tipo].append(utc_to_local(medicion.fecha))
+        valor = float(medicion.valor)
+        valores[medicion.tipo].append(
+            _to_sg(valor) if medicion.tipo == "DENSIDAD" else valor
+        )
+
+    fig, axes = plt.subplots(3, 1, figsize=(10, 6), sharex=True)
+
+    axes[0].plot(fechas["PH"], valores["PH"], marker="o")
+    axes[0].set_title("pH")
+
+    axes[1].plot(fechas["DENSIDAD"], valores["DENSIDAD"], marker="o")
+    axes[1].set_title(_("Densidad (SG)"))
+
+    axes[2].plot(
+        fechas["TEMPERATURA"],
+        valores["TEMPERATURA"],
+        marker="o",
+    )
+    axes[2].set_title(_("Temperatura (°C)"))
+
+    for axis in axes:
+        axis.grid(True)
+        axis.xaxis.set_major_formatter(
+            mdates.DateFormatter("%Y-%m-%d", tz=app_timezone())
+        )
+
+    axes[2].set_xlabel(
+        _("Fecha y hora (%(timezone)s)", timezone=str(app_timezone()))
+    )
+
+    fig.autofmt_xdate()
+    fig.tight_layout()
+
+    buffer = BytesIO()
+    fig.savefig(buffer, format="png", dpi=150)
+    plt.close(fig)
+    buffer.seek(0)
+
+    return send_file(buffer, mimetype="image/png")
 
 
 @baches_bp.route("/<int:bache_id>/editar", methods=["GET", "POST"])

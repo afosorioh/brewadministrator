@@ -175,4 +175,11 @@
   <a href="{{ url_for('baches.lista') }}" class="btn btn-secondary">{{ _("Volver a la lista") }}</a>
   <a href="{{ url_for('baches.exportar_pdf', bache_id=bache.id) }}" class="btn btn-outline-primary">{{ _("Exportar PDF") }}</a>
 </div>
+
+<div class="card p-3 mt-4">
+  <h5>{{ _("Gráfica") }}</h5>
+  <img class="img-fluid"
+       src="{{ url_for('baches.grafica', bache_id=bache.id) }}"
+       alt="{{ _("Gráfica de mediciones del bache") }}">
+</div>
 {% endblock %}

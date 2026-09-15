@@ -62,6 +62,9 @@ class BatchesInternationalizationTestCase(unittest.TestCase):
         self.assertIn("|tojson", form)
         self.assertIn("|tojson", listing)
         self.assertIn("tipo_mp_labels.get(mp.tipo, mp.tipo)", detail)
+        self.assertIn("url_for('baches.grafica'", detail)
+        self.assertIn('_("Gráfica")', detail)
+        self.assertIn('_("Gráfica de mediciones del bache")', detail)
 
     def test_gettext_calls_do_not_contain_unsafe_literal_percent_signs(self):
         templates_dir = self.project_root / "app" / "templates" / "baches"
