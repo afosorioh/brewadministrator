@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Servicio edge MT-512E Log v09/Sitrad para Python 3.4.
+"""Servicio edge MT-512E Log v09/Sitrad v10/Modbus para Python 3.4.
 
 Dependencias externas: PySerial 2.6. Lee los controladores cada minuto,
 conserva mediciones en SQLite y las envia por HTTPS. Los comandos remotos son
@@ -33,9 +33,16 @@ except ImportError:  # pragma: no cover
 import serial
 
 
-VERSION = "2026-08-24-mt512e-gateway-py34-v2"
+VERSION = "2026-09-02-mt512e-mixed-sitrad-modbus-py34-v1"
 LOGGER = logging.getLogger("brew_temperature_gateway")
-BAUDRATE = 28800
+SITRAD_BAUDRATE = 28800
+MODBUS_BAUDRATE = 9600
+MODBUS_MIN_INTERVAL_SECONDS = 0.100
+MODBUS_READ_HOLDING_REGISTERS = 0x03
+MODBUS_WRITE_SINGLE_REGISTER = 0x06
+MODBUS_SETPOINT_REGISTER = 0x0000
+MODBUS_MONITORING_REGISTER = 0x009B
+MODBUS_MONITORING_REGISTER_COUNT = 7
 READ_COMMAND = 0x20
 WRITE_SETUP_COMMAND = 0x40
 SETPOINT_FUNCTION = 0x00
@@ -87,6 +94,99 @@ def hexdump(data):
     encoded = binascii.hexlify(data).decode("ascii").upper()
     return " ".join(encoded[index:index + 2]
                     for index in range(0, len(encoded), 2))
+
+
+def modbus_crc16(data):
+    crc = 0xFFFF
+    for value in bytearray(data):
+        crc ^= value
+        for unused_bit in range(8):
+            if crc & 1:
+                crc = (crc >> 1) ^ 0xA001
+            else:
+                crc >>= 1
+    return crc
+
+
+def append_modbus_crc(payload):
+    checksum = modbus_crc16(payload)
+    return payload + bytes(bytearray((checksum & 0xFF, checksum >> 8)))
+
+
+def build_modbus_read_request(device_id, address, quantity):
+    return append_modbus_crc(bytes(bytearray((
+        device_id,
+        MODBUS_READ_HOLDING_REGISTERS,
+        (address >> 8) & 0xFF,
+        address & 0xFF,
+        (quantity >> 8) & 0xFF,
+        quantity & 0xFF,
+    ))))
+
+
+def build_modbus_write_request(device_id, address, value):
+    unsigned = int(value) & 0xFFFF
+    return append_modbus_crc(bytes(bytearray((
+        device_id,
+        MODBUS_WRITE_SINGLE_REGISTER,
+        (address >> 8) & 0xFF,
+        address & 0xFF,
+        (unsigned >> 8) & 0xFF,
+        unsigned & 0xFF,
+    ))))
+
+
+def validate_modbus_response(response, device_id, function):
+    if len(response) < 5:
+        raise ControllerError(
+            "respuesta Modbus incompleta: %s" % (
+                hexdump(response) if response else "vacia"
+            )
+        )
+    received_crc = response[-2] | (response[-1] << 8)
+    calculated_crc = modbus_crc16(response[:-2])
+    if received_crc != calculated_crc:
+        raise ControllerError(
+            "CRC Modbus invalido calculado=%04X recibido=%04X" % (
+                calculated_crc, received_crc
+            )
+        )
+    if response[0] != device_id:
+        raise ControllerError(
+            "respondio ID Modbus %d; se esperaba %d" % (
+                response[0], device_id
+            )
+        )
+    if response[1] == (function | 0x80):
+        raise ControllerError(
+            "excepcion Modbus 0x%02X" % response[2]
+        )
+    if response[1] != function:
+        raise ControllerError(
+            "funcion Modbus inesperada 0x%02X" % response[1]
+        )
+
+
+def decode_modbus_registers(response, device_id, quantity):
+    validate_modbus_response(
+        response, device_id, MODBUS_READ_HOLDING_REGISTERS
+    )
+    expected_bytes = quantity * 2
+    if response[2] != expected_bytes or len(response) != expected_bytes + 5:
+        raise ControllerError(
+            "longitud Modbus inesperada para %d registros: %s" % (
+                quantity, hexdump(response)
+            )
+        )
+    registers = []
+    for index in range(quantity):
+        offset = 3 + (index * 2)
+        registers.append((response[offset] << 8) | response[offset + 1])
+    return registers
+
+
+def signed_register(value):
+    return value - 0x10000 if value & 0x8000 else value
 
 
 def get_termios2(port):
@@ -236,7 +336,7 @@ def decode_frame(frame, expected_id):
     }
 
 
-class SitradBus(object):
+class MixedProtocolBus(object):
     def __init__(self, port_name, timeout):
         try:
             self.port = serial.Serial(
@@ -253,13 +353,77 @@ class SitradBus(object):
                 port_name, error
             ))
         self.timeout = timeout
-        try:
-            configure_baudrate(self.port, BAUDRATE)
-        except Exception:
-            self.port.close()
-            raise
+        self.current_protocol = None
+        self.last_modbus_request_at = None
 
-    def read_state(self, device_id):
+    def _select_protocol(self, protocol):
+        if protocol == self.current_protocol:
+            return
+        self.port.flushInput()
+        self.port.flushOutput()
+        if protocol == "sitrad":
+            configure_baudrate(self.port, SITRAD_BAUDRATE)
+            set_parity(self.port, PARITY_NONE)
+        elif protocol == "modbus":
+            configure_baudrate(self.port, MODBUS_BAUDRATE)
+            set_parity(self.port, PARITY_NONE)
+        else:
+            raise ControllerError("protocolo desconocido: %s" % protocol)
+        self.current_protocol = protocol
+        time.sleep(MODBUS_MIN_INTERVAL_SECONDS)
+
+    def _modbus_exchange(self, request):
+        self._select_protocol("modbus")
+        if self.last_modbus_request_at is not None:
+            elapsed = time.monotonic() - self.last_modbus_request_at
+            if elapsed < MODBUS_MIN_INTERVAL_SECONDS:
+                time.sleep(MODBUS_MIN_INTERVAL_SECONDS - elapsed)
+        self.port.flushInput()
+        self.port.flushOutput()
+        self.last_modbus_request_at = time.monotonic()
+        self.port.write(request)
+        self.port.flush()
+        response = read_response(self.port, self.timeout, silence=0.020)
+        if not response:
+            raise ControllerError("dispositivo Modbus sin respuesta")
+        return response
+
+    def _read_modbus_registers(self, device_id, address, quantity):
+        request = build_modbus_read_request(device_id, address, quantity)
+        response = self._modbus_exchange(request)
+        return decode_modbus_registers(response, device_id, quantity)
+
+    def _read_modbus_state(self, device_id):
+        setpoint_registers = self._read_modbus_registers(
+            device_id, MODBUS_SETPOINT_REGISTER, 1
+        )
+        monitoring = self._read_modbus_registers(
+            device_id,
+            MODBUS_MONITORING_REGISTER,
+            MODBUS_MONITORING_REGISTER_COUNT,
+        )
+        setpoint_raw = signed_register(setpoint_registers[0])
+        temperature_raw = signed_register(monitoring[0])
+        status_word_1 = monitoring[1]
+        status_word_2 = monitoring[2]
+        return {
+            "device_id": device_id,
+            "firmware_version": monitoring[6],
+            "temperature_c": temperature_raw / 10.0,
+            "temperature_raw": temperature_raw,
+            "setpoint_c": setpoint_raw / 10.0,
+            "setpoint_raw": setpoint_raw,
+            "output_active": bool(status_word_2 & (1 << 2)),
+            "output_status_raw": status_word_2,
+            "sensor_error": bool(status_word_2 & 0x01),
+            "sensor_flags": status_word_2,
+            "process_status_raw": status_word_1,
+        }
+
+    def read_state(self, device_id, protocol="sitrad"):
+        if protocol == "modbus":
+            return self._read_modbus_state(device_id)
+        self._select_protocol("sitrad")
         self.port.flushInput()
         self.port.flushOutput()
         send_address_and_payload(self.port, device_id, one_byte(READ_COMMAND))
@@ -269,8 +433,9 @@ class SitradBus(object):
         return decode_frame(frame, device_id)
 
     def set_setpoint(self, device_id, value_c, expected_current_c,
-                     minimum_c, maximum_c, maximum_delta_c):
-        before = self.read_state(device_id)
+                     minimum_c, maximum_c, maximum_delta_c,
+                     protocol="sitrad"):
+        before = self.read_state(device_id, protocol)
         target_raw = int(round(float(value_c) * 10.0))
         expected_raw = int(round(float(expected_current_c) * 10.0))
         if before["setpoint_raw"] != expected_raw:
@@ -292,20 +457,36 @@ class SitradBus(object):
                 float(maximum_delta_c)
             )
 
-        payload = build_setpoint_payload(device_id, target_raw)
-        self.port.flushInput()
-        self.port.flushOutput()
-        send_address_and_payload(self.port, device_id, payload)
-        acknowledgement = read_response(self.port, self.timeout)
-        if acknowledgement != WRITE_ACK:
-            raise ControllerError(
-                "ACK de escritura inesperado: %s" % (
-                    hexdump(acknowledgement) if acknowledgement else "vacio"
-                )
+        if protocol == "modbus":
+            request = build_modbus_write_request(
+                device_id, MODBUS_SETPOINT_REGISTER, target_raw
             )
+            acknowledgement = self._modbus_exchange(request)
+            validate_modbus_response(
+                acknowledgement, device_id, MODBUS_WRITE_SINGLE_REGISTER
+            )
+            if acknowledgement != request:
+                raise ControllerError(
+                    "confirmacion Modbus de escritura inesperada: %s" %
+                    hexdump(acknowledgement)
+                )
+        else:
+            self._select_protocol("sitrad")
+            payload = build_setpoint_payload(device_id, target_raw)
+            self.port.flushInput()
+            self.port.flushOutput()
+            send_address_and_payload(self.port, device_id, payload)
+            acknowledgement = read_response(self.port, self.timeout)
+            if acknowledgement != WRITE_ACK:
+                raise ControllerError(
+                    "ACK de escritura inesperado: %s" % (
+                        hexdump(acknowledgement)
+                        if acknowledgement else "vacio"
+                    )
+                )
         for unused_attempt in range(5):
             time.sleep(0.5)
-            after = self.read_state(device_id)
+            after = self.read_state(device_id, protocol)
             if after["setpoint_raw"] == target_raw:
                 return after
         raise ControllerError(
@@ -520,6 +701,7 @@ def validate_controller(item):
         "controller_id": str(item["controller_id"]),
         "device_id": int(item["device_id"]),
         "name": str(item["name"]),
+        "protocol": str(item.get("protocol", "sitrad")).lower(),
         "minimum_setpoint_c": float(item["minimum_setpoint_c"]),
         "maximum_setpoint_c": float(item["maximum_setpoint_c"]),
         "batch_id": (
@@ -529,6 +711,8 @@ def validate_controller(item):
     }
     if not 1 <= parsed["device_id"] <= 247:
         raise GatewayError("device_id fuera de rango")
+    if parsed["protocol"] not in ("sitrad", "modbus"):
+        raise GatewayError("protocolo debe ser sitrad o modbus")
     if parsed["minimum_setpoint_c"] >= parsed["maximum_setpoint_c"]:
         raise GatewayError("limites de setpoint invalidos")
     return parsed
@@ -559,7 +743,10 @@ def load_config(path):
         "api_base_url": str(raw["api_base_url"]),
         "api_token": token,
         "api_timeout_seconds": float(raw.get("api_timeout_seconds", 10.0)),
-        "batch_size": int(raw.get("batch_size", 100)),
+        "batch_size": max(1, min(500, int(raw.get("batch_size", 100)))),
+        "max_upload_batches_per_cycle": max(
+            1, int(raw.get("max_upload_batches_per_cycle", 20))
+        ),
         "command_max_delta_c": float(raw.get("command_max_delta_c", 5.0)),
         "fallback_controllers": controllers,
     }
@@ -594,7 +781,9 @@ class GatewayService(object):
         for controller in controllers:
             observed_at = utc_now_iso()
             try:
-                state = self.bus.read_state(controller["device_id"])
+                state = self.bus.read_state(
+                    controller["device_id"], controller["protocol"]
+                )
             except ControllerError as error:
                 LOGGER.error("%s: %s", controller["controller_id"], error)
                 continue
@@ -613,8 +802,8 @@ class GatewayService(object):
             }
             self.store.add_reading(payload)
             LOGGER.info(
-                "%s: temperatura=%.1f C setpoint=%.1f C salida=%s",
-                controller["name"], state["temperature_c"],
+                "%s [%s]: temperatura=%.1f C setpoint=%.1f C salida=%s",
+                controller["name"], controller["protocol"], state["temperature_c"],
                 state["setpoint_c"],
                 "activa" if state["output_active"] else "inactiva"
             )
@@ -622,15 +811,45 @@ class GatewayService(object):
     def flush_readings(self):
         if self.api is None:
             return
-        readings = self.store.pending_readings(self.config["batch_size"])
-        if not readings:
-            return
-        try:
-            self.api.send_readings(readings)
-        except ApiError as error:
-            LOGGER.warning("Lecturas conservadas para reintento: %s", error)
-            return
-        self.store.remove_readings([item["reading_id"] for item in readings])
+        batch_size = self.config["batch_size"]
+        max_batches = self.config.get("max_upload_batches_per_cycle", 20)
+        synchronized = 0
+        for unused_batch_number in range(max_batches):
+            readings = self.store.pending_readings(batch_size)
+            if not readings:
+                break
+            try:
+                result = self.api.send_readings(readings)
+            except ApiError as error:
+                LOGGER.warning("Lecturas conservadas para reintento: %s", error)
+                break
+            try:
+                processed = int(result.get("accepted", 0)) + int(
+                    result.get("duplicates", 0)
+                )
+            except (TypeError, ValueError, AttributeError):
+                LOGGER.warning(
+                    "Respuesta inesperada; lote conservado para reintento"
+                )
+                break
+            if processed != len(readings):
+                LOGGER.warning(
+                    "La VPS confirmo %d de %d lecturas; lote conservado",
+                    processed, len(readings)
+                )
+                break
+            self.store.remove_readings(
+                [item["reading_id"] for item in readings]
+            )
+            synchronized += len(readings)
+            if len(readings) < batch_size:
+                break
+        if synchronized:
+            LOGGER.info(
+                "Sincronizadas %d lecturas; cola pendiente=%s",
+                synchronized,
+                "si" if self.store.pending_readings(1) else "no"
+            )
 
     def execute_command(self, command, controller_map):
         command_id = str(command["command_id"])
@@ -648,7 +867,8 @@ class GatewayService(object):
                 float(command["expected_setpoint_c"]),
                 controller["minimum_setpoint_c"],
                 controller["maximum_setpoint_c"],
-                self.config["command_max_delta_c"]
+                self.config["command_max_delta_c"],
+                controller["protocol"]
             )
             message = "setpoint confirmado en %.1f C" % state["setpoint_c"]
             status = "completed"
@@ -713,7 +933,7 @@ class GatewayService(object):
 
 def build_parser():
     parser = argparse.ArgumentParser(
-        description="Servicio Sitrad MT-512E Log v09 para Raspberry Pi"
+        description="Servicio mixto Sitrad/Modbus para MT-512E Log"
     )
     parser.add_argument(
         "--config", default="/etc/brew-temperature-gateway/config.json"
@@ -741,7 +961,7 @@ def main():
     store = LocalStore(config["database_path"])
     bus = None
     try:
-        bus = SitradBus(
+        bus = MixedProtocolBus(
             config["serial_port"], config["serial_timeout_seconds"]
         )
         api = None
