@@ -250,7 +250,7 @@ This project is licensed under the [GNU General Public License v3.0](LICENSE).
 ## Author
 
 **Andrés Felipe Osorio Henker**  
-Backend Software Engineer · Telecommunications Engineer · University Lecturer · Researcher
+Backend Software Engineer · Telecommunications Engineer · University Lecturer · Researcher . Brewer
 
 - GitHub: [@afosorioh](https://github.com/afosorioh)
 - LinkedIn: [andres-felipe-osorio-henker](https://www.linkedin.com/in/andres-felipe-osorio-henker)
