@@ -22,6 +22,17 @@ BrewAdministrator is a web application designed to support the operational lifec
 
 The application follows Flask's application-factory pattern and separates routes, services, templates, utilities, database models, and migrations. It is currently used as a real operational platform, which makes the project both a software-engineering portfolio and a domain-specific production system.
 
+## Live demo
+
+The portal can be explored at [https://demo.cervecerialibre.com/](https://demo.cervecerialibre.com/).
+
+| Field | Value |
+|---|---|
+| Username | `demo` |
+| Password | `demo` |
+
+> The demo environment is reset every night. Any data created or modified during a test session will be deleted as part of the nightly reset.
+
 ## Key modules
 
 ### Recipes
@@ -44,10 +55,6 @@ Track individual kegs by code, capacity, filled volume, beer style, batch, custo
 
 Provide an operational dashboard with total inventory, clean, full, delivered, and dirty keg counts. Visualizations group kegs by status and capacity, while filters support date, customer, and beer-style analysis.
 
-### Inventory and catalog integration
-
-Expose product availability for inventory workflows and external consumers, including integration with the brewery's chatbot/catalog services.
-
 ### Tastings and quality control
 
 Create tasting sessions linked to production batches and collect structured
@@ -59,17 +66,23 @@ without access to the management portal.
 
 Manage customers and authenticated users with role-based access controls for administrative and operational responsibilities.
 
+### Visual configuration
+
+Customize the portal from the administrative interface without editing source code or restarting the application. Administrators can configure the application name, short name, slogan, color palette, body and heading typography, main logo, favicon, and login background. The module validates uploaded images, provides a live preview, and can restore the default visual identity.
+
 ### Statistics and reports
 
 Generate production and operational statistics, visual summaries, and PDF exports using Matplotlib and ReportLab.
 
 ### Temperature monitoring and control
 
-The temperature module connects Full Gauge MT-512E Log v09 controllers to the
-management portal through a Raspberry Pi and an isolated USB–RS-485 adapter.
-The field service in [`raspberry_gateway/gateway_mt512e_sitrad_py34.py`](raspberry_gateway/gateway_mt512e_sitrad_py34.py)
-communicates directly with the controllers through the validated Sitrad serial
-protocol, without requiring Sitrad Pro or a Windows computer.
+The temperature module connects Full Gauge controllers to the management portal
+through a Raspberry Pi and an isolated USB–RS-485 adapter. It supports both
+**MT-512E Log v09 through the Sitrad protocol** and **MT-512E Log v10 through
+Modbus RTU**. For v09 devices, the field service in
+[`raspberry_gateway/gateway_mt512e_sitrad_py34.py`](raspberry_gateway/gateway_mt512e_sitrad_py34.py)
+communicates directly with the controller without requiring Sitrad Pro or a
+Windows computer.
 
 Current capabilities include:
 
@@ -127,7 +140,7 @@ Current capabilities include:
 | Authentication | Flask-Login, role-based authorization |
 | Schema evolution | Alembic, Flask-Migrate |
 | Reporting and analytics | Matplotlib, NumPy, ReportLab, Pillow |
-| Edge and industrial integration | Raspberry Pi, RS-485, PySerial, Sitrad, SQLite outbox, systemd |
+| Edge and industrial integration | Raspberry Pi, RS-485, PySerial, Sitrad, Modbus RTU, SQLite outbox, systemd |
 | Configuration | python-dotenv |
 | Production deployment | Ubuntu, Nginx, Gunicorn |
 | Version control | Git, GitHub |
@@ -159,7 +172,7 @@ brewadministrator/
 - **Application factory:** extensions and routes are initialized through `create_app()`, making configuration and deployment easier to manage.
 - **Relational traceability:** recipes, raw-material lots, batches, measurements, kegs, movements, customers, and tastings are connected through SQLAlchemy models.
 - **Role-based access control:** authenticated users receive permissions according to their operational role.
-- **Service boundary:** integrations such as chatbot inventory access are isolated from HTTP route handlers.
+- **Service boundary:** hardware communication and external integrations are isolated from HTTP route handlers.
 - **Database migrations:** Alembic and Flask-Migrate provide controlled schema evolution.
 - **Production deployment:** the application runs behind Nginx and Gunicorn on Ubuntu with PostgreSQL.
 - **Resilient edge integration:** the Raspberry Pi persists readings locally before delivery, while UUID-based idempotency prevents duplicate measurements after retries.
@@ -228,7 +241,7 @@ Raw-material quality certificates are stored outside the public static directory
 
 ## Project status
 
-The platform is under active development and is already used for brewery operations. Current work focuses on extending operational workflows, reporting, inventory integrations, usability, and production traceability.
+The platform is under active development and is already used for brewery operations. Current work focuses on extending operational workflows, reporting, visual customization, usability, and production traceability.
 
 ## License
 
