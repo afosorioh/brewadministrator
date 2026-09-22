@@ -95,6 +95,9 @@ class TemperatureInternationalizationTestCase(unittest.TestCase):
         self.assertIn("_('Temperatura (°C)')|tojson", detail)
         self.assertIn("|tojson", form)
         self.assertNotIn("confirm('¿Eliminar", form)
+        self.assertIn("autoSkip: true", detail)
+        self.assertIn("maxTicksLimit: 12", detail)
+        self.assertNotIn("tickLabels", detail)
 
     def test_validation_messages_and_direct_flashes_use_gettext(self):
         route = self.project_root / "app" / "routes" / "temperatura.py"

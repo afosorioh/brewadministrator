@@ -123,7 +123,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
 const labels = {{ chart_labels|tojson }};
-const tickLabels = {{ chart_tick_labels|tojson }};
 const temperatures = {{ chart_temperatures|tojson }};
 const setpoints = {{ chart_setpoints|tojson }};
 new Chart(document.getElementById('temperatureChart'), {
@@ -145,11 +144,13 @@ new Chart(document.getElementById('temperatureChart'), {
         title: {display: true, text: {{ _('Fecha y hora')|tojson }}},
         grid: {display: false},
         ticks: {
-          autoSkip: false,
-          maxRotation: 45,
+          autoSkip: true,
+          maxTicksLimit: 12,
+          maxRotation: 0,
           minRotation: 0,
           callback: function(value) {
-            return tickLabels[value] || null;
+            const fullLabel = this.getLabelForValue(value);
+            return fullLabel ? fullLabel.slice(5, 16) : '';
           }
         }
       },
