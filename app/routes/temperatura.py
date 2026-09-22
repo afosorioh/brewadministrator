@@ -111,37 +111,6 @@ def _batches_with_readings(controller_id):
     )
 
 
-def _chart_tick_labels(readings):
-    """Build sparse labels while preserving every reading in the chart."""
-    if not readings:
-        return []
-
-    total_seconds = (
-        readings[-1].observado_en - readings[0].observado_en
-    ).total_seconds()
-    tick_interval_seconds = 3600 if total_seconds <= 72 * 3600 else 4 * 3600
-    labels = []
-    last_tick_at = None
-
-    for index, reading in enumerate(readings):
-        observed_at = reading.observado_en
-        show_tick = (
-            index == 0
-            or index == len(readings) - 1
-            or last_tick_at is None
-            or (observed_at - last_tick_at).total_seconds()
-            >= tick_interval_seconds
-        )
-        labels.append(
-            format_local_datetime(observed_at, "%m-%d %H:%M")
-            if show_tick else ""
-        )
-        if show_tick:
-            last_tick_at = observed_at
-
-    return labels
-
-
 @temperatura_bp.get("/")
 @login_required
 def lista():
@@ -284,7 +253,6 @@ def detalle(controller_id):
         format_local_datetime(reading.observado_en)
         for reading in chart_readings
     ]
-    chart_tick_labels = _chart_tick_labels(chart_readings)
     chart_temperatures = [
         float(reading.temperatura_c) for reading in chart_readings
     ]
@@ -294,7 +262,6 @@ def detalle(controller_id):
     return render_template(
         "temperatura/detalle.html", controller=controller,
         readings=readings, commands=commands, chart_labels=chart_labels,
-        chart_tick_labels=chart_tick_labels,
         chart_temperatures=chart_temperatures,
         chart_setpoints=chart_setpoints,
         chart_reading_count=len(chart_readings),
