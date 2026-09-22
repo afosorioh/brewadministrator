@@ -55,12 +55,14 @@
 </form>
 {% endif %}
 
-{% if readings %}
+{% if chart_reading_count %}
 <div class="card shadow-sm mb-4">
   <div class="card-header">
-    <strong>{{ ngettext('Última %(count)s lectura', 'Últimas %(count)s lecturas', readings|length, count=readings|length) }}</strong>
     {% if selected_batch %}
+      <strong>{{ _('Gráfica de mediciones del bache') }}</strong>
       <span class="text-muted">· {{ selected_batch.codigo_bache }}</span>
+    {% else %}
+      <strong>{{ ngettext('Última %(count)s lectura', 'Últimas %(count)s lecturas', readings|length, count=readings|length) }}</strong>
     {% endif %}
   </div>
   <div class="card-body"><canvas id="temperatureChart" height="90"></canvas></div>
@@ -117,27 +119,39 @@
   </div>
 </div>
 
-{% if readings %}
+{% if chart_reading_count %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
 const labels = {{ chart_labels|tojson }};
-const temperatures = {{ readings|reverse|map(attribute='temperatura_c')|map('float')|list|tojson }};
-const setpoints = {{ readings|reverse|map(attribute='setpoint_c')|map('float')|list|tojson }};
+const tickLabels = {{ chart_tick_labels|tojson }};
+const temperatures = {{ chart_temperatures|tojson }};
+const setpoints = {{ chart_setpoints|tojson }};
 new Chart(document.getElementById('temperatureChart'), {
   type: 'line',
   data: {
     labels: labels,
     datasets: [
-      {label: {{ _('Temperatura °C')|tojson }}, data: temperatures, borderColor: '#dc3545', tension: 0.2, pointRadius: 1},
+      {label: {{ _('Temperatura °C')|tojson }}, data: temperatures, borderColor: '#dc3545', tension: 0.2, pointRadius: 0, pointHoverRadius: 3, borderWidth: 1.5},
       {label: {{ _('Setpoint °C')|tojson }}, data: setpoints, borderColor: '#0d6efd', borderDash: [6, 4], tension: 0, pointRadius: 0}
     ]
   },
   options: {
     responsive: true,
+    animation: false,
+    normalized: true,
     interaction: {mode: 'index', intersect: false},
     scales: {
       x: {
-        title: {display: true, text: {{ _('Fecha y hora')|tojson }}}
+        title: {display: true, text: {{ _('Fecha y hora')|tojson }}},
+        grid: {display: false},
+        ticks: {
+          autoSkip: false,
+          maxRotation: 45,
+          minRotation: 0,
+          callback: function(value) {
+            return tickLabels[value] || null;
+          }
+        }
       },
       y: {
         title: {display: true, text: {{ _('Temperatura (°C)')|tojson }}}

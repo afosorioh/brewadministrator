@@ -1,7 +1,7 @@
 import sys
 import types
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 
@@ -175,6 +175,38 @@ class TemperatureHistoryBatchFilterTestCase(unittest.TestCase):
         self.assertIn("12.3", html)
         self.assertNotIn("18.7", html)
         self.assertIn("Fecha y hora", html)
+
+    def test_selected_batch_chart_contains_complete_history_beyond_200_rows(self):
+        first_observed_at = datetime(2026, 7, 1, 12, 0)
+        with self.app.app_context():
+            db.session.add_all(
+                [
+                    self._reading(
+                        f"full-cycle-{index:03d}",
+                        self.controller_id,
+                        self.batch_3_id,
+                        first_observed_at + timedelta(minutes=3 * index),
+                        "5.5" if index == 0 else "12.0",
+                    )
+                    for index in range(205)
+                ]
+            )
+            db.session.commit()
+
+        response = self.client.get(
+            f"/temperatura/{self.controller_id}?bache_id={self.batch_3_id}"
+        )
+        html = response.get_data(as_text=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Gráfica de mediciones del bache", html)
+        self.assertIn("BATCH-003", html)
+        self.assertIn("2026-07-01 07:00:00", html)
+        self.assertIn("const temperatures = [5.5", html)
+        recent_table = html.split("Lecturas recientes", 1)[1].split(
+            "Comandos recientes", 1
+        )[0]
+        self.assertEqual(recent_table.count("<tr>"), 201)
 
     def test_batch_from_another_controller_is_rejected(self):
         response = self.client.get(
